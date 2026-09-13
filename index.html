@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="Giri Orbit — Complete Cloud-Free Office Suite. Drift Documents, Axis Spreadsheets, Kinetic Presentations, and Aegis PDF Studio. Enterprise productivity, sovereign browser storage.">
+  <meta name="keywords" content="Giri Orbit, office suite, document editor, spreadsheet, presentation, PDF, productivity, GIRI Corporation">
+  <meta name="author" content="GIRI Corporation">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Giri Orbit">
+  <meta name="format-detection" content="telephone=no">
+
+  <!-- Open Graph / Social -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Giri Orbit — Complete Productivity Platform">
+  <meta property="og:description" content="Drift Documents, Axis Spreadsheets, Kinetic Presentations & Aegis PDF Studio — all in your browser, no cloud required.">
+  <meta property="og:image" content="assets/giri-logo-symbol.png">
+  <meta property="og:site_name" content="Giri Orbit">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Giri Orbit — Complete Productivity Platform">
+  <meta name="twitter:description" content="Enterprise office suite that runs entirely in your browser. No login, no cloud.">
+  <meta name="twitter:image" content="assets/giri-logo-symbol.png">
+
+  <title>Giri Orbit — Complete Productivity Platform | GIRI Corporation</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="assets/giri-logo-symbol.png">
+  <link rel="apple-touch-icon" href="assets/giri-logo-symbol.png">
+  <link rel="stylesheet" href="css/styles.css?v=10.0">
+  <link rel="stylesheet" href="css/hub.css?v=10.0">
+  <link rel="stylesheet" href="css/fontsAndSelection.css?v=10.0">
+  <link rel="stylesheet" href="css/sync.css?v=10.0">
+  <link rel="stylesheet" href="css/mobile.css?v=10.0">
+  <link rel="manifest" href="manifest.json">
+</head>
+<body>
+
+  <!-- TIER 2: GIRI ORBIT SUITE SUB-HEADER -->
+  <header class="tier2-suite-header">
+    <div class="tier2-inner">
+      <div class="tier2-left">
+        <!-- Giri Orbit Dual-Ring Gyroscope / Giri Group Master Mark (Provided by User) -->
+        <div class="suite-product-brand" id="suite-product-brand" role="button" tabindex="0" title="Return to Suite Hub">
+          <div class="orbit-brand-mark">
+            <img src="assets/giri-logo-symbol.png" alt="Giri Group" class="orbit-group-symbol-img">
+          </div>
+          <div class="suite-brand-titles">
+            <span class="suite-brand-sub">Giri</span>
+            <span class="suite-brand-main">Orbit</span>
+          </div>
+        </div>
+
+        <!-- Suite Menu Dropdowns -->
+        <nav class="tier2-nav-menu">
+          <div class="tier2-menu-item">
+            <span>Workspace ▾</span>
+            <div class="tier2-dropdown">
+              <div class="dropdown-product-row" data-launch="drift">
+                <span class="icon-sq sq-blue">D</span>
+                <div><strong>Drift</strong><p>Executive Document Composer</p></div>
+              </div>
+              <div class="dropdown-product-row" data-launch="axis">
+                <span class="icon-sq sq-green">A</span>
+                <div><strong>Axis</strong><p>High-Velocity Data Matrix</p></div>
+              </div>
+              <div class="dropdown-product-row" data-launch="kinetic">
+                <span class="icon-sq sq-red">K</span>
+                <div><strong>Kinetic</strong><p>Cinematic Presentation Show</p></div>
+              </div>
+              <div class="dropdown-product-row" data-launch="pdf">
+                <span class="icon-sq sq-orange">Æ</span>
+                <div><strong>Aegis Studio</strong><p>PDF Cryptographic Seal</p></div>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <!-- Suite View Switcher Tabs & Actions -->
+      <div class="tier2-right">
+        <button class="tier1-sync-pill" id="btn-global-sync" title="Browser Sync Status & Storage Manager">
+          <span class="sync-dot-live"></span>
+          <span id="txt-global-sync">Synced</span>
+        </button>
+        <a href="https://www.instagram.com/abhinavgiri45/" target="_blank" rel="noopener" class="tier1-instagram-pill" style="margin-right:8px;" title="Follow @abhinavgiri45 on Instagram">
+          <div class="tier1-instagram-pill-icon">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="2.5" y="2.5" width="19" height="19" rx="5.2" stroke="#ffffff" stroke-width="2" fill="none"/>
+              <circle cx="12" cy="12" r="4.2" stroke="#ffffff" stroke-width="2" fill="none"/>
+              <circle cx="16.8" cy="7.2" r="1.1" fill="#ffffff"/>
+            </svg>
+          </div>
+          <span>@abhinavgiri45</span>
+        </a>
+        <!-- Active Suite Tabs with Specific Tool Links -->
+        <nav class="suite-switcher-pill-bar">
+          <a href="#hub" class="suite-nav-pill active" data-view="launcher" id="tab-nav-launcher" title="Orbit Hub (http://127.0.0.1:5000/#hub)">
+            <span class="pill-full-label">Orbit Hub</span>
+            <span class="pill-short-label">Hub</span>
+          </a>
+          <a href="#drift" class="suite-nav-pill" data-view="drift" id="tab-nav-drift" title="Giri Drift Docs (http://127.0.0.1:5000/#drift)">
+            <span class="pill-full-label">Drift (Docs)</span>
+            <span class="pill-short-label">Drift</span>
+          </a>
+          <a href="#axis" class="suite-nav-pill" data-view="axis" id="tab-nav-axis" title="Giri Axis Sheets (http://127.0.0.1:5000/#axis)">
+            <span class="pill-full-label">Axis (Sheets)</span>
+            <span class="pill-short-label">Axis</span>
+          </a>
+          <a href="#kinetic" class="suite-nav-pill" data-view="kinetic" id="tab-nav-kinetic" title="Giri Kinetic Presentation (http://127.0.0.1:5000/#kinetic)">
+            <span class="pill-full-label">Kinetic (Presentation)</span>
+            <span class="pill-short-label">Kinetic</span>
+          </a>
+          <a href="#pdf" class="suite-nav-pill" data-view="pdf" id="tab-nav-pdf" title="Giri Aegis PDF Studio (http://127.0.0.1:5000/#pdf)">
+            <span class="pill-full-label">Aegis (PDF)</span>
+            <span class="pill-short-label">Aegis</span>
+          </a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hidden Universal File Input for Imports -->
+  <input type="file" id="universal-file-input" accept=".json,.csv,.md,.txt,.docx,.xlsx,.pptx" style="display: none;">
+
+  <!-- PRIMARY WORKSPACE VIEWPORT -->
+  <main class="orbit-workspace" id="orbit-workspace">
+    <!-- Rendered by app.js?v=8.0: Zoho-Style Suite Landing Hub OR Full-Screen Desktop Tool Workspaces -->
+  </main>
+
+  <!-- PROFESSIONAL EXPORT FORMAT MODAL DIALOG -->
+  <div class="export-modal-backdrop" id="export-modal-backdrop" aria-hidden="true">
+    <div class="export-modal-card" role="dialog" aria-modal="true" aria-label="Export Document Options">
+      <div class="export-modal-header">
+        <div class="export-header-title-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e42528" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <div>
+            <h3 class="export-modal-title">Export Document</h3>
+            <span class="export-modal-sub" id="export-modal-tool-name">Giri Drift Word Processor</span>
+          </div>
+        </div>
+        <button class="esc-kbd" id="btn-close-export-modal">ESC</button>
+      </div>
+
+      <div class="export-modal-body">
+        <!-- File Name Row -->
+        <div class="export-field-group">
+          <label for="export-filename-input" class="export-field-label">File Name</label>
+          <div class="export-filename-wrap">
+            <input type="text" id="export-filename-input" class="export-filename-input" value="Enterprise-Charter" spellcheck="false">
+            <span class="export-ext-badge" id="export-ext-preview">.docx</span>
+          </div>
+        </div>
+
+        <!-- Format Selector Grid -->
+        <div class="export-field-group">
+          <label class="export-field-label">Select File Format & Extension</label>
+          <div class="export-formats-grid" id="export-formats-grid">
+            <!-- Dynamically populated format cards -->
+          </div>
+        </div>
+      </div>
+
+      <div class="export-modal-footer">
+        <button class="export-cancel-btn" id="btn-cancel-export">Cancel</button>
+        <button class="btn-zoho-red" id="btn-confirm-export" style="padding:8px 18px; font-size:13px;">
+          <span>Download & Export</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Command Palette Spotlight Dialog (Ctrl+K) -->
+  <div class="cmd-palette-backdrop" id="cmd-palette-backdrop" aria-hidden="true">
+    <div class="cmd-palette-card" role="dialog" aria-modal="true" aria-label="Command Palette">
+      <div class="cmd-search-row">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" id="cmd-search-input" placeholder="Type a command or search documents..." spellcheck="false" autocomplete="off">
+        <kbd class="esc-kbd" id="cmd-close-btn">ESC</kbd>
+      </div>
+
+      <div class="cmd-results-list" id="cmd-results-list"></div>
+
+      <div class="cmd-footer-hints">
+        <span>Use <kbd>↑</kbd> <kbd>↓</kbd> to navigate</span>
+        <span><kbd>Enter</kbd> to execute</span>
+        <span><kbd>ESC</kbd> to dismiss</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Executive Copilot Modal (Ctrl+J) -->
+  <div class="ai-copilot-backdrop" id="ai-copilot-backdrop" aria-hidden="true">
+    <div class="ai-copilot-card" role="dialog" aria-modal="true" aria-label="AI Executive Copilot">
+      <div class="ai-copilot-header">
+        <div class="ai-title-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          <span class="ai-title">Giri Orbit AI Executive Copilot</span>
+        </div>
+        <kbd class="esc-kbd" id="ai-copilot-close">ESC</kbd>
+      </div>
+
+      <input type="text" id="ai-prompt-input" class="ai-prompt-input" placeholder="Ask AI: 'Summarize charter', 'Draft action items', or 'Format table'..." spellcheck="false">
+
+      <div class="ai-quick-pills">
+        <button class="ai-pill-btn" data-prompt="executive-summary">✨ Executive Summary</button>
+        <button class="ai-pill-btn" data-prompt="action-items">📋 Key Action Items</button>
+        <button class="ai-pill-btn" data-prompt="strategic-table">📊 Strategic Table</button>
+        <button class="ai-pill-btn" data-prompt="enhance-tone">⚡ Enhance Tone</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enterprise Sovereign Specs & Documentation Modal -->
+  <div class="sovereign-modal-backdrop" id="sovereign-modal-backdrop" aria-hidden="true">
+    <div class="sovereign-modal-card" role="dialog" aria-modal="true" aria-label="Giri Orbit Sovereign Enterprise Specifications">
+      <div class="export-modal-header">
+        <div class="export-header-title-wrap">
+          <div class="orbit-brand-mark" style="width:32px; height:32px; background:#000; border-radius:6px; overflow:hidden;">
+            <img src="assets/giri-logo-symbol.png" alt="Giri Group" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div>
+            <h3 class="export-modal-title" id="sovereign-modal-title">Giri Orbit Sovereign Architecture</h3>
+            <span class="export-modal-sub" id="sovereign-modal-sub">Enterprise Specification & Platform Capabilities</span>
+          </div>
+        </div>
+        <button class="esc-kbd" id="btn-close-sovereign-modal">ESC</button>
+      </div>
+
+      <div class="export-modal-body" id="sovereign-modal-body" style="font-size:13px; color:#334155; line-height:1.6;">
+        <!-- Dynamically injected content -->
+      </div>
+
+      <div class="export-modal-footer">
+        <button class="export-cancel-btn" id="btn-dismiss-sovereign">Dismiss</button>
+        <button class="btn-giri-primary" id="btn-action-sovereign" style="padding:8px 18px; font-size:12.5px;">
+          <span>Launch Fullscreen App</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Toast Container -->
+  <div class="orbit-toast-wrap" id="orbit-toast-wrap" aria-live="polite"></div>
+
+  <!-- Main Orchestrator -->
+  <script type="module" src="js/app.js?v=9.0"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then((reg) => {
+          console.log('[Giri Orbit PWA] Service Worker active, scope:', reg.scope);
+        }).catch((err) => {
+          console.warn('[Giri Orbit PWA] Service Worker registration skipped:', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
