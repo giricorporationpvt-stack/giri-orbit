@@ -1258,7 +1258,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
                       <button class="fluent-btn-small" id="btn-font-grow" title="Grow Font (Ctrl+Shift+>)">A<sup>▲</sup></button>
                       <button class="fluent-btn-small" id="btn-font-shrink" title="Shrink Font (Ctrl+Shift+<)">A<sup>▼</sup></button>
-                      <button class="fluent-btn-small" data-cmd="removeFormat" title="Clear All Formatting (Tx)">T<span style="font-size:9px; color:#ef4444; margin-left:1px;">✕</span></button>
+                      <button class="fluent-btn-small" id="btn-drift-clear-format" data-cmd="removeFormat" title="Clear All Formatting (Tx)">T<span style="font-size:9px; color:#ef4444; margin-left:1px;">✕</span></button>
                     </div>
 
                     <div class="fluent-group-row">
@@ -3332,15 +3332,16 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         const words = text.trim() ? text.trim().split(/\s+/).length : 0;
         const chars = text.length;
         const readMin = Math.max(1, Math.ceil(words / 200));
+        const speakMin = Math.max(1, Math.ceil(words / 130));
 
         if (wordCountEl) wordCountEl.textContent = words.toLocaleString();
         if (charCountEl) charCountEl.textContent = chars.toLocaleString();
-        if (readTimeEl) readTimeEl.textContent = `~${readMin} min`;
+        if (readTimeEl) readTimeEl.textContent = `~${readMin}m read • ~${speakMin}m speak`;
 
         const sbWordText = container.querySelector('#drift-sidebar-wordcount-text');
         const sbCharText = container.querySelector('#drift-sidebar-charcount-text');
         if (sbWordText) sbWordText.textContent = `${words.toLocaleString()} words`;
-        if (sbCharText) sbCharText.textContent = `${chars.toLocaleString()} chars • ~${readMin} min read`;
+        if (sbCharText) sbCharText.textContent = `${chars.toLocaleString()} chars • ~${readMin}m read • ~${speakMin}m speak`;
 
         const pageBreaks = paper.querySelectorAll('.drift-page-break').length;
         const totalPages = Math.max(1, pageBreaks + 1);
@@ -3510,6 +3511,36 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         if (window.orbitPlatform) window.orbitPlatform.triggerToast('Page break inserted');
       });
 
+      // Table of Contents Generator
+      container.querySelector('#btn-insert-toc-action')?.addEventListener('click', () => {
+        const headings = paper.querySelectorAll('h1, h2, h3');
+        if (headings.length === 0) {
+          alert('No headings (H1, H2, H3) found in the document. Add headings first to generate a Table of Contents.');
+          return;
+        }
+        let tocHtml = `<div class="drift-toc-block" contenteditable="false" style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #2563eb; border-radius:6px; padding:16px 20px; margin:20px 0; user-select:none;">
+          <h3 style="margin:0 0 12px 0; font-size:14px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:6px;"><span>📑</span> Table of Contents</h3>
+          <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:6px;">`;
+        headings.forEach((h, idx) => {
+          const tag = h.tagName.toLowerCase();
+          const indent = tag === 'h1' ? '0px' : (tag === 'h2' ? '18px' : '36px');
+          const weight = tag === 'h1' ? '700' : '500';
+          const size = tag === 'h1' ? '12px' : '11px';
+          const title = h.textContent.trim() || 'Untitled Section';
+          if (!h.id) h.id = `section-heading-${idx + 1}`;
+          tocHtml += `<li style="margin-left:${indent}; font-size:${size}; font-weight:${weight};">
+            <a href="#${h.id}" style="color:#2563eb; text-decoration:none; display:flex; justify-content:space-between; border-bottom:1px dotted #cbd5e1; padding-bottom:2px;" onclick="document.getElementById('${h.id}')?.scrollIntoView({behavior:'smooth'}); return false;">
+              <span>${title}</span>
+              <span style="color:#94a3b8; font-family:monospace;">§${idx + 1}</span>
+            </a>
+          </li>`;
+        });
+        tocHtml += `</ul></div><p><br></p>`;
+        document.execCommand('insertHTML', false, tocHtml);
+        saveDocument();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Table of Contents generated');
+      });
+
       // Viewport scroll listener for active page tracking
       const centerViewport = container.querySelector('#drift-center-viewport');
       centerViewport?.addEventListener('scroll', () => {
@@ -3610,6 +3641,14 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           paper.focus();
           saveDocument();
         });
+      });
+
+      // Clear Formatting Button
+      container.querySelector('#btn-drift-clear-format')?.addEventListener('click', () => {
+        document.execCommand('removeFormat', false, null);
+        paper.focus();
+        saveDocument();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Formatting cleared');
       });
 
       // Searchable World Font Picker (Calibri is strict default)

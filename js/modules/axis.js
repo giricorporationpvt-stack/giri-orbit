@@ -1419,11 +1419,11 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
             <!-- Sort & Filter -->
             <div class="fluent-ribbon-group">
               <div class="fluent-group-controls">
-                <button class="fluent-btn-large" id="btn-axis-sort-asc" title="Sort Column Ascending (A to Z)">
+                <button class="fluent-btn-large" id="btn-axis-sort-az" data-ref="btn-axis-sort-asc" title="Sort Column Ascending (A to Z)">
                   <span style="font-size:16px;">A→Z</span>
                   <span>Sort Asc</span>
                 </button>
-                <button class="fluent-btn-large" id="btn-axis-sort-desc" title="Sort Column Descending (Z to A)">
+                <button class="fluent-btn-large" id="btn-axis-sort-za" data-ref="btn-axis-sort-desc" title="Sort Column Descending (Z to A)">
                   <span style="font-size:16px;">Z→A</span>
                   <span>Sort Desc</span>
                 </button>
@@ -4690,14 +4690,18 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
   // =========================================================================
   // DATA TAB CONTROLS: SORT & FILTER
   // =========================================================================
-  // Sort Ascending / Descending by active column
-  container.querySelector('#btn-axis-sort-asc')?.addEventListener('click', () => {
-    if (!activeCell) return;
-    sortActiveColumn(true);
+  // Sort Ascending / Descending by active column (#btn-axis-sort-az / #btn-axis-sort-za)
+  ['#btn-axis-sort-az', '#btn-axis-sort-asc'].forEach(sel => {
+    container.querySelector(sel)?.addEventListener('click', () => {
+      if (!activeCell) return;
+      sortActiveColumn(true);
+    });
   });
-  container.querySelector('#btn-axis-sort-desc')?.addEventListener('click', () => {
-    if (!activeCell) return;
-    sortActiveColumn(false);
+  ['#btn-axis-sort-za', '#btn-axis-sort-desc'].forEach(sel => {
+    container.querySelector(sel)?.addEventListener('click', () => {
+      if (!activeCell) return;
+      sortActiveColumn(false);
+    });
   });
 
   function sortActiveColumn(ascending) {
@@ -4705,23 +4709,59 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     const coord = parseCellCoordinates(activeCell.dataset.cellId);
     if (!coord) return;
     const col = coord.colLetter;
-    const rows = Array.from(gridTable.querySelectorAll('tbody tr')).slice(3, 15); // Sort middle rows
+    const allRows = Array.from(gridTable.querySelectorAll('tbody tr'));
+    if (allRows.length <= 1) return;
 
-    rows.sort((a, b) => {
+    // Preserve row 0 / header row, sort all data rows
+    const headerRow = allRows[0];
+    const dataRows = allRows.slice(1);
+
+    dataRows.sort((a, b) => {
       const cellA = a.querySelector(`[data-col="${col}"]`) || a.querySelector(`[data-cell-id^="${col}"]`);
       const cellB = b.querySelector(`[data-col="${col}"]`) || b.querySelector(`[data-cell-id^="${col}"]`);
-      const valA = parseFloat((cellA?.textContent || '').replace(/[$, ]/g, '')) || cellA?.textContent || '';
-      const valB = parseFloat((cellB?.textContent || '').replace(/[$, ]/g, '')) || cellB?.textContent || '';
-      if (typeof valA === 'number' && typeof valB === 'number') {
-        return ascending ? valA - valB : valB - valA;
+      const textA = (cellA?.textContent || '').trim();
+      const textB = (cellB?.textContent || '').trim();
+
+      // Push blank cells to the bottom
+      if (!textA && textB) return 1;
+      if (textA && !textB) return -1;
+      if (!textA && !textB) return 0;
+
+      const cleanA = textA.replace(/[$, %]/g, '');
+      const cleanB = textB.replace(/[$, %]/g, '');
+      const numA = parseFloat(cleanA);
+      const numB = parseFloat(cleanB);
+      const isNumA = !isNaN(numA) && isFinite(numA) && !isNaN(Number(cleanA));
+      const isNumB = !isNaN(numB) && isFinite(numB) && !isNaN(Number(cleanB));
+
+      if (isNumA && isNumB) {
+        return ascending ? numA - numB : numB - numA;
       }
-      return ascending ? String(valA).localeCompare(String(valB)) : String(valB).localeCompare(String(valA));
+      return ascending
+        ? textA.localeCompare(textB, undefined, { numeric: true, sensitivity: 'base' })
+        : textB.localeCompare(textA, undefined, { numeric: true, sensitivity: 'base' });
     });
 
     const tbody = gridTable.querySelector('tbody');
-    rows.forEach(r => tbody.appendChild(r));
+    dataRows.forEach(r => tbody.appendChild(r));
+
+    // Re-index row headers and coordinate metadata so row index order stays clean
+    Array.from(gridTable.querySelectorAll('tbody tr')).forEach((tr, idx) => {
+      const rNum = idx + 1;
+      tr.dataset.rowIdx = String(rNum);
+      const rowHeaderSpan = tr.querySelector('.axis-row-header span:first-child');
+      if (rowHeaderSpan) rowHeaderSpan.textContent = String(rNum);
+      tr.querySelectorAll('.axis-cell').forEach(td => {
+        const colL = td.dataset.col;
+        if (colL) {
+          td.dataset.row = String(rNum);
+          td.dataset.cellId = `${colL}${rNum}`;
+        }
+      });
+    });
+
     saveCurrentSheet();
-    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Sorted Column ${col} ${ascending ? 'Ascending' : 'Descending'}`);
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Sorted Column ${col} ${ascending ? 'A → Z (Ascending)' : 'Z → A (Descending)'}`);
   }
 
   // AutoFilter Toggle

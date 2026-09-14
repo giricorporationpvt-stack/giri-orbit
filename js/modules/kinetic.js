@@ -5287,19 +5287,36 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
       }
       if (k === 'd') {
         e.preventDefault();
-        const clones = [];
-        selectedShapes.forEach(shape => {
-          const clone = shape.cloneNode(true);
-          clone.style.left = `${(parseInt(shape.style.left, 10) || 100) + 20}px`;
-          clone.style.top = `${(parseInt(shape.style.top, 10) || 100) + 20}px`;
-          makeDraggable(clone);
-          clone.addEventListener('dblclick', () => clone.remove());
-          objectsContainer.appendChild(clone);
-          clones.push(clone);
-        });
-        clearShapeSelection();
-        clones.forEach(c => selectShape(c, true));
-        saveDeck();
+        if (selectedShapes.size > 0) {
+          const clones = [];
+          selectedShapes.forEach(shape => {
+            const clone = shape.cloneNode(true);
+            clone.style.left = `${(parseInt(shape.style.left, 10) || 100) + 20}px`;
+            clone.style.top = `${(parseInt(shape.style.top, 10) || 100) + 20}px`;
+            makeDraggable(clone);
+            clone.addEventListener('dblclick', () => clone.remove());
+            objectsContainer.appendChild(clone);
+            clones.push(clone);
+          });
+          clearShapeSelection();
+          clones.forEach(c => selectShape(c, true));
+          saveDeck();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast('Duplicated selected shape(s)');
+        } else {
+          // Duplicate active slide
+          const current = slidesData[currentSlideIndex];
+          if (current) {
+            const dup = JSON.parse(JSON.stringify(current));
+            dup.id = Date.now();
+            dup.title = (dup.title || 'Slide') + ' (Copy)';
+            slidesData.splice(currentSlideIndex + 1, 0, dup);
+            currentSlideIndex++;
+            saveDeck();
+            renderThumbnails();
+            switchSlide(currentSlideIndex);
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast('Duplicated active slide (Ctrl+D)');
+          }
+        }
         return;
       }
       if (k === 'p') {
@@ -5313,7 +5330,7 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
       }
     }
 
-    // Delete / Backspace removes selected shapes
+    // Delete / Backspace removes selected shapes or active slide
     if (e.key === 'Delete' || e.key === 'Backspace') {
       if (selectedShapes.size > 0) {
         e.preventDefault();
@@ -5321,6 +5338,15 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
         selectedShapes.clear();
         saveDeck();
         if (window.orbitPlatform) window.orbitPlatform.triggerToast('Deleted selected shape(s)');
+        return;
+      } else if (slidesData.length > 1) {
+        e.preventDefault();
+        slidesData.splice(currentSlideIndex, 1);
+        currentSlideIndex = Math.max(0, Math.min(currentSlideIndex, slidesData.length - 1));
+        saveDeck();
+        renderThumbnails();
+        switchSlide(currentSlideIndex);
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Deleted active slide');
         return;
       }
     }
@@ -6021,8 +6047,9 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     });
   });
 
-  // Duplicate Slide Shortcut (Ctrl+D)
+  // Duplicate Slide Shortcut (Ctrl+D) fallback
   document.addEventListener('keydown', (e) => {
+    if (e.defaultPrevented) return;
     const isEditing = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd' && !isEditing) {
       e.preventDefault();

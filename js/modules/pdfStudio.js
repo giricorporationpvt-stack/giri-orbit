@@ -3477,15 +3477,17 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
     }
   });
 
-  // Dark Reader Mode
+  // Dark Reader Mode / Invert Contrast
   container.querySelector('#btn-pdf-theme-light')?.addEventListener('click', () => {
     sheetEl.classList.remove('dark-reader-mode');
+    sheetEl.style.filter = '';
     if (window.orbitPlatform) window.orbitPlatform.triggerToast('Light Paper reading mode');
   });
 
   container.querySelector('#btn-pdf-theme-dark')?.addEventListener('click', () => {
     sheetEl.classList.add('dark-reader-mode');
-    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Dark Reader contrast mode enabled');
+    sheetEl.style.filter = 'invert(0.9) hue-rotate(180deg)';
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Night Reading Mode enabled (high contrast inverted)');
   });
 
   // =========================================================================

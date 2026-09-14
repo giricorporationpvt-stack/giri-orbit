@@ -618,11 +618,64 @@ class GiriOrbitPlatform {
       syncManager.openStorageModal();
     });
 
-    window.addEventListener('orbit:sync-change', () => {
+    const updateNetworkStatus = () => {
       const headerPillText = document.getElementById('txt-global-sync');
-      if (headerPillText) {
-        headerPillText.textContent = 'Synced';
+      const dot = document.querySelector('#btn-global-sync .sync-dot-live');
+      if (navigator.onLine) {
+        if (headerPillText) headerPillText.textContent = 'Synced';
+        if (dot) dot.style.background = '#22c55e';
+      } else {
+        if (headerPillText) headerPillText.textContent = 'Offline Ready';
+        if (dot) dot.style.background = '#38bdf8';
       }
+    };
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+    updateNetworkStatus();
+
+    // PWA Install Prompt
+    let deferredPrompt = null;
+    const pwaBtn = document.getElementById('btn-pwa-install');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (pwaBtn) pwaBtn.style.display = 'inline-flex';
+    });
+    pwaBtn?.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') {
+          if (pwaBtn) pwaBtn.style.display = 'none';
+        }
+        deferredPrompt = null;
+      } else {
+        alert('Giri Orbit is ready to install! Tap your browser menu (⋮ or Share) and select "Add to Home screen" or "Install App".');
+      }
+    });
+
+    // Fullscreen Toggle
+    const fsBtn = document.getElementById('btn-suite-fullscreen');
+    fsBtn?.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen?.().catch(() => {});
+      } else {
+        document.exitFullscreen?.().catch(() => {});
+      }
+    });
+
+    // Mobile Virtual Keyboard Viewport Adjustment for Floating Toolbars
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        const offset = Math.max(0, window.innerHeight - window.visualViewport.height);
+        document.querySelectorAll('.drift-mobile-toolbar, .axis-mobile-toolbar, .kinetic-mobile-slide-nav-pill, .pdf-mobile-toolbar').forEach(tb => {
+          tb.style.bottom = offset > 50 ? `${offset + 8}px` : '12px';
+        });
+      });
+    }
+
+    window.addEventListener('orbit:sync-change', () => {
+      updateNetworkStatus();
       if (this.currentView === 'launcher') {
         const landing = this.workspace.querySelector('.zoho-suite-landing');
         if (landing) {
