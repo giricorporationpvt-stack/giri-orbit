@@ -227,22 +227,36 @@ class GiriOrbitPlatform {
           </button>
 
           
-          <!-- FOLLOW THE JOURNEY INSTAGRAM CARD (media_1789114004474.png) -->
-          <div class="follow-journey-wrap">
-            <span class="follow-journey-label">FOLLOW THE JOURNEY</span>
-            <a href="https://www.instagram.com/abhinavgiri45/" target="_blank" rel="noopener" class="giri-instagram-card" title="Connect with Abhinav Giri on Instagram">
-              <div class="instagram-logo-badge">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="2.5" y="2.5" width="19" height="19" rx="5.2" stroke="#ffffff" stroke-width="2" fill="none"/>
-                  <circle cx="12" cy="12" r="4.2" stroke="#ffffff" stroke-width="2" fill="none"/>
-                  <circle cx="16.8" cy="7.2" r="1.1" fill="#ffffff"/>
-                </svg>
-              </div>
-              <div class="instagram-card-text">
-                <strong class="instagram-handle">@abhinavgiri45</strong>
-                <span class="instagram-sub">Connect on Instagram &rarr;</span>
-              </div>
-            </a>
+          <!-- GIRI CORPORATION & FOLLOW THE JOURNEY CARDS -->
+          <div class="follow-journey-wrap" style="display:flex; flex-direction:row; flex-wrap:wrap; gap:14px; align-items:center;">
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <span class="follow-journey-label">OFFICIAL PORTAL</span>
+              <a href="https://giri-corporation.pages.dev/" target="_blank" rel="noopener" class="giri-corp-card" title="Visit Giri Corporation Official Website">
+                <div class="corp-logo-badge" style="width:42px; height:42px; border-radius:11px; background:#0f172a; border:1px solid #38bdf8; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                  <img src="assets/giri-logo-symbol.png" alt="Giri Corporation" style="width:28px; height:28px; border-radius:50%; object-fit:cover; display:block;">
+                </div>
+                <div class="instagram-card-text">
+                  <strong class="instagram-handle" style="color:#0f172a;">Giri Corporation</strong>
+                  <span class="instagram-sub" style="color:#0284c7;">giri-corporation.pages.dev &rarr;</span>
+                </div>
+              </a>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <span class="follow-journey-label">FOLLOW THE JOURNEY</span>
+              <a href="https://www.instagram.com/abhinavgiri45/" target="_blank" rel="noopener" class="giri-instagram-card" title="Connect with Abhinav Giri on Instagram">
+                <div class="instagram-logo-badge">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2.5" y="2.5" width="19" height="19" rx="5.2" stroke="#ffffff" stroke-width="2" fill="none"/>
+                    <circle cx="12" cy="12" r="4.2" stroke="#ffffff" stroke-width="2" fill="none"/>
+                    <circle cx="16.8" cy="7.2" r="1.1" fill="#ffffff"/>
+                  </svg>
+                </div>
+                <div class="instagram-card-text">
+                  <strong class="instagram-handle">@abhinavgiri45</strong>
+                  <span class="instagram-sub">Connect on Instagram &rarr;</span>
+                </div>
+              </a>
+            </div>
           </div>
 
           <!-- 4 Distinct Giri Tool Switcher Cards -->

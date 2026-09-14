@@ -160,21 +160,35 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
               Sovereign in-memory spreadsheet and financial modeling matrix. Zero database tracking, instant local calculation engine, and customizable financial templates.
             </p>
 
-            <div class="follow-journey-wrap" style="margin-bottom:18px;">
-              <span class="follow-journey-label">FOLLOW THE JOURNEY</span>
-              <a href="https://www.instagram.com/abhinavgiri45/" target="_blank" rel="noopener" class="giri-instagram-card giri-instagram-card-dark" title="Connect with Abhinav Giri on Instagram">
-                <div class="instagram-logo-badge">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="2.5" y="2.5" width="19" height="19" rx="5.2" stroke="#ffffff" stroke-width="2" fill="none"/>
-                    <circle cx="12" cy="12" r="4.2" stroke="#ffffff" stroke-width="2" fill="none"/>
-                    <circle cx="16.8" cy="7.2" r="1.1" fill="#ffffff"/>
-                  </svg>
-                </div>
-                <div class="instagram-card-text">
-                  <strong class="instagram-handle">@abhinavgiri45</strong>
-                  <span class="instagram-sub">Connect on Instagram &rarr;</span>
-                </div>
-              </a>
+            <div class="follow-journey-wrap" style="margin-bottom:18px; display:flex; flex-direction:row; flex-wrap:wrap; gap:14px; align-items:center;">
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <span class="follow-journey-label">OFFICIAL PORTAL</span>
+                <a href="https://giri-corporation.pages.dev/" target="_blank" rel="noopener" class="giri-corp-card giri-corp-card-dark" title="Visit Giri Corporation Official Website">
+                  <div class="corp-logo-badge" style="width:42px; height:42px; border-radius:11px; background:#0f172a; border:1px solid #38bdf8; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                    <img src="assets/giri-logo-symbol.png" alt="Giri Corporation" style="width:28px; height:28px; border-radius:50%; object-fit:cover; display:block;">
+                  </div>
+                  <div class="instagram-card-text">
+                    <strong class="instagram-handle" style="color:#ffffff;">Giri Corporation</strong>
+                    <span class="instagram-sub" style="color:#38bdf8;">giri-corporation.pages.dev &rarr;</span>
+                  </div>
+                </a>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:6px;">
+                <span class="follow-journey-label">FOLLOW THE JOURNEY</span>
+                <a href="https://www.instagram.com/abhinavgiri45/" target="_blank" rel="noopener" class="giri-instagram-card giri-instagram-card-dark" title="Connect with Abhinav Giri on Instagram">
+                  <div class="instagram-logo-badge">
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="2.5" y="2.5" width="19" height="19" rx="5.2" stroke="#ffffff" stroke-width="2" fill="none"/>
+                      <circle cx="12" cy="12" r="4.2" stroke="#ffffff" stroke-width="2" fill="none"/>
+                      <circle cx="16.8" cy="7.2" r="1.1" fill="#ffffff"/>
+                    </svg>
+                  </div>
+                  <div class="instagram-card-text">
+                    <strong class="instagram-handle">@abhinavgiri45</strong>
+                    <span class="instagram-sub">Connect on Instagram &rarr;</span>
+                  </div>
+                </a>
+              </div>
             </div>
 
             <div class="tool-hero-actions">

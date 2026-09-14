@@ -1,6 +1,6 @@
 # Giri Orbit
 
-**Complete Cloud-Free Office Suite** by [GIRI Corporation](https://github.com/giricorporationpvt-stack)
+**Complete Cloud-Free Office Suite** by [GIRI Corporation](https://giri-corporation.pages.dev/)
 
 [![GitHub Pages](https://img.shields.io/badge/Live-GitHub%20Pages-blue?style=flat-square&logo=github)](https://giricorporationpvt-stack.github.io/giri-orbit)
 
@@ -86,4 +86,4 @@ Proprietary © 2025 GIRI Corporation. All rights reserved.
 
 ---
 
-> Built with ❤️ by [Abhinav Giri](https://www.instagram.com/abhinavgiri45/) | GIRI Corporation
+> Built with ❤️ by [Abhinav Giri](https://www.instagram.com/abhinavgiri45/) | [GIRI Corporation](https://giri-corporation.pages.dev/)

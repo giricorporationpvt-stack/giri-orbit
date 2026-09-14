@@ -156,3 +156,72 @@
   width: 12px;
   height: 12px;
 }
+
+/* ==========================================================================
+   GIRI CORPORATION OFFICIAL PORTAL (https://giri-corporation.pages.dev/)
+   ========================================================================== */
+.giri-corp-card {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  text-decoration: none;
+  color: #0f172a;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.giri-corp-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.2);
+  border-color: #38bdf8;
+}
+
+.giri-corp-card-dark {
+  background: #202024 !important;
+  border: 1px solid #333338 !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+  color: #ffffff !important;
+}
+
+.giri-corp-card-dark:hover {
+  background: #27272d !important;
+  border-color: #38bdf8 !important;
+  box-shadow: 0 8px 26px rgba(56, 189, 248, 0.25) !important;
+}
+
+.giri-corp-card-dark .corp-title {
+  color: #ffffff !important;
+}
+
+.giri-corp-card-dark .corp-sub {
+  color: #38bdf8 !important;
+}
+
+.tier1-corp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.tier1-corp-pill:hover {
+  background: #0f172a;
+  border-color: #38bdf8;
+  color: #38bdf8;
+  transform: translateY(-1px);
+}
+
