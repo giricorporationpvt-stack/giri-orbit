@@ -145,6 +145,10 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
               <button class="btn-tool-new-template-cta" id="btn-pdf-hero-custom">
                 <span>+ Custom Template</span>
               </button>
+              <button class="btn-tool-new-template-cta" id="btn-pdf-hero-import-tpl" style="background:#1e293b; color:#38bdf8; border:1px solid #334155;" title="Import Custom Template (.json)">
+                <span>↑ Import Template</span>
+              </button>
+              <input type="file" id="pdf-import-tpl-input" accept=".json" style="display:none;">
             </div>
           </div>
 
@@ -374,25 +378,39 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
             ${renderPdfTemplateVisualThumbnail(tpl)}
           </div>
           <div class="tool-template-meta" style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
+            <div style="flex:1; min-width:0;">
               <span class="tool-template-title">${tpl.name}</span>
               <span class="tool-template-cat-label">${tpl.category || 'PDF Document'}</span>
             </div>
             ${isCustom ? `
-              <button class="btn-delete-custom-tpl" title="Delete custom template" style="background:#450a0a; border:1px solid #991b1b; color:#fca5a5; border-radius:4px; padding:3px 7px; font-size:11px; cursor:pointer;">🗑</button>
+              <div style="display:flex; gap:4px; flex-shrink:0;" class="pdf-custom-actions">
+                <button class="btn-export-pdf-tpl" title="Export as JSON" style="background:#1e293b; border:1px solid #334155; color:#38bdf8; border-radius:4px; padding:2px 6px; font-size:10px; cursor:pointer;">↓</button>
+                <button class="btn-del-pdf-tpl" title="Delete Template" style="background:#450a0a; border:1px solid #991b1b; color:#fca5a5; border-radius:4px; padding:2px 6px; font-size:10px; cursor:pointer;">🗑</button>
+              </div>
             ` : ''}
           </div>
         `;
 
-        card.querySelector('.btn-delete-custom-tpl')?.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (confirm(`Delete custom template "${tpl.name}"?`)) {
-            customTemplates = customTemplates.filter(t => t.id !== tpl.id);
-            localStorage.setItem('giri_orbit_pdf_custom_templates', JSON.stringify(customTemplates));
-            refreshCards();
-            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Deleted template "${tpl.name}"`);
-          }
-        });
+        if (isCustom) {
+          card.querySelector('.btn-export-pdf-tpl')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const blob = new Blob([JSON.stringify(tpl, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${(tpl.name || 'custom_pdf_template').toLowerCase().replace(/[^a-z0-9]/g, '_')}.json`;
+            a.click();
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Exported "${tpl.name}" JSON template`);
+          });
+          card.querySelector('.btn-del-pdf-tpl')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(`Delete custom template "${tpl.name}"?`)) {
+              customTemplates = customTemplates.filter(t => t.id !== tpl.id);
+              localStorage.setItem('giri_orbit_pdf_custom_templates', JSON.stringify(customTemplates));
+              refreshCards();
+              if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Deleted template "${tpl.name}"`);
+            }
+          });
+        }
 
         card.addEventListener('click', () => {
           mountPdfEditor(rootEl, tpl.pages, onUpdate);
@@ -400,6 +418,34 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
         cardsGrid.appendChild(card);
       });
     }
+
+    const importTplInput = rootEl.querySelector('#pdf-import-tpl-input');
+    rootEl.querySelector('#btn-pdf-hero-import-tpl')?.addEventListener('click', () => importTplInput?.click());
+    importTplInput?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (re) => {
+          try {
+            const parsed = JSON.parse(re.target.result);
+            if (!parsed.name || (!parsed.pages && !parsed.htmlContent)) {
+              alert('Invalid PDF template JSON file.');
+              return;
+            }
+            parsed.id = 'custom-pdf-' + Date.now();
+            parsed.category = 'custom';
+            parsed.isCustom = true;
+            customTemplates.push(parsed);
+            localStorage.setItem('giri_orbit_pdf_custom_templates', JSON.stringify(customTemplates));
+            refreshCards();
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${parsed.name}"`);
+          } catch(err) {
+            alert('Failed to import JSON template: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
 
     pills.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1319,6 +1365,10 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
                   <span style="font-size:16px;">↺</span>
                   <span>Rotate -90°</span>
                 </button>
+                <button class="fluent-btn-large" id="btn-pdf-stamp-pagenum" title="Affix Page Number Stamp">
+                  <span style="font-size:16px;">#️⃣</span>
+                  <span>Page # Stamp</span>
+                </button>
                 <div class="fluent-group-col" style="justify-content:center;">
                   <button class="fluent-btn-small" id="btn-pdf-move-up" title="Move Page Up" style="width:auto; padding:0 6px;">⬆ Move Up</button>
                   <button class="fluent-btn-small" id="btn-pdf-move-down" title="Move Page Down" style="width:auto; padding:0 6px; margin-top:4px;">⬇ Move Down</button>
@@ -1764,6 +1814,17 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
             <button class="btn-zoho-red" id="btn-whats-new-ok" style="padding:6px 16px; font-size:12px;">Got It</button>
           </div>
         </div>
+      <!-- Mobile Floating Quick-Action Bar for PDF Studio -->
+      <div class="pdf-mobile-toolbar" id="pdf-mobile-toolbar" style="display:none;">
+        <button class="mobile-tool-btn" id="btn-mobile-pdf-prev" title="Previous Page">◀</button>
+        <span id="pdf-mobile-page-pill" style="font-size:11px; font-weight:700; color:#f8fafc; padding:0 4px;">1 / 1</span>
+        <button class="mobile-tool-btn" id="btn-mobile-pdf-next" title="Next Page">▶</button>
+        <div class="mobile-tool-sep"></div>
+        <button class="mobile-tool-btn" id="btn-mobile-pdf-pen" title="Ink Drawing">✏</button>
+        <button class="mobile-tool-btn" id="btn-mobile-pdf-sig" title="Signature">🖋</button>
+        <button class="mobile-tool-btn" id="btn-mobile-pdf-stamp" title="Approve Stamp">🏷</button>
+        <button class="mobile-tool-btn" id="btn-mobile-pdf-rotate" title="Rotate 90°">↻</button>
+        <button class="mobile-tool-btn" id="btn-mobile-pdf-save" title="Download PDF" style="color:#ef4444;">💾</button>
       </div>
     </div>
   `;
@@ -2150,6 +2211,8 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
     if (!thumbsList || !pageCountHeading) return;
     thumbsList.innerHTML = '';
     pageCountHeading.textContent = `PAGES (${pages.length})`;
+    const mobilePagePill = container.querySelector('#pdf-mobile-page-pill');
+    if (mobilePagePill) mobilePagePill.textContent = `${activePageIndex + 1} / ${pages.length}`;
 
     try {
       localStorage.setItem('giri_orbit_pdf_pages', JSON.stringify(pages));
@@ -2198,6 +2261,8 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
     container.querySelectorAll('.pdf-page-thumb').forEach((t, i) => {
       t.classList.toggle('active', i === activePageIndex);
     });
+    const mobilePagePill = container.querySelector('#pdf-mobile-page-pill');
+    if (mobilePagePill) mobilePagePill.textContent = `${activePageIndex + 1} / ${pages.length}`;
 
     if (inkCtx && inkCanvas) {
       inkCtx.clearRect(0, 0, inkCanvas.width, inkCanvas.height);
@@ -3186,6 +3251,25 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
     if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Rotated to ${page.rotation}°`);
   });
 
+  container.querySelector('#btn-pdf-stamp-pagenum')?.addEventListener('click', () => {
+    const stamp = document.createElement('div');
+    stamp.className = 'pdf-pagenum-stamp';
+    stamp.style.position = 'absolute';
+    stamp.style.bottom = '24px';
+    stamp.style.right = '32px';
+    stamp.style.padding = '4px 8px';
+    stamp.style.fontSize = '11px';
+    stamp.style.color = '#64748b';
+    stamp.style.fontFamily = 'var(--font-mono)';
+    stamp.style.fontWeight = '600';
+    stamp.style.pointerEvents = 'auto';
+    stamp.style.cursor = 'move';
+    stamp.textContent = `Page ${activePageIndex + 1} of ${pages.length}`;
+    stamp.addEventListener('dblclick', () => stamp.remove());
+    annotationsLayer.appendChild(stamp);
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Page number stamp affixed: Page ${activePageIndex + 1} of ${pages.length}`);
+  });
+
   container.querySelector('#btn-pdf-move-up')?.addEventListener('click', () => {
     if (activePageIndex <= 0) return;
     const temp = pages[activePageIndex];
@@ -3467,6 +3551,29 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
   });
   container.querySelector('#btn-pdf-launcher-watermark')?.addEventListener('click', () => {
     container.querySelector('#btn-pdf-custom-watermark')?.click();
+  });
+
+  // ── PDF Studio Mobile Toolbar Listeners ───────────────────────
+  container.querySelector('#btn-mobile-pdf-prev')?.addEventListener('click', () => {
+    switchPage(activePageIndex - 1);
+  });
+  container.querySelector('#btn-mobile-pdf-next')?.addEventListener('click', () => {
+    switchPage(activePageIndex + 1);
+  });
+  container.querySelector('#btn-mobile-pdf-pen')?.addEventListener('click', () => {
+    container.querySelector('#btn-pdf-pen-draw')?.click();
+  });
+  container.querySelector('#btn-mobile-pdf-sig')?.addEventListener('click', () => {
+    container.querySelector('#btn-open-signature-pad')?.click();
+  });
+  container.querySelector('#btn-mobile-pdf-stamp')?.addEventListener('click', () => {
+    container.querySelector('#btn-pdf-stamp-approved')?.click();
+  });
+  container.querySelector('#btn-mobile-pdf-rotate')?.addEventListener('click', () => {
+    container.querySelector('#btn-pdf-rotate')?.click();
+  });
+  container.querySelector('#btn-mobile-pdf-save')?.addEventListener('click', () => {
+    container.querySelector('#btn-pdf-save-device')?.click();
   });
 
   renderPagesSidebar();

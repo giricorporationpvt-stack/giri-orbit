@@ -456,6 +456,72 @@ button, [role=button], a, select, input { -webkit-tap-highlight-color: transpare
     margin: 0 !important;
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.35) !important;
   }
+
+  /* ------------------------------------------------------------
+     MOBILE VIEWPORT CLEARANCE & FLOATING ACTION TOOLBARS
+     ------------------------------------------------------------ */
+  .drift-center-viewport { padding-bottom: 74px !important; }
+  .axis-grid-viewport { padding-bottom: 74px !important; }
+  .kinetic-stage-viewport { padding-bottom: 74px !important; }
+  .pdf-content-wrapper, .pdf-canvas-viewport { padding-bottom: 74px !important; }
+
+  .drift-mobile-toolbar,
+  .axis-mobile-toolbar,
+  .kinetic-mobile-toolbar,
+  .pdf-mobile-toolbar {
+    display: flex !important;
+    position: fixed !important;
+    bottom: 12px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background: rgba(15, 23, 42, 0.94) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.16) !important;
+    border-radius: 28px !important;
+    padding: 4px 8px !important;
+    gap: 6px !important;
+    align-items: center !important;
+    z-index: 9999 !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+    max-width: 95vw !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  .drift-mobile-toolbar::-webkit-scrollbar,
+  .axis-mobile-toolbar::-webkit-scrollbar,
+  .kinetic-mobile-toolbar::-webkit-scrollbar,
+  .pdf-mobile-toolbar::-webkit-scrollbar {
+    display: none !important;
+  }
+  .mobile-tool-btn {
+    background: transparent !important;
+    border: none !important;
+    color: #f1f5f9 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    border-radius: 16px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer !important;
+    flex-shrink: 0 !important;
+    padding: 0 6px !important;
+    transition: background 0.15s ease, transform 0.1s ease !important;
+  }
+  .mobile-tool-btn:active {
+    background: rgba(255, 255, 255, 0.18) !important;
+    transform: scale(0.95) !important;
+  }
+  .mobile-tool-sep {
+    width: 1px !important;
+    height: 18px !important;
+    background: rgba(255, 255, 255, 0.18) !important;
+    flex-shrink: 0 !important;
+  }
 }
 
 /* ============================================================
@@ -599,3 +665,11 @@ html {
   align-items: center; justify-content: center; transition: transform 0.15s;
 }
 .mobile-toolbar-fab:active { transform: scale(0.94); }
+
+/* Hide floating mobile toolbars on desktop by default */
+.drift-mobile-toolbar,
+.axis-mobile-toolbar,
+.kinetic-mobile-toolbar,
+.pdf-mobile-toolbar {
+  display: none;
+}

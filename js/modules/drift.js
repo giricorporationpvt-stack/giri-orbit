@@ -1703,9 +1703,12 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                         <option value="#fefce8">Cream</option>
                       </select>
                     </div>
-                    <div class="fluent-group-row" style="margin-top:4px;">
-                      <button class="fluent-btn-small" id="btn-page-borders" style="width:100%; justify-content:center;">
-                        <span>Page Borders ▾</span>
+                    <div class="fluent-group-row" style="margin-top:4px; gap:4px;">
+                      <button class="fluent-btn-small" id="btn-page-borders" style="flex:1; justify-content:center;">
+                        <span>Borders ▾</span>
+                      </button>
+                      <button class="fluent-btn-small" id="btn-drift-watermark" style="flex:1; justify-content:center;" title="Document Watermark">
+                        <span>🌊 Watermark ▾</span>
                       </button>
                     </div>
                   </div>
@@ -1964,7 +1967,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
             <!-- 2. HEADINGS PANE -->
             <div class="drift-sidebar-tab-pane" id="pane-drift-headings" style="display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
-              <span class="sidebar-heading" style="margin-bottom:6px; flex-shrink:0;">DOCUMENT OUTLINE</span>
+              <span class="sidebar-heading" style="margin-bottom:6px; flex-shrink:0;">HEADINGS OUTLINE</span>
               <ul class="doc-outline-list" id="doc-outline-list" style="flex:1; overflow-y:auto; list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:4px;">
                 <!-- Dynamically populated from headings -->
               </ul>
@@ -1972,6 +1975,18 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
             <!-- BOTTOM PROOFING & STATS BAR (Replacing old telemetry) -->
             <div class="drift-sidebar-bottom-bar" style="margin-top:auto; padding-top:10px; border-top:1px solid #27272a; display:flex; flex-direction:column; gap:6px; flex-shrink:0;">
+              <!-- Page Viewer Trigger Card -->
+              <div class="sidebar-proofing-card" id="btn-drift-sidebar-pageviewer" role="button" tabindex="0" title="Document Pages & Layout Navigation" style="background:#18181b; border:1px solid #27272a; border-radius:6px; padding:7px 9px; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:16px;">📄</span>
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:9.5px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Pages</span>
+                    <strong id="drift-sidebar-page-count" style="font-size:11.5px; color:#38bdf8;">1 Page</strong>
+                  </div>
+                  <div style="font-size:10px; color:#64748b;" id="drift-sidebar-page-info">Standard A4 Layout</div>
+                </div>
+              </div>
+
               <!-- Word Count Trigger Card -->
               <div class="sidebar-proofing-card" id="btn-drift-sidebar-wordcount" role="button" tabindex="0" title="Open Detailed Word Count & Document Statistics" style="background:#18181b; border:1px solid #27272a; border-radius:6px; padding:7px 9px; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:8px;">
                 <span style="font-size:16px;">📝</span>
@@ -2042,6 +2057,24 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           <!-- Floating Emoji Picker Dropdown -->
           <div class="fluent-emoji-picker-dropdown" id="drift-emoji-picker-dropdown">
             <!-- Populated dynamically with emojis -->
+          </div>
+
+          <!-- Mobile Floating Formatting Toolbar -->
+          <div class="drift-mobile-toolbar" id="drift-mobile-toolbar" style="display:none;">
+            <button class="mobile-tool-btn" id="btn-mobile-drift-sidebar" title="Toggle Navigation Drawer">📑</button>
+            <div class="mobile-tool-sep"></div>
+            <button class="mobile-tool-btn" id="btn-mobile-drift-undo" title="Undo">↶</button>
+            <button class="mobile-tool-btn" id="btn-mobile-drift-redo" title="Redo">↷</button>
+            <div class="mobile-tool-sep"></div>
+            <button class="mobile-tool-btn" id="btn-mobile-drift-bold" title="Bold"><b>B</b></button>
+            <button class="mobile-tool-btn" id="btn-mobile-drift-italic" title="Italic"><i>I</i></button>
+            <button class="mobile-tool-btn" id="btn-mobile-drift-underline" title="Underline"><u>U</u></button>
+            <button class="mobile-tool-btn" id="btn-mobile-drift-rupee" title="Insert ₹ Rupee">₹</button>
+            <div class="mobile-tool-sep"></div>
+            <button class="mobile-tool-btn" id="btn-mobile-drift-h1" title="Heading 1">H1</button>
+            <button class="mobile-tool-btn" id="btn-mobile-drift-bullet" title="Bullet List">•</button>
+            <button class="mobile-tool-btn" id="btn-mobile-drift-dictate" title="Voice Dictation">🎙</button>
+            <button class="mobile-tool-btn" id="btn-mobile-drift-save" title="Save Document" style="color:#38bdf8;">💾</button>
           </div>
         </div>
       </div>
@@ -3295,6 +3328,13 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         if (sbWordText) sbWordText.textContent = `${words.toLocaleString()} words`;
         if (sbCharText) sbCharText.textContent = `${chars.toLocaleString()} chars • ~${readMin} min read`;
 
+        const pageBreaks = paper.querySelectorAll('.drift-page-break').length;
+        const totalPages = Math.max(1, pageBreaks + 1);
+        const sbPageCount = container.querySelector('#drift-sidebar-page-count');
+        const sbPageBadge = container.querySelector('#drift-page-counter-badge');
+        if (sbPageCount) sbPageCount.textContent = `${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'}`;
+        if (sbPageBadge) sbPageBadge.textContent = `Page 1 of ${totalPages}`;
+
         renderPageThumbnails();
       }
 
@@ -3355,6 +3395,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         updateOutline();
       });
 
+      // Page Viewer Card Click
+      container.querySelector('#btn-drift-sidebar-pageviewer')?.addEventListener('click', () => {
+        tabPages?.click();
+      });
+
       // Mobile Drawer & Sidebar Toggle
       const toggleSidebarBtn = container.querySelector('#btn-drift-toggle-sidebar');
       const closeSidebarDrawerBtn = container.querySelector('#btn-close-drift-sidebar-drawer');
@@ -3373,6 +3418,73 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       });
       closeSidebarDrawerBtn?.addEventListener('click', () => {
         leftSidebar?.classList.remove('mobile-open');
+      });
+
+      // Mobile Floating Toolbar Actions
+      container.querySelector('#btn-mobile-drift-sidebar')?.addEventListener('click', () => {
+        leftSidebar?.classList.toggle('mobile-open');
+      });
+      container.querySelector('#btn-mobile-drift-undo')?.addEventListener('click', () => {
+        document.execCommand('undo');
+        saveDocument();
+      });
+      container.querySelector('#btn-mobile-drift-redo')?.addEventListener('click', () => {
+        document.execCommand('redo');
+        saveDocument();
+      });
+      container.querySelector('#btn-mobile-drift-bold')?.addEventListener('click', () => {
+        document.execCommand('bold');
+        saveDocument();
+      });
+      container.querySelector('#btn-mobile-drift-italic')?.addEventListener('click', () => {
+        document.execCommand('italic');
+        saveDocument();
+      });
+      container.querySelector('#btn-mobile-drift-underline')?.addEventListener('click', () => {
+        document.execCommand('underline');
+        saveDocument();
+      });
+      container.querySelector('#btn-mobile-drift-rupee')?.addEventListener('click', () => {
+        document.execCommand('insertText', false, '₹');
+        saveDocument();
+      });
+      container.querySelector('#btn-mobile-drift-h1')?.addEventListener('click', () => {
+        document.execCommand('formatBlock', false, '<h1>');
+        saveDocument();
+      });
+      container.querySelector('#btn-mobile-drift-bullet')?.addEventListener('click', () => {
+        document.execCommand('insertUnorderedList');
+        saveDocument();
+      });
+      container.querySelector('#btn-mobile-drift-dictate')?.addEventListener('click', () => {
+        container.querySelector('#btn-voice-dictate-group')?.click();
+      });
+      container.querySelector('#btn-mobile-drift-save')?.addEventListener('click', () => {
+        saveDocument();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Document saved successfully');
+      });
+
+      // Watermark Action
+      container.querySelector('#btn-drift-watermark')?.addEventListener('click', () => {
+        const text = prompt('Enter watermark text (e.g. CONFIDENTIAL, DRAFT, URGENT) or leave empty to remove:', 'CONFIDENTIAL');
+        let watermarkEl = paper.querySelector('.drift-watermark-overlay');
+        if (text === null) return;
+        if (!text.trim()) {
+          watermarkEl?.remove();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast('Watermark removed');
+        } else {
+          if (!watermarkEl) {
+            watermarkEl = document.createElement('div');
+            watermarkEl.className = 'drift-watermark-overlay';
+            watermarkEl.contentEditable = 'false';
+            watermarkEl.style.cssText = 'position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-45deg);font-size:72px;font-weight:900;color:rgba(148,163,184,0.18);text-transform:uppercase;letter-spacing:10px;pointer-events:none;user-select:none;z-index:1;';
+            paper.style.position = 'relative';
+            paper.appendChild(watermarkEl);
+          }
+          watermarkEl.textContent = text.trim();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Watermark "${text.trim()}" applied`);
+        }
+        saveDocument();
       });
 
       // Page Break Action

@@ -190,6 +190,10 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
               <button class="btn-tool-new-template-cta" id="btn-axis-hero-custom">
                 <span>+ Custom Template</span>
               </button>
+              <button class="btn-tool-new-template-cta" id="btn-axis-hero-import-tpl" style="background:#1e293b; color:#38bdf8; border:1px solid #334155;" title="Import Custom Template (.json)">
+                <span>↑ Import Template</span>
+              </button>
+              <input type="file" id="axis-import-tpl-input" accept=".json" style="display:none;">
             </div>
           </div>
 
@@ -545,23 +549,80 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
       if (query) pool = pool.filter(x => x.name.toLowerCase().includes(query) || x.desc.toLowerCase().includes(query));
 
       pool.forEach(tpl => {
+        const isCustom = tpl.category === 'custom' || tpl.isCustom || String(tpl.id).startsWith('custom-');
         const card = document.createElement('div');
         card.className = 'tool-template-card';
         card.innerHTML = `
           <div class="tool-template-preview-frame">
             ${renderAxisTemplateVisualThumbnail(tpl)}
           </div>
-          <div class="tool-template-meta">
-            <span class="tool-template-title">${tpl.name}</span>
-            <span class="tool-template-cat-label">${tpl.category || 'Financials'}</span>
+          <div class="tool-template-meta" style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="flex:1; min-width:0;">
+              <span class="tool-template-title">${tpl.name}</span>
+              <span class="tool-template-cat-label">${tpl.category || 'Financials'}</span>
+            </div>
+            ${isCustom ? `
+              <div style="display:flex; gap:4px; flex-shrink:0;" class="axis-custom-actions">
+                <button class="btn-export-axis-tpl" title="Export as JSON" style="background:#1e293b; border:1px solid #334155; color:#38bdf8; border-radius:4px; padding:2px 6px; font-size:10px; cursor:pointer;">↓</button>
+                <button class="btn-del-axis-tpl" title="Delete Template" style="background:#450a0a; border:1px solid #991b1b; color:#fca5a5; border-radius:4px; padding:2px 6px; font-size:10px; cursor:pointer;">🗑</button>
+              </div>
+            ` : ''}
           </div>
         `;
+        if (isCustom) {
+          card.querySelector('.btn-export-axis-tpl')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const blob = new Blob([JSON.stringify(tpl, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${(tpl.name || 'custom_axis_template').toLowerCase().replace(/[^a-z0-9]/g, '_')}.json`;
+            a.click();
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Exported "${tpl.name}" JSON template`);
+          });
+          card.querySelector('.btn-del-axis-tpl')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(`Delete custom template "${tpl.name}"?`)) {
+              customTemplates = customTemplates.filter(x => x.id !== tpl.id);
+              localStorage.setItem('giri_orbit_axis_custom_templates', JSON.stringify(customTemplates));
+              refreshCards();
+              if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Deleted template "${tpl.name}"`);
+            }
+          });
+        }
         card.addEventListener('click', () => {
-          mountAxisEditor(rootEl, tpl.data, onUpdate);
+          mountAxisEditor(rootEl, tpl.sheetsData || tpl.data, onUpdate);
         });
         cardsGrid.appendChild(card);
       });
     }
+
+    const importTplInput = rootEl.querySelector('#axis-import-tpl-input');
+    rootEl.querySelector('#btn-axis-hero-import-tpl')?.addEventListener('click', () => importTplInput?.click());
+    importTplInput?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (re) => {
+          try {
+            const parsed = JSON.parse(re.target.result);
+            if (!parsed.name || (!parsed.sheetsData && !parsed.data)) {
+              alert('Invalid Axis template JSON file.');
+              return;
+            }
+            parsed.id = 'custom-axis-' + Date.now();
+            parsed.category = 'custom';
+            parsed.isCustom = true;
+            customTemplates.push(parsed);
+            localStorage.setItem('giri_orbit_axis_custom_templates', JSON.stringify(customTemplates));
+            refreshCards();
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${parsed.name}"`);
+          } catch(err) {
+            alert('Failed to import JSON template: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
 
     pills.forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1647,7 +1708,22 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
             <span class="axis-zoom-label" id="axis-zoom-level" title="Reset Zoom to 100%">100%</span>
             <button class="axis-zoom-btn" id="btn-axis-zoom-in" title="Zoom In">+</button>
           </div>
-        </div>
+      </div>
+
+      <!-- Mobile Floating Quick-Action Bar for Axis -->
+      <div class="axis-mobile-toolbar" id="axis-mobile-toolbar" style="display:none;">
+        <button class="mobile-tool-btn" id="btn-mobile-axis-undo" title="Undo">↶</button>
+        <button class="mobile-tool-btn" id="btn-mobile-axis-redo" title="Redo">↷</button>
+        <div class="mobile-tool-sep"></div>
+        <button class="mobile-tool-btn" id="btn-mobile-axis-sum" title="AutoSum (=SUM)"><b>∑</b></button>
+        <button class="mobile-tool-btn" id="btn-mobile-axis-rupee" title="Format INR (₹)">₹</button>
+        <button class="mobile-tool-btn" id="btn-mobile-axis-dollar" title="Format USD ($)">$</button>
+        <button class="mobile-tool-btn" id="btn-mobile-axis-pct" title="Format Percent (%)">%</button>
+        <div class="mobile-tool-sep"></div>
+        <button class="mobile-tool-btn" id="btn-mobile-axis-add-row" title="Insert Row">+R</button>
+        <button class="mobile-tool-btn" id="btn-mobile-axis-add-col" title="Insert Column">+C</button>
+        <button class="mobile-tool-btn" id="btn-mobile-axis-clear" title="Clear Cell">✕</button>
+        <button class="mobile-tool-btn" id="btn-mobile-axis-save" title="Save Workbook" style="color:#38bdf8;">💾</button>
       </div>
     </div>
   `;
@@ -1918,6 +1994,48 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
   container.querySelector('#btn-axis-add-26-cols')?.addEventListener('click', () => {
     appendColumns(26);
     if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Added 26 columns (${currentRenderedCols.toLocaleString()} total columns, up to ${indexToColName(currentRenderedCols - 1)})`);
+  });
+
+  // ── Axis Mobile Toolbar Listeners ─────────────────────────────
+  container.querySelector('#btn-mobile-axis-undo')?.addEventListener('click', () => {
+    container.querySelector('#btn-axis-quick-undo')?.click();
+  });
+  container.querySelector('#btn-mobile-axis-redo')?.addEventListener('click', () => {
+    container.querySelector('#btn-axis-quick-redo')?.click();
+  });
+  container.querySelector('#btn-mobile-axis-sum')?.addEventListener('click', () => {
+    container.querySelector('#btn-axis-home-autosum')?.click();
+  });
+  container.querySelector('#btn-mobile-axis-rupee')?.addEventListener('click', () => {
+    container.querySelector('#btn-axis-quick-rupee')?.click();
+  });
+  container.querySelector('#btn-mobile-axis-dollar')?.addEventListener('click', () => {
+    container.querySelector('#btn-axis-quick-curr')?.click();
+  });
+  container.querySelector('#btn-mobile-axis-pct')?.addEventListener('click', () => {
+    container.querySelector('#btn-axis-quick-pct')?.click();
+  });
+  container.querySelector('#btn-mobile-axis-add-row')?.addEventListener('click', () => {
+    appendRows(10);
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Added 10 rows (${currentRenderedRows} total)`);
+  });
+  container.querySelector('#btn-mobile-axis-add-col')?.addEventListener('click', () => {
+    appendColumns(5);
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Added 5 columns (${currentRenderedCols} total)`);
+  });
+  container.querySelector('#btn-mobile-axis-clear')?.addEventListener('click', () => {
+    if (activeCell) {
+      activeCell.textContent = '';
+      activeCell.classList.remove('num-cell', 'formula-cell');
+      rawFormulas.delete(activeCell.dataset.cellId);
+      saveCurrentSheet();
+      updateLiveStatusBar();
+      if (window.orbitPlatform) window.orbitPlatform.triggerToast('Cleared cell');
+    }
+  });
+  container.querySelector('#btn-mobile-axis-save')?.addEventListener('click', () => {
+    saveCurrentSheet();
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Workbook saved');
   });
 
   // Infinite Scroll Expansion on Viewport

@@ -1722,6 +1722,10 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
               <button class="btn-tool-new-template-cta" id="btn-kinetic-hero-custom">
                 <span>+ Custom Template</span>
               </button>
+              <button class="btn-tool-new-template-cta" id="btn-kinetic-hero-import-tpl" style="background:#1e293b; color:#38bdf8; border:1px solid #334155;" title="Import Custom Template (.json)">
+                <span>↑ Import Template</span>
+              </button>
+              <input type="file" id="kinetic-import-tpl-input" accept=".json" style="display:none;">
             </div>
           </div>
 
@@ -1918,8 +1922,34 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
             </div>
             <h4 class="pgo-card-title" title="${tpl.name}">${tpl.name}</h4>
             <p class="pgo-card-desc" title="${tpl.desc || ''}">${tpl.desc || ''}</p>
+            ${tpl.category === 'custom' ? `
+              <div style="display:flex; justify-content:flex-end; gap:6px; margin-top:6px;" onclick="event.stopPropagation()">
+                <button class="btn-export-kinetic-tpl" title="Export as JSON" style="background:#1e293b; border:1px solid #334155; color:#38bdf8; border-radius:4px; padding:3px 8px; font-size:10px; cursor:pointer;">↓ Export</button>
+                <button class="btn-del-kinetic-tpl" title="Delete Template" style="background:#450a0a; border:1px solid #991b1b; color:#fca5a5; border-radius:4px; padding:3px 8px; font-size:10px; cursor:pointer;">🗑</button>
+              </div>
+            ` : ''}
           </div>
         `;
+        if (tpl.category === 'custom') {
+          card.querySelector('.btn-export-kinetic-tpl')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const blob = new Blob([JSON.stringify(tpl, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `${(tpl.name || 'custom_kinetic_template').toLowerCase().replace(/[^a-z0-9]/g, '_')}.json`;
+            a.click();
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Exported "${tpl.name}" JSON template`);
+          });
+          card.querySelector('.btn-del-kinetic-tpl')?.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (confirm(`Delete custom template "${tpl.name}"?`)) {
+              customTemplates = customTemplates.filter(x => x.id !== tpl.id);
+              localStorage.setItem('giri_orbit_kinetic_custom_templates', JSON.stringify(customTemplates));
+              renderCards(false);
+              if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Deleted template "${tpl.name}"`);
+            }
+          });
+        }
         card.addEventListener('click', () => {
           const themedSlides = (tpl.slides || []).map(s => ({
             ...s,
@@ -2041,6 +2071,43 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
     });
 
     rootEl.querySelector('#btn-kinetic-hero-custom')?.addEventListener('click', () => hubFileInput?.click());
+
+    const kineticImportInput = rootEl.querySelector('#kinetic-import-tpl-input');
+    rootEl.querySelector('#btn-kinetic-hero-import-tpl')?.addEventListener('click', () => kineticImportInput?.click());
+    kineticImportInput?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        try {
+          const parsed = JSON.parse(evt.target.result);
+          let slides = [];
+          if (Array.isArray(parsed)) slides = parsed;
+          else if (parsed.slides && Array.isArray(parsed.slides)) slides = parsed.slides;
+          else throw new Error('Invalid slides data format');
+
+          const tplName = parsed.name || file.name.replace(/\.[^/.]+$/, '');
+          const newTpl = {
+            id: 'custom-tpl-' + Date.now(),
+            name: tplName,
+            category: 'custom',
+            desc: parsed.desc || `Imported custom presentation template`,
+            previewAccent: parsed.previewAccent || '#3b82f6',
+            previewBg: parsed.previewBg || '#0f172a',
+            slides
+          };
+          customTemplates.push(newTpl);
+          localStorage.setItem('giri_orbit_kinetic_custom_templates', JSON.stringify(customTemplates));
+          selCat = 'custom';
+          pills.forEach(p => p.classList.toggle('active', p.dataset.cat === 'custom'));
+          renderCards(false);
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${tplName}"!`);
+        } catch (err) {
+          alert('Failed to import JSON template: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+    });
     rootEl.querySelector('#btn-kinetic-nav-custom')?.addEventListener('click', () => {
       selCat = 'custom';
       pills.forEach(p => p.classList.toggle('active', p.dataset.cat === 'custom'));
@@ -2713,6 +2780,17 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
               </div>
               <div class="fluent-group-label">Accessibility</div>
             </div>
+
+            <!-- Speech / Read Aloud Group -->
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-kinetic-read-aloud" title="Read Slide Content &amp; Notes Aloud">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                  <span>Read Aloud</span>
+                </button>
+              </div>
+              <div class="fluent-group-label">Speech</div>
+            </div>
           </div>
 
           <!-- 3. DESIGN TAB PANE -->
@@ -3044,11 +3122,12 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
           </div>
 
           <!-- Mobile Touch Navigation Pill -->
-          <div class="kinetic-mobile-slide-nav-pill" id="kinetic-mobile-slide-nav-pill" style="display:none; position:absolute; bottom:12px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.88); backdrop-filter:blur(8px); border:1px solid #334155; border-radius:24px; padding:4px 12px; gap:10px; align-items:center; z-index:100; box-shadow:0 4px 16px rgba(0,0,0,0.4); font-size:11.5px; color:#f8fafc; user-select:none;">
-            <button id="btn-kinetic-mobile-prev" style="background:none;border:none;color:#38bdf8;font-size:14px;cursor:pointer;padding:2px 6px;">◀</button>
+          <div class="kinetic-mobile-slide-nav-pill" id="kinetic-mobile-slide-nav-pill" style="display:none; position:absolute; bottom:12px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.92); backdrop-filter:blur(8px); border:1px solid #334155; border-radius:24px; padding:4px 10px; gap:8px; align-items:center; z-index:100; box-shadow:0 4px 16px rgba(0,0,0,0.4); font-size:11.5px; color:#f8fafc; user-select:none; white-space:nowrap;">
+            <button id="btn-kinetic-mobile-prev" style="background:none;border:none;color:#38bdf8;font-size:14px;cursor:pointer;padding:2px 4px;">◀</button>
             <span id="kinetic-mobile-slide-num" style="font-weight:700; font-family:var(--font-mono); font-size:11px;">1 / 1</span>
-            <button id="btn-kinetic-mobile-next" style="background:none;border:none;color:#38bdf8;font-size:14px;cursor:pointer;padding:2px 6px;">▶</button>
-            <button id="btn-kinetic-mobile-present" style="background:#2563eb;color:#ffffff;border:none;border-radius:12px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;margin-left:2px;">▶ Show</button>
+            <button id="btn-kinetic-mobile-next" style="background:none;border:none;color:#38bdf8;font-size:14px;cursor:pointer;padding:2px 4px;">▶</button>
+            <button id="btn-kinetic-mobile-add" title="Add Slide" style="background:#334155;color:#ffffff;border:none;border-radius:12px;padding:3px 7px;font-size:10px;font-weight:700;cursor:pointer;">+ Slide</button>
+            <button id="btn-kinetic-mobile-present" style="background:#2563eb;color:#ffffff;border:none;border-radius:12px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;">▶ Show</button>
           </div>
         </div>
 
@@ -5078,6 +5157,9 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
   mobilePresent?.addEventListener('click', () => {
     launchPresenter(currentSlideIndex);
   });
+  container.querySelector('#btn-kinetic-mobile-add')?.addEventListener('click', () => {
+    container.querySelector('#btn-kinetic-new-slide-btn')?.click();
+  });
 
   // Mobile Touch Swipe Navigation (Swipe Left = Next, Swipe Right = Prev)
   let touchStartX = 0;
@@ -5539,6 +5621,33 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
   // ── Review Tab: Translate ────────────────────────────────────
   container.querySelector('#btn-kinetic-translate')?.addEventListener('click', () => {
     if (window.orbitPlatform) window.orbitPlatform.triggerToast('Translation: Select text on the slide and right-click → Translate in your browser');
+  });
+
+  // ── Review Tab: Read Aloud ────────────────────────────────────
+  container.querySelector('#btn-kinetic-read-aloud')?.addEventListener('click', () => {
+    if (!('speechSynthesis' in window)) {
+      alert('Text-to-speech is not supported in your browser.');
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const current = slidesData[currentSlideIndex];
+    if (!current) return;
+    const toSpeak = [
+      current.title || '',
+      current.desc || '',
+      ...(current.features || []).map(f => `${f.title || ''}. ${f.desc || ''}`),
+      current.notes ? `Speaker notes: ${current.notes}` : ''
+    ].filter(Boolean).join('. ');
+
+    if (!toSpeak.trim()) {
+      if (window.orbitPlatform) window.orbitPlatform.triggerToast('Slide has no text to read.');
+      return;
+    }
+    const utter = new SpeechSynthesisUtterance(toSpeak);
+    utter.rate = 1.0;
+    utter.pitch = 1.0;
+    window.speechSynthesis.speak(utter);
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Reading slide text aloud...');
   });
 
   function renderNavThumbnails() { renderThumbnails(); }
