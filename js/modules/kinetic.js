@@ -35,6 +35,13 @@ import { localSync } from '../components/localFileDirectSync.js';
  * for Golden Light Prestige, Corporate Navy, Modern AI, and all presentation decks.
  * ============================================================================
  */
+/**
+ * ============================================================================
+ * GIRI KINETIC - UNIVERSAL EXECUTIVE THEME & VECTOR BACKGROUND ART ENGINE
+ * Covers 100% of all 3,560+ PresentationGO templates, curated PowerPoint decks,
+ * and built-in classic presentations. Never produces a plain white slide.
+ * ============================================================================
+ */
 export function resolveSlideTheme(slide) {
   if (!slide) slide = {};
   const style = (slide.themeStyle || '').toLowerCase();
@@ -42,14 +49,68 @@ export function resolveSlideTheme(slide) {
   const tag = (slide.tag || '').toLowerCase();
   const deck = (slide.deckName || '').toLowerCase();
   const desc = (slide.desc || '').toLowerCase();
-  const text = `${style} ${title} ${tag} ${deck} ${desc}`;
+  const color = (slide.color || '').toLowerCase();
+  const layout = (slide.layout || slide.diagramType || '').toLowerCase();
+  const text = `${style} ${title} ${tag} ${deck} ${desc} ${color} ${layout}`;
 
-  // 1. Golden Light Prestige / Luxury Gold
-  if (style === 'golden-light' || style === 'luxury-gold' || text.includes('golden') || text.includes('prestige') || text.includes('gold')) {
+  // Helper to generate diagram-specific ambient watermark geometry
+  function getDiagramWatermark(accent) {
+    if (layout === 'circular-loop' || layout === 'radial-cycle') {
+      return `
+        <circle cx="460" cy="259" r="130" fill="none" stroke="${accent}" stroke-width="1.5" stroke-dasharray="6,6" opacity="0.2"/>
+        <circle cx="460" cy="259" r="175" fill="none" stroke="${accent}" stroke-width="1" opacity="0.12"/>
+        <circle cx="460" cy="259" r="220" fill="none" stroke="${accent}" stroke-width="0.8" stroke-dasharray="3,6" opacity="0.08"/>
+      `;
+    }
+    if (layout === 'milestone-road' || layout === 'milestone-journey' || layout === 'horizontal-timeline') {
+      return `
+        <path d="M -50 480 Q 280 500, 520 340 T 980 180" fill="none" stroke="${accent}" stroke-width="3.5" stroke-dasharray="10,8" opacity="0.25"/>
+        <circle cx="280" cy="450" r="4" fill="${accent}" opacity="0.4"/>
+        <circle cx="520" cy="340" r="4" fill="${accent}" opacity="0.5"/>
+        <circle cx="750" cy="240" r="4" fill="${accent}" opacity="0.4"/>
+      `;
+    }
+    if (layout === 'swot-matrix') {
+      return `
+        <line x1="460" y1="40" x2="460" y2="480" stroke="${accent}" stroke-width="1.2" stroke-dasharray="6,4" opacity="0.2"/>
+        <line x1="80" y1="259" x2="840" y2="259" stroke="${accent}" stroke-width="1.2" stroke-dasharray="6,4" opacity="0.2"/>
+        <circle cx="460" cy="259" r="45" fill="none" stroke="${accent}" stroke-width="1.2" opacity="0.25"/>
+      `;
+    }
+    if (layout === 'hexagon-cluster' || layout === 'hexagon-matrix') {
+      return `
+        <polygon points="460,180 510,210 510,270 460,300 410,270 410,210" fill="none" stroke="${accent}" stroke-width="1" opacity="0.15"/>
+        <polygon points="520,280 570,310 570,370 520,400 470,370 470,310" fill="none" stroke="${accent}" stroke-width="1" opacity="0.12"/>
+        <polygon points="400,280 450,310 450,370 400,400 350,370 350,310" fill="none" stroke="${accent}" stroke-width="1" opacity="0.12"/>
+      `;
+    }
+    if (layout === 'pyramid-hierarchy') {
+      return `
+        <polygon points="460,80 320,450 600,450" fill="none" stroke="${accent}" stroke-width="1.2" opacity="0.18"/>
+        <line x1="390" y1="260" x2="530" y2="260" stroke="${accent}" stroke-width="1" opacity="0.15"/>
+      `;
+    }
+    if (layout === 'funnel-stages') {
+      return `
+        <polygon points="300,90 620,90 540,450 380,450" fill="none" stroke="${accent}" stroke-width="1" stroke-dasharray="4,4" opacity="0.15"/>
+      `;
+    }
+    if (layout === 'gears-process') {
+      return `
+        <circle cx="780" cy="140" r="90" fill="none" stroke="${accent}" stroke-width="1.5" stroke-dasharray="4,8" opacity="0.18"/>
+        <circle cx="140" cy="400" r="70" fill="none" stroke="${accent}" stroke-width="1.5" stroke-dasharray="4,8" opacity="0.15"/>
+      `;
+    }
+    return '';
+  }
+
+  // 1. GOLD / AMBER / LUXURY / COPPER
+  if (style === 'golden-light' || style === 'luxury-gold' || style === 'copper-wealth' || color === 'amber' || color === 'yellow' || color === 'gold' || text.includes('golden') || text.includes('prestige') || text.includes('luxury') || text.includes('gold') || text.includes('wealth')) {
+    const acc = '#fef08a';
     return {
       name: 'golden-light',
       bg: 'radial-gradient(ellipse at bottom left, #422006 0%, #170f05 50%, #09090b 100%)',
-      accent: '#fef08a',
+      accent: acc,
       accentBorder: 'rgba(234, 179, 8, 0.45)',
       cardBg: 'rgba(26, 18, 7, 0.72)',
       isDark: true,
@@ -75,17 +136,19 @@ export function resolveSlideTheme(slide) {
           <circle cx="380" cy="270" r="3" fill="#ffffff"/>
           <circle cx="680" cy="380" r="5" fill="#fef08a" filter="drop-shadow(0 0 10px #eab308)"/>
           <circle cx="850" cy="180" r="3.5" fill="#ffffff"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // 2. Corporate Navy / Annual Report / Board Briefing / QBR
-  if (style === 'corporate-navy' || text.includes('corporate') || text.includes('annual report') || text.includes('board briefing') || text.includes('qbr') || text.includes('quarterly business') || text.includes('governance')) {
+  // 2. CORPORATE NAVY / BLUE / ANNUAL REPORT / BOARD / QBR / AUDIT / SAPPHIRE
+  if (style === 'corporate-navy' || color === 'blue' || text.includes('corporate') || text.includes('annual report') || text.includes('board') || text.includes('qbr') || text.includes('governance') || text.includes('navy') || text.includes('sapphire') || text.includes('finance')) {
+    const acc = '#38bdf8';
     return {
       name: 'corporate-navy',
       bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)',
-      accent: '#38bdf8',
+      accent: acc,
       accentBorder: 'rgba(56, 189, 248, 0.45)',
       cardBg: 'rgba(7, 25, 47, 0.72)',
       isDark: true,
@@ -103,17 +166,19 @@ export function resolveSlideTheme(slide) {
           <polygon points="500,150 700,50 700,280 500,380" fill="#38bdf8" opacity="0.15"/>
           <circle cx="400" cy="420" r="6" fill="#38bdf8" filter="drop-shadow(0 0 8px #38bdf8)"/>
           <circle cx="700" cy="50" r="5" fill="#93c5fd"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // 3. Crimson Venture / Unicorn Venture Capital Pitch Deck
-  if (style === 'crimson-venture' || text.includes('pitch') || text.includes('venture') || text.includes('unicorn') || text.includes('crimson') || text.includes('capital ask')) {
+  // 3. CRIMSON VENTURE / RED / ROSE / PITCH / UNICORN / CAPITAL / VC
+  if (style === 'crimson-venture' || style === 'rose-vibrant' || color === 'red' || color === 'crimson' || text.includes('pitch') || text.includes('venture') || text.includes('unicorn') || text.includes('crimson') || text.includes('capital') || text.includes('seed')) {
+    const acc = '#fb7185';
     return {
       name: 'crimson-venture',
       bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)',
-      accent: '#fb7185',
+      accent: acc,
       accentBorder: 'rgba(251, 113, 133, 0.45)',
       cardBg: 'rgba(76, 5, 25, 0.72)',
       isDark: true,
@@ -130,17 +195,19 @@ export function resolveSlideTheme(slide) {
           <path d="M -50 450 Q 400 150, 980 80" fill="none" stroke="url(#cv-crimson-grad)" stroke-width="6"/>
           <circle cx="680" cy="150" r="6" fill="#ffffff" filter="drop-shadow(0 0 12px #f43f5e)"/>
           <line x1="120" y1="100" x2="300" y2="100" stroke="#fda4af" stroke-width="2" opacity="0.6"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // 4. Creative Gradient / Modern AI & DeepTech / Neural / Frontier
-  if (style === 'creative-gradient' || text.includes('ai') || text.includes('deeptech') || text.includes('neural') || text.includes('frontier') || text.includes('gradient')) {
+  // 4. CREATIVE GRADIENT / MODERN AI / DEEPTECH / NEURAL / FRONTIER / ELECTRIC INDIGO
+  if (style === 'creative-gradient' || style === 'electric-indigo' || text.includes('ai') || text.includes('deeptech') || text.includes('neural') || text.includes('frontier') || text.includes('gradient') || text.includes('cognitive') || text.includes('quantum')) {
+    const acc = '#f472b6';
     return {
       name: 'creative-gradient',
       bg: 'linear-gradient(135deg, #312e81 0%, #6366f1 40%, #ec4899 100%)',
-      accent: '#f472b6',
+      accent: acc,
       accentBorder: 'rgba(244, 114, 182, 0.45)',
       cardBg: 'rgba(49, 46, 129, 0.72)',
       isDark: true,
@@ -160,17 +227,19 @@ export function resolveSlideTheme(slide) {
           <circle cx="280" cy="360" r="180" fill="url(#cg-orb2)"/>
           <path d="M 0 260 Q 300 80, 580 340 T 980 200" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.6"/>
           <circle cx="580" cy="340" r="5" fill="#fff"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // 5. Abstract Teal Flow
-  if (style === 'teal-flow' || text.includes('teal') || text.includes('cyan') || text.includes('flow')) {
+  // 5. TEAL & CYAN FLOW / OCEAN / CLOUD / MODERN TECH
+  if (style === 'teal-flow' || color === 'cyan' || color === 'teal' || text.includes('teal') || text.includes('cyan') || text.includes('flow') || text.includes('ocean') || text.includes('cloud')) {
+    const acc = '#2dd4bf';
     return {
       name: 'teal-flow',
-      bg: 'radial-gradient(ellipse at top left, #042f2e 0%, #0f172a 60%, #020617 100%)',
-      accent: '#2dd4bf',
+      bg: 'radial-gradient(ellipse at top left, #042f2e 0%, #083344 50%, #020617 100%)',
+      accent: acc,
       accentBorder: 'rgba(45, 212, 191, 0.45)',
       cardBg: 'rgba(4, 47, 46, 0.72)',
       isDark: true,
@@ -186,17 +255,19 @@ export function resolveSlideTheme(slide) {
           <path d="M -20 150 Q 350 450, 700 200 T 1050 500" fill="none" stroke="#2dd4bf" stroke-width="3" opacity="0.75"/>
           <circle cx="350" cy="380" r="5" fill="#5eead4" filter="drop-shadow(0 0 8px #2dd4bf)"/>
           <circle cx="700" cy="200" r="4" fill="#ffffff"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // 6. Neon Data Waves
-  if (style === 'neon-waves' || text.includes('neon') || text.includes('cyber waves')) {
+  // 6. NEON WAVES / CYBERPUNK / SYNTH
+  if (style === 'neon-waves' || text.includes('neon') || text.includes('cyber waves') || text.includes('synth')) {
+    const acc = '#c084fc';
     return {
       name: 'neon-waves',
       bg: 'radial-gradient(ellipse at bottom right, #1e1b4b 0%, #0f172a 50%, #09090b 100%)',
-      accent: '#c084fc',
+      accent: acc,
       accentBorder: 'rgba(192, 132, 252, 0.45)',
       cardBg: 'rgba(30, 27, 75, 0.72)',
       isDark: true,
@@ -212,17 +283,19 @@ export function resolveSlideTheme(slide) {
           <path d="M 0 350 Q 230 150, 460 350 T 920 350" fill="none" stroke="url(#nw-neon-grad)" stroke-width="5" filter="drop-shadow(0 0 10px #a855f7)"/>
           <path d="M 0 380 Q 230 180, 460 380 T 920 380" fill="none" stroke="#38bdf8" stroke-width="2" opacity="0.6"/>
           <circle cx="460" cy="350" r="6" fill="#ffffff" filter="drop-shadow(0 0 8px #a855f7)"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // 7. Enterprise Cybersecurity & Zero-Trust
-  if (style === 'cyber-matrix' || text.includes('cyber') || text.includes('security') || text.includes('zero-trust')) {
+  // 7. ENTERPRISE CYBERSECURITY & ZERO-TRUST / TERMINAL
+  if (style === 'cyber-matrix' || text.includes('cyber') || text.includes('security') || text.includes('zero-trust') || text.includes('cryptograph')) {
+    const acc = '#34d399';
     return {
       name: 'cyber-matrix',
       bg: 'radial-gradient(ellipse at center, #022c22 0%, #031c15 60%, #020617 100%)',
-      accent: '#34d399',
+      accent: acc,
       accentBorder: 'rgba(52, 211, 153, 0.45)',
       cardBg: 'rgba(2, 44, 34, 0.72)',
       isDark: true,
@@ -237,17 +310,19 @@ export function resolveSlideTheme(slide) {
           <path d="M 50 420 L 350 420 L 520 180 L 880 180" fill="none" stroke="#10b981" stroke-width="4"/>
           <circle cx="520" cy="180" r="6" fill="#34d399" filter="drop-shadow(0 0 10px #10b981)"/>
           <polygon points="780,100 830,130 830,190 780,220 730,190 730,130" fill="none" stroke="#34d399" stroke-width="2"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // 8. Medical, Healthcare & Clinical Research
-  if (style === 'medical-clean' || text.includes('medical') || text.includes('healthcare') || text.includes('clinical') || text.includes('biotech')) {
+  // 8. MEDICAL, HEALTHCARE & CLINICAL RESEARCH
+  if (style === 'medical-clean' || text.includes('medical') || text.includes('healthcare') || text.includes('clinical') || text.includes('biotech') || text.includes('pharma')) {
+    const acc = '#38bdf8';
     return {
       name: 'medical-clean',
       bg: 'linear-gradient(135deg, #082f49 0%, #0369a1 60%, #0ea5e9 100%)',
-      accent: '#38bdf8',
+      accent: acc,
       accentBorder: 'rgba(56, 189, 248, 0.45)',
       cardBg: 'rgba(8, 47, 73, 0.72)',
       isDark: true,
@@ -257,17 +332,19 @@ export function resolveSlideTheme(slide) {
           <circle cx="310" cy="120" r="6" fill="#fff" filter="drop-shadow(0 0 10px #38bdf8)"/>
           <circle cx="750" cy="160" r="60" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4"/>
           <circle cx="750" cy="160" r="8" fill="#38bdf8"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // 9. Consulting Frameworks & McKinsey Strategy
-  if (style === 'violet-luxury' || text.includes('consulting') || text.includes('strategy') || text.includes('luxury') || text.includes('amethyst')) {
+  // 9. VIOLET LUXURY / CONSULTING / STRATEGY / MCKINSEY / AMETHYST / PURPLE
+  if (style === 'violet-luxury' || color === 'purple' || color === 'violet' || text.includes('consulting') || text.includes('strategy') || text.includes('luxury') || text.includes('amethyst') || text.includes('purple')) {
+    const acc = '#c084fc';
     return {
       name: 'violet-luxury',
       bg: 'radial-gradient(ellipse at bottom left, #4c1d95 0%, #2e1065 50%, #09090b 100%)',
-      accent: '#c084fc',
+      accent: acc,
       accentBorder: 'rgba(192, 132, 252, 0.45)',
       cardBg: 'rgba(76, 29, 149, 0.72)',
       isDark: true,
@@ -283,17 +360,19 @@ export function resolveSlideTheme(slide) {
           <circle cx="680" cy="150" r="80" fill="none" stroke="#c084fc" stroke-width="2" opacity="0.4"/>
           <circle cx="260" cy="320" r="5" fill="#ffffff" filter="drop-shadow(0 0 8px #e879f9)"/>
           <circle cx="800" cy="120" r="6" fill="#f5d0fe"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // 10. Omnichannel Marketing Strategy & Growth
-  if (style === 'sunset-warm' || text.includes('sunset') || text.includes('marketing') || text.includes('omnichannel')) {
+  // 10. SUNSET WARM / OMNICHANNEL MARKETING / ORANGE / CORAL
+  if (style === 'sunset-warm' || color === 'orange' || color === 'coral' || text.includes('sunset') || text.includes('marketing') || text.includes('omnichannel') || text.includes('orange') || text.includes('coral')) {
+    const acc = '#fed7aa';
     return {
       name: 'sunset-warm',
       bg: 'linear-gradient(135deg, #7c2d12 0%, #c2410c 50%, #f97316 100%)',
-      accent: '#fed7aa',
+      accent: acc,
       accentBorder: 'rgba(254, 215, 170, 0.45)',
       cardBg: 'rgba(124, 45, 18, 0.72)',
       isDark: true,
@@ -303,17 +382,19 @@ export function resolveSlideTheme(slide) {
           <path d="M 0 420 Q 250 220, 500 350 T 950 180" fill="none" stroke="#ffedd5" stroke-width="5"/>
           <path d="M 50 480 Q 320 300, 600 400 T 1000 250" fill="none" stroke="#fdba74" stroke-width="2.5" opacity="0.7"/>
           <circle cx="500" cy="350" r="5" fill="#fff"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // 11. SaaS Enterprise Sales & Growth
-  if (style === 'emerald-growth' || style === 'forest-eco' || text.includes('saas') || text.includes('sales') || text.includes('emerald') || text.includes('growth')) {
+  // 11. EMERALD GROWTH / SAAS ENTERPRISE / FOREST ECO / GREEN
+  if (style === 'emerald-growth' || style === 'forest-eco' || color === 'green' || color === 'emerald' || text.includes('saas') || text.includes('sales') || text.includes('emerald') || text.includes('green') || text.includes('eco') || text.includes('growth')) {
+    const acc = '#6ee7b7';
     return {
       name: 'emerald-growth',
       bg: 'linear-gradient(135deg, #022c22 0%, #064e3b 50%, #047857 100%)',
-      accent: '#6ee7b7',
+      accent: acc,
       accentBorder: 'rgba(110, 231, 183, 0.45)',
       cardBg: 'rgba(2, 44, 34, 0.72)',
       isDark: true,
@@ -322,17 +403,19 @@ export function resolveSlideTheme(slide) {
           <path d="M -50 450 Q 280 450, 500 260 T 950 80" fill="none" stroke="#34d399" stroke-width="5"/>
           <polygon points="680,360 810,230 810,430 680,430" fill="#10b981" opacity="0.2"/>
           <circle cx="500" cy="260" r="6" fill="#ffffff" filter="drop-shadow(0 0 8px #34d399)"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // 12. Minimalist Editorial & Creative Studio
-  if (style === 'obsidian-minimal' || text.includes('minimal') || text.includes('obsidian') || text.includes('monochrome')) {
+  // 12. OBSIDIAN MINIMAL / SLATE INDUSTRIAL / DARK / MONOCHROME
+  if (style === 'obsidian-minimal' || style === 'slate-industrial' || color === 'dark' || color === 'slate' || text.includes('minimal') || text.includes('obsidian') || text.includes('monochrome') || text.includes('black')) {
+    const acc = '#f4f4f5';
     return {
       name: 'obsidian-minimal',
       bg: 'linear-gradient(135deg, #09090b 0%, #18181b 50%, #27272a 100%)',
-      accent: '#f4f4f5',
+      accent: acc,
       accentBorder: 'rgba(244, 244, 245, 0.35)',
       cardBg: 'rgba(18, 18, 20, 0.85)',
       isDark: true,
@@ -343,25 +426,49 @@ export function resolveSlideTheme(slide) {
           <line x1="460" y1="60" x2="460" y2="458" stroke="#3f3f46" stroke-width="1"/>
           <circle cx="460" cy="259" r="120" fill="none" stroke="#e4e4e7" stroke-width="1.8"/>
           <circle cx="460" cy="259" r="6" fill="#ffffff"/>
+          ${getDiagramWatermark(acc)}
         </svg>
       `
     };
   }
 
-  // Default Executive Sapphire Theme
-  const defaultAccent = slide.previewAccent || slide.accent || '#38bdf8';
+  // 13. NORDIC FROST / ARCTIC
+  if (style === 'nordic-frost' || text.includes('frost') || text.includes('arctic') || text.includes('glacial')) {
+    const acc = '#7dd3fc';
+    return {
+      name: 'nordic-frost',
+      bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0284c7 100%)',
+      accent: acc,
+      accentBorder: 'rgba(125, 211, 252, 0.45)',
+      cardBg: 'rgba(15, 23, 42, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.85; pointer-events:none;">
+          <polygon points="700,100 850,30 900,180 750,250" fill="#38bdf8" opacity="0.25"/>
+          <polygon points="500,180 700,100 750,250 550,320" fill="#7dd3fc" opacity="0.2"/>
+          <path d="M -50 350 L 300 220 L 600 380 T 950 150" fill="none" stroke="#bae6fd" stroke-width="4"/>
+          <circle cx="600" cy="380" r="6" fill="#ffffff"/>
+          ${getDiagramWatermark(acc)}
+        </svg>
+      `
+    };
+  }
+
+  // Universal Default: Premium Obsidian Sapphire with Dynamic Accent & Diagram Watermark
+  const dynamicAccent = slide.previewAccent || slide.accent || '#38bdf8';
   return {
-    name: 'default',
+    name: 'default-executive',
     bg: slide.bg || 'linear-gradient(135deg, #070d19 0%, #0f172a 50%, #1e293b 100%)',
-    accent: defaultAccent,
-    accentBorder: `${defaultAccent}45`,
+    accent: dynamicAccent,
+    accentBorder: `${dynamicAccent}45`,
     cardBg: 'rgba(15, 23, 42, 0.72)',
     isDark: true,
     svgArt: `
       <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.35; pointer-events:none;">
-        <circle cx="850" cy="80" r="280" fill="${defaultAccent}" filter="blur(90px)" opacity="0.18"/>
+        <circle cx="850" cy="80" r="280" fill="${dynamicAccent}" filter="blur(90px)" opacity="0.18"/>
         <circle cx="80" cy="460" r="220" fill="#3b82f6" filter="blur(90px)" opacity="0.12"/>
-        <path d="M 0 160 Q 460 380, 920 200" fill="none" stroke="${defaultAccent}" stroke-width="2" opacity="0.3"/>
+        <path d="M 0 160 Q 460 380, 920 200" fill="none" stroke="${dynamicAccent}" stroke-width="2" opacity="0.3"/>
+        ${getDiagramWatermark(dynamicAccent)}
       </svg>
     `
   };

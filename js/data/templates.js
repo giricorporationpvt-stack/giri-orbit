@@ -181,6 +181,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     category: 'pitch',
     desc: 'Series A / Venture Capital Investment Presentation: Problem, Solution, Traction, Market Size, and Capital Ask',
     previewAccent: '#c43e1c',
+    themeStyle: 'crimson-venture',
     slides: [
       {
         id: 1, layout: 'title', bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)', accent: '#c43e1c', tag: 'INVESTOR BRIEFING',
@@ -234,6 +235,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     category: 'pitch',
     desc: 'Ultra-concise seed round pitch presentation focusing on unfair advantage, growth rate, and founder pedigree',
     previewAccent: '#ea580c',
+    themeStyle: 'sunset-warm',
     slides: [
       {
         id: 1, layout: 'title', bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)', accent: '#ea580c', tag: 'SEED PITCH',
@@ -265,6 +267,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     category: 'pitch',
     desc: 'DeepTech investor briefing for generative computing, local LLMs, and neural memory networks',
     previewAccent: '#8b5cf6',
+    themeStyle: 'creative-gradient',
     slides: [
       {
         id: 1, layout: 'title', bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)', accent: '#8b5cf6', tag: 'DEEPTECH 2027',
@@ -298,6 +301,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     category: 'review',
     desc: 'Quarterly review presentation with departmental OKRs, revenue waterfalls, and headcount roadmap',
     previewAccent: '#b91c1c',
+    themeStyle: 'corporate-navy',
     slides: [
       {
         id: 1, layout: 'title', bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)', accent: '#b91c1c', tag: 'STRATEGY 2026',
@@ -340,6 +344,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     category: 'review',
     desc: 'Formal boardroom presentation covering corporate governance, regulatory audits, and capital allocation',
     previewAccent: '#0f172a',
+    themeStyle: 'obsidian-minimal',
     slides: [
       {
         id: 1, layout: 'title', bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)', accent: '#0f172a', tag: 'BOARD OF DIRECTORS',
@@ -371,6 +376,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     category: 'review',
     desc: 'Strategic market positioning analysis detailing internal Strengths/Weaknesses and market Opportunities/Threats',
     previewAccent: '#0284c7',
+    themeStyle: 'teal-flow',
     slides: [
       {
         id: 1, layout: 'title', bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)', accent: '#0284c7', tag: 'MARKET POSITIONING',

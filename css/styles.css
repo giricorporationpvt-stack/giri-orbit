@@ -3931,3 +3931,68 @@ body.in-tool .orbit-workspace {
 }
 
 
+
+/* ==========================================================================
+   EXECUTIVE GLASSMORPHISM OVERRIDES FOR ALL PRESENTATIONGO DIAGRAMS
+   Applies high-contrast dark luxury cards and typography across all diagrams
+   ========================================================================== */
+.kinetic-slide-frame .pgo-loop-node-card,
+.kinetic-slide-frame .pgo-zigzag-card,
+.kinetic-slide-frame .pgo-chevron-card,
+.kinetic-slide-frame .pgo-milestone-card,
+.kinetic-slide-frame .pgo-flag-card,
+.kinetic-slide-frame .pgo-flag-body,
+.kinetic-slide-frame .pgo-bubble-bubble,
+.kinetic-slide-frame .pgo-gear-card,
+.kinetic-slide-frame .pgo-honeycomb-cell,
+.kinetic-slide-frame .pgo-pyramid-tier-row,
+.kinetic-slide-frame .pgo-funnel-stage-row,
+.kinetic-slide-frame .pgo-pricing-col {
+  background: rgba(15, 23, 42, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.45) !important;
+}
+
+.kinetic-slide-frame .pgo-node-title {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+.kinetic-slide-frame .pgo-node-desc {
+  color: #cbd5e1 !important;
+  line-height: 1.4 !important;
+}
+
+.kinetic-slide-frame .pgo-pricing-col.popular {
+  border-color: #38bdf8 !important;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3) !important;
+}
+
+/* SWOT Analysis Quadrants High-Contrast Glow */
+.kinetic-slide-frame .pgo-swot-quadrant {
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border-radius: 10px !important;
+}
+.kinetic-slide-frame .pgo-swot-s {
+  background: rgba(6, 78, 59, 0.55) !important;
+  border: 1px solid rgba(16, 185, 129, 0.45) !important;
+}
+.kinetic-slide-frame .pgo-swot-w {
+  background: rgba(127, 29, 29, 0.55) !important;
+  border: 1px solid rgba(239, 68, 68, 0.45) !important;
+}
+.kinetic-slide-frame .pgo-swot-o {
+  background: rgba(30, 58, 138, 0.55) !important;
+  border: 1px solid rgba(59, 130, 246, 0.45) !important;
+}
+.kinetic-slide-frame .pgo-swot-t {
+  background: rgba(120, 53, 15, 0.55) !important;
+  border: 1px solid rgba(245, 158, 11, 0.45) !important;
+}
+.kinetic-slide-frame .pgo-swot-quadrant .pgo-node-desc {
+  color: #f1f5f9 !important;
+}
