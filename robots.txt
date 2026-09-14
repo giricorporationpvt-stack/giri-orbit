@@ -1,0 +1,5 @@
+﻿User-agent: *
+Allow: /
+
+Sitemap: https://giricorporationpvt-stack.github.io/giri-orbit/sitemap.xml
+
