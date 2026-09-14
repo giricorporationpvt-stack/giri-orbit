@@ -439,10 +439,19 @@ class GiriSyncManager {
           </div>
         </div>
 
-        <div class="sync-modal-footer">
-          <button class="btn-clear-all-sync" id="btn-purge-all-sync">
-            Clear All Browser Work
-          </button>
+        </div>
+
+        <div class="sync-modal-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="btn-clear-all-sync" id="btn-purge-all-sync" style="background:#fee2e2; color:#b91c1c; border:1px solid #fca5a5; border-radius:6px; padding:7px 12px; font-weight:600; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              Clear Browser Work...
+            </button>
+            <button class="btn-backup-sync" id="btn-backup-all-sync" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; border-radius:6px; padding:7px 12px; font-weight:600; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px; transition:all 0.15s;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Backup JSON
+            </button>
+          </div>
           <button class="btn-close-sync-modal" id="btn-close-sync-modal-bottom">
             Done
           </button>
@@ -485,10 +494,246 @@ class GiriSyncManager {
       });
     });
 
+    modalBackdrop.querySelector('#btn-backup-all-sync')?.addEventListener('click', () => {
+      this.exportBackupJson();
+    });
+
     modalBackdrop.querySelector('#btn-purge-all-sync')?.addEventListener('click', () => {
-      if (confirm('Are you sure you want to clear all saved work from browser storage? All drafts in Drift, Axis, Kinetic, and PDF will be reset.')) {
+      this.openClearStorageDialog(() => {
+        this.openStorageModal();
+      });
+    });
+  }
+
+  /**
+   * Export all browser work to a JSON file
+   */
+  exportBackupJson() {
+    const backup = {
+      timestamp: new Date().toISOString(),
+      version: '1.0',
+      registry: this.getRegistry(),
+      tools: {}
+    };
+
+    ['drift', 'axis', 'kinetic', 'pdf'].forEach(tool => {
+      const config = TOOL_DEFAULTS[tool];
+      if (config) {
+        backup.tools[tool] = {
+          title: localStorage.getItem(config.titleKey) || '',
+          data: localStorage.getItem(config.dataKey) || '',
+          time: localStorage.getItem(config.timeKey) || ''
+        };
+      }
+    });
+
+    const templates = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && (k.includes('custom_templates') || k.startsWith('giri_orbit_'))) {
+        templates[k] = localStorage.getItem(k);
+      }
+    }
+    backup.templates = templates;
+
+    const jsonStr = JSON.stringify(backup, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `giri_orbit_full_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 150);
+
+    if (window.orbitPlatform && window.orbitPlatform.showToast) {
+      window.orbitPlatform.showToast('Downloaded complete workspace backup (.json)', 'violet');
+    }
+  }
+
+  /**
+   * Dedicated Granular Cleanup Dialog
+   */
+  openClearStorageDialog(onComplete) {
+    let dialogBackdrop = document.getElementById('orbit-cleanup-dialog-backdrop');
+    if (!dialogBackdrop) {
+      dialogBackdrop = document.createElement('div');
+      dialogBackdrop.id = 'orbit-cleanup-dialog-backdrop';
+      dialogBackdrop.className = 'office-modal-backdrop';
+      dialogBackdrop.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px;';
+      document.body.appendChild(dialogBackdrop);
+    }
+
+    const usage = this.getStorageUsage();
+
+    dialogBackdrop.innerHTML = `
+      <div class="office-dialog-card" role="dialog" aria-modal="true" style="background:#ffffff;border-radius:12px;width:480px;max-width:100%;box-shadow:0 20px 48px rgba(0,0,0,0.25);overflow:hidden;border:1px solid #e2e8f0;font-family:var(--font-sans);">
+        <div style="background:#fef2f2;border-bottom:1px solid #fee2e2;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:20px;background:#fee2e2;padding:6px;border-radius:8px;">⚠️</span>
+            <div>
+              <div style="font-size:15px;font-weight:700;color:#991b1b;">Clear Browser Storage</div>
+              <div style="font-size:11.5px;color:#b91c1c;">Reset local in-memory drafts & free browser cache</div>
+            </div>
+          </div>
+          <button id="btn-close-cleanup-dialog" style="background:none;border:none;font-size:16px;color:#991b1b;cursor:pointer;padding:4px 8px;border-radius:4px;">✕</button>
+        </div>
+
+        <div style="padding:20px;display:flex;flex-direction:column;gap:14px;font-size:13px;color:#334155;">
+          <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:#0f172a;">Current Storage Utilized</div>
+              <div style="font-size:11px;color:#64748b;">Drift: ${usage.toolSizes.drift || '0 KB'} • Axis: ${usage.toolSizes.axis || '0 KB'} • Kinetic: ${usage.toolSizes.kinetic || '0 KB'} • PDF: ${usage.toolSizes.pdf || '0 KB'}</div>
+            </div>
+            <span style="background:#dbeafe;color:#1e40af;font-size:12px;font-weight:700;padding:3px 8px;border-radius:12px;">${usage.total}</span>
+          </div>
+
+          <div style="font-size:12px;font-weight:700;color:#0f172a;text-transform:uppercase;letter-spacing:0.04em;">Select what to delete:</div>
+
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;background:#f8fafc;">
+              <input type="radio" name="cleanup-scope" value="all" checked style="cursor:pointer;accent-color:#dc2626;">
+              <div>
+                <strong style="color:#0f172a;display:block;">All Work Sessions (Full Reset)</strong>
+                <span style="font-size:11px;color:#64748b;">Deletes all saved drafts across Drift, Axis, Kinetic, and PDF Studio.</span>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;">
+              <input type="radio" name="cleanup-scope" value="drift" style="cursor:pointer;accent-color:#2563eb;">
+              <div>
+                <strong style="color:#0f172a;display:block;">Drift Documents Only (${usage.toolSizes.drift || '0 KB'})</strong>
+                <span style="font-size:11px;color:#64748b;">Clears only document drafts; keeps spreadsheets & presentations.</span>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;">
+              <input type="radio" name="cleanup-scope" value="axis" style="cursor:pointer;accent-color:#16a34a;">
+              <div>
+                <strong style="color:#0f172a;display:block;">Axis Spreadsheets Only (${usage.toolSizes.axis || '0 KB'})</strong>
+                <span style="font-size:11px;color:#64748b;">Clears financial sheets; keeps other work intact.</span>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;">
+              <input type="radio" name="cleanup-scope" value="kinetic" style="cursor:pointer;accent-color:#ea580c;">
+              <div>
+                <strong style="color:#0f172a;display:block;">Kinetic Presentations Only (${usage.toolSizes.kinetic || '0 KB'})</strong>
+                <span style="font-size:11px;color:#64748b;">Clears slide decks; keeps documents & sheets.</span>
+              </div>
+            </label>
+            <label style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid #e2e8f0;border-radius:6px;cursor:pointer;">
+              <input type="radio" name="cleanup-scope" value="pdf" style="cursor:pointer;accent-color:#dc2626;">
+              <div>
+                <strong style="color:#0f172a;display:block;">PDF Studio Annotations (${usage.toolSizes.pdf || '0 KB'})</strong>
+                <span style="font-size:11px;color:#64748b;">Clears marked PDFs & seals; keeps documents.</span>
+              </div>
+            </label>
+          </div>
+
+          <div style="padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="cleanup-download-backup" checked style="cursor:pointer;accent-color:#16a34a;">
+            <label for="cleanup-download-backup" style="font-size:11.5px;color:#166534;cursor:pointer;font-weight:600;">
+              Download JSON Backup file before deleting (Safely preserve my work)
+            </label>
+          </div>
+        </div>
+
+        <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:12px 20px;display:flex;justify-content:flex-end;gap:10px;">
+          <button id="btn-cancel-cleanup" style="background:#ffffff;border:1px solid #cbd5e1;color:#475569;border-radius:6px;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;">
+            Cancel
+          </button>
+          <button id="btn-confirm-cleanup" style="background:#dc2626;border:none;color:#ffffff;border-radius:6px;padding:8px 18px;font-size:12.5px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+            <span>🗑️</span> Confirm Cleanup
+          </button>
+        </div>
+      </div>
+    `;
+
+    dialogBackdrop.style.display = 'flex';
+
+    const closeCleanup = () => { dialogBackdrop.style.display = 'none'; };
+    dialogBackdrop.querySelector('#btn-close-cleanup-dialog')?.addEventListener('click', closeCleanup);
+    dialogBackdrop.querySelector('#btn-cancel-cleanup')?.addEventListener('click', closeCleanup);
+
+    dialogBackdrop.querySelector('#btn-confirm-cleanup')?.addEventListener('click', () => {
+      const scope = dialogBackdrop.querySelector('input[name="cleanup-scope"]:checked')?.value || 'all';
+      const doBackup = dialogBackdrop.querySelector('#cleanup-download-backup')?.checked;
+
+      if (doBackup) {
+        this.exportBackupJson();
+      }
+
+      this.cacheDeletedSnapshot(scope);
+
+      if (scope === 'all') {
         this.clearAllSyncedWork();
-        close();
+      } else {
+        this.deleteSyncedWork(scope);
+      }
+
+      closeCleanup();
+      if (typeof onComplete === 'function') onComplete();
+
+      this.showUndoToast(scope);
+    });
+  }
+
+  cacheDeletedSnapshot(scope) {
+    try {
+      this._lastUndoSnapshot = {
+        scope,
+        time: Date.now(),
+        data: {}
+      };
+      const keysToSave = scope === 'all' ? ['drift', 'axis', 'kinetic', 'pdf'] : [scope];
+      keysToSave.forEach(tool => {
+        const config = TOOL_DEFAULTS[tool];
+        if (config) {
+          this._lastUndoSnapshot.data[tool] = {
+            data: localStorage.getItem(config.dataKey),
+            title: localStorage.getItem(config.titleKey),
+            time: localStorage.getItem(config.timeKey)
+          };
+        }
+      });
+    } catch {}
+  }
+
+  showUndoToast(scope) {
+    const existing = document.getElementById('orbit-undo-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'orbit-undo-toast';
+    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#18181b;color:#f8fafc;padding:10px 18px;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,0.3);z-index:100000;display:flex;align-items:center;gap:12px;font-size:12.5px;font-family:var(--font-sans);border:1px solid #334155;';
+    toast.innerHTML = `
+      <span>🗑️ Browser storage cleared for <strong>${scope === 'all' ? 'All Tools' : scope.toUpperCase()}</strong>.</span>
+      <button id="btn-undo-action" style="background:#2563eb;color:#ffffff;border:none;padding:4px 10px;border-radius:4px;font-size:11.5px;font-weight:700;cursor:pointer;">↩ Undo (10s)</button>
+    `;
+    document.body.appendChild(toast);
+
+    const timer = setTimeout(() => {
+      toast.remove();
+      this._lastUndoSnapshot = null;
+    }, 10000);
+
+    toast.querySelector('#btn-undo-action')?.addEventListener('click', () => {
+      clearTimeout(timer);
+      if (this._lastUndoSnapshot && this._lastUndoSnapshot.data) {
+        Object.entries(this._lastUndoSnapshot.data).forEach(([tool, vals]) => {
+          const config = TOOL_DEFAULTS[tool];
+          if (config && vals.data) {
+            localStorage.setItem(config.dataKey, vals.data);
+            if (vals.title) localStorage.setItem(config.titleKey, vals.title);
+            if (vals.time) localStorage.setItem(config.timeKey, vals.time);
+            this.registerSyncedWork(tool, vals.title || config.toolName, Date.now());
+          }
+        });
+        toast.innerHTML = `<span>✔ Restored previous browser work successfully!</span>`;
+        setTimeout(() => toast.remove(), 2500);
+        window.dispatchEvent(new CustomEvent('orbit:sync-change', { detail: { action: 'restore' } }));
+        this.openStorageModal();
       }
     });
   }

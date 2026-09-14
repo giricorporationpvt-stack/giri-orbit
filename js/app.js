@@ -80,6 +80,14 @@ class GiriOrbitPlatform {
         this.navigateTo(view, null, false);
       }
     });
+
+    // Listen for storage / sync changes to update recent docs cards dynamically
+    window.addEventListener('orbit:sync-change', () => {
+      const landing = document.querySelector('.zoho-landing-container');
+      if (landing) {
+        this.renderRecentDocsGrid(landing);
+      }
+    });
   }
 
   /**
@@ -207,7 +215,7 @@ class GiriOrbitPlatform {
         <div class="zoho-hero-left">
           <h1 class="zoho-hero-title">The Sovereign Enterprise Workspace</h1>
           <p class="zoho-hero-subtitle">
-            Giri Orbit by GIRI Corporation delivers unified, zero-latency computing. Unbind your workflows with Drift document architecture, Axis financial modeling, Kinetic cinematic presentations, and Aegis cryptographic document validation — powered by instant in-memory state and ambient zero-gravity spatial physics.
+            Giri Orbit by GIRI Corporation delivers unified, zero-latency computing. Unbind your workflows with Drift document architecture, Axis financial modeling, Kinetic cinematic presentations, and Aegis cryptographic document validation — powered by instant in-memory state.
           </p>
 
           <!-- Executive Giri Orbit Primary CTA Button -->
@@ -1137,7 +1145,7 @@ class GiriOrbitPlatform {
           </div>
           <div style="display:flex; align-items:flex-start; gap:10px;">
             <span style="color:#2563eb; font-weight:800;">3.</span>
-            <span><strong>Universal Interchange:</strong> Seamlessly export to standard Microsoft Office formats (.docx, .doc, .xlsx, .xls, .pptx, .ppt) and PDF.</span>
+            <span><strong>Universal Interchange:</strong> Seamlessly export to standard Office formats (.docx, .doc, .xlsx, .xls, .pptx, .ppt) and PDF.</span>
           </div>
         </div>
       `;
@@ -1403,8 +1411,8 @@ class GiriOrbitPlatform {
   getFormatsForTool(tool) {
     const formatConfigs = {
       drift: [
-        { ext: 'docx', name: 'Word Document (.docx)', desc: 'Microsoft Word Open XML format', color: '#2563eb', label: 'DOCX' },
-        { ext: 'doc', name: 'Word 97-2003 (.doc)', desc: 'Legacy Microsoft Word format', color: '#1d4ed8', label: 'DOC' },
+        { ext: 'docx', name: 'Word Document (.docx)', desc: 'Word Open XML document format', color: '#2563eb', label: 'DOCX' },
+        { ext: 'doc', name: 'Word 97-2003 (.doc)', desc: 'Legacy Word binary format', color: '#1d4ed8', label: 'DOC' },
         { ext: 'odt', name: 'Open Document Text (.odt)', desc: 'LibreOffice/OpenOffice Writer format', color: '#1a6b3c', label: 'ODT' },
         { ext: 'rtf', name: 'Rich Text Format (.rtf)', desc: 'Cross-application rich text exchange', color: '#7c3aed', label: 'RTF' },
         { ext: 'md', name: 'Markdown (.md)', desc: 'GitHub-flavored markdown format', color: '#0891b2', label: 'MD' },
@@ -1434,7 +1442,7 @@ class GiriOrbitPlatform {
       ],
       pdf: [
         { ext: 'pdf', name: 'PDF Document (.pdf)', desc: 'Finalized stamped PDF with signatures', color: '#dc2626', label: 'PDF' },
-        { ext: 'docx', name: 'Word Document (.docx)', desc: 'Converted editable Microsoft Word document', color: '#2563eb', label: 'DOCX' },
+        { ext: 'docx', name: 'Word Document (.docx)', desc: 'Converted editable Word document', color: '#2563eb', label: 'DOCX' },
         { ext: 'txt', name: 'Plain Text (.txt)', desc: 'Clean extracted document text', color: '#64748b', label: 'TXT' },
         { ext: 'html', name: 'HTML Webpage (.html)', desc: 'Browser-viewable formatted page', color: '#ea580c', label: 'HTML' },
         { ext: 'md', name: 'Markdown (.md)', desc: 'Markdown text with formatting', color: '#0891b2', label: 'MD' }
@@ -2024,9 +2032,9 @@ ${(s.features || []).map(f => `- **${f.num}** ${f.title}: ${f.desc}`).join('\n')
       pptx:   ['pdf', 'txt', 'html', 'gslide'],
       ppt:    ['pdf', 'txt', 'html', 'gslide'],
       gdoc:   ['docx', 'pdf', 'txt', 'html', 'md'],
-      gsheet: ['csv', 'json', 'html', 'txt'],
-      gslide: ['pdf', 'txt', 'html'],
-      giri:   ['pdf', 'txt', 'json'],
+      gsheet: ['xlsx', 'csv', 'json', 'html', 'txt', 'pdf'],
+      gslide: ['pptx', 'pdf', 'txt', 'html'],
+      giri:   ['docx', 'xlsx', 'pptx', 'pdf', 'json', 'txt'],
     };
 
     const FORMAT_LABELS = {
@@ -2038,6 +2046,7 @@ ${(s.features || []).map(f => `- **${f.num}** ${f.title}: ${f.desc}`).join('\n')
       csv:    '📊 CSV Spreadsheet (.csv)',
       xlsx:   '📗 Excel Workbook (.xlsx)',
       docx:   '📘 Word Document (.docx)',
+      pptx:   '📙 PowerPoint Presentation (.pptx)',
       gdoc:   '🔵 Giri Drift Document (.gdoc)',
       gsheet: '🟢 Giri Axis Spreadsheet (.gsheet)',
       gslide: '🔴 Giri Kinetic Presentation (.gslide)',
@@ -2214,6 +2223,191 @@ ${(s.features || []).map(f => `- **${f.num}** ${f.title}: ${f.desc}`).join('\n')
                 .replace(/<[^>]+>/g, '')
                 .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ');
               mime = 'text/markdown';
+            }
+          }
+
+          // ── gdoc → docx/pdf/txt/html/md ──────────────────────────────
+          else if (srcExt === 'gdoc') {
+            let docContent = raw;
+            try {
+              const parsed = JSON.parse(raw);
+              docContent = parsed.html || parsed.content || parsed.text || raw;
+            } catch {
+              docContent = raw;
+            }
+            if (destExt === 'docx') {
+              output = `<!DOCTYPE html><html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${baseName}</title><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]--><style>body{font-family:Calibri,'Segoe UI',sans-serif;font-size:11pt;line-height:1.25;margin:1in;}table{border-collapse:collapse;width:100%;}td,th{border:1px solid #cbd5e1;padding:6px 8px;}</style></head><body>${docContent}</body></html>`;
+              mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            } else if (destExt === 'html') {
+              output = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${baseName}</title><style>body{font-family:system-ui,sans-serif;max-width:820px;margin:40px auto;padding:0 24px;line-height:1.6;color:#0f172a;}</style></head><body>${docContent}</body></html>`;
+              mime = 'text/html';
+            } else if (destExt === 'txt') {
+              const div = document.createElement('div');
+              div.innerHTML = docContent;
+              output = div.innerText || div.textContent || '';
+              mime = 'text/plain';
+            } else if (destExt === 'md') {
+              output = docContent
+                .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n')
+                .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n')
+                .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n')
+                .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
+                .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
+                .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
+                .replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<[^>]+>/g, '')
+                .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ');
+              mime = 'text/markdown';
+            } else if (destExt === 'pdf') {
+              this.showToast('Opening print dialog — choose "Save as PDF"', 'violet');
+              const win = window.open('', '_blank');
+              win.document.write(`<!DOCTYPE html><html><head><title>${baseName}</title><style>body{font-family:Calibri,sans-serif;max-width:760px;margin:40px auto;line-height:1.6;}</style></head><body>${docContent}</body></html>`);
+              win.document.close();
+              win.print();
+              return;
+            }
+          }
+
+          // ── gsheet → xlsx/csv/json/html/txt/pdf ─────────────────────
+          else if (srcExt === 'gsheet') {
+            let sheetCells = [];
+            try {
+              const parsed = JSON.parse(raw);
+              if (parsed.sheets) {
+                const firstKey = Object.keys(parsed.sheets)[0];
+                const sheet = parsed.sheets[firstKey];
+                if (sheet && sheet.data) {
+                  const maxR = 50; const maxC = 15;
+                  for (let r = 1; r <= maxR; r++) {
+                    const row = [];
+                    let hasVal = false;
+                    for (let c = 0; c < maxC; c++) {
+                      const colName = String.fromCharCode(65 + c);
+                      const key = `${colName}${r}`;
+                      const cell = sheet.data[key];
+                      const val = cell ? (cell.val !== undefined ? cell.val : cell.raw || '') : '';
+                      if (val) hasVal = true;
+                      row.push(val);
+                    }
+                    if (hasVal) sheetCells.push(row);
+                  }
+                }
+              } else if (Array.isArray(parsed)) {
+                sheetCells = parsed;
+              }
+            } catch {
+              sheetCells = raw.split('\n').filter(Boolean).map(l => l.split(','));
+            }
+            if (!sheetCells.length) sheetCells = [['No data', 'Empty spreadsheet']];
+
+            if (destExt === 'xlsx') {
+              const xmlRows = sheetCells.map(r =>
+                `<Row>${r.map(c => `<Cell><Data ss:Type="${isNaN(c) || c === '' ? 'String' : 'Number'}">${String(c).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</Data></Cell>`).join('')}</Row>`
+              ).join('');
+              output = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
+ <Worksheet ss:Name="Sheet1">
+  <Table>${xmlRows}</Table>
+ </Worksheet>
+</Workbook>`;
+              mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            } else if (destExt === 'csv') {
+              output = sheetCells.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+              mime = 'text/csv';
+            } else if (destExt === 'json') {
+              output = JSON.stringify(sheetCells, null, 2);
+              mime = 'application/json';
+            } else if (destExt === 'html') {
+              output = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${baseName}</title><style>table{border-collapse:collapse;width:100%;font-family:system-ui,sans-serif;}th,td{border:1px solid #cbd5e1;padding:6px 10px;font-size:12px;}th{background:#f1f5f9;}</style></head><body><table>${sheetCells.map((r, i) => `<tr>${r.map(c => `<${i === 0 ? 'th' : 'td'}>${c}</${i === 0 ? 'th' : 'td'}>`).join('')}</tr>`).join('')}</table></body></html>`;
+              mime = 'text/html';
+            } else if (destExt === 'txt') {
+              output = sheetCells.map(r => r.join('\t')).join('\n');
+              mime = 'text/plain';
+            } else if (destExt === 'pdf') {
+              this.showToast('Opening print dialog — choose "Save as PDF"', 'violet');
+              const win = window.open('', '_blank');
+              win.document.write(`<!DOCTYPE html><html><head><title>${baseName}</title><style>table{border-collapse:collapse;width:100%;font-family:sans-serif;}th,td{border:1px solid #94a3b8;padding:6px 8px;font-size:11px;}</style></head><body><h2>${baseName}</h2><table>${sheetCells.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</table></body></html>`);
+              win.document.close();
+              win.print();
+              return;
+            }
+          }
+
+          // ── gslide → pptx/pdf/txt/html ──────────────────────────────
+          else if (srcExt === 'gslide') {
+            let slides = [];
+            try {
+              const parsed = JSON.parse(raw);
+              slides = parsed.slides || (Array.isArray(parsed) ? parsed : []);
+            } catch {
+              slides = [{ title: baseName, desc: raw }];
+            }
+            if (!slides.length) slides = [{ title: baseName, desc: 'Slide Presentation Deck' }];
+
+            if (destExt === 'pptx') {
+              const slidesHtml = slides.map((s, idx) => `
+                <div style="page-break-after:always; width:960px; height:540px; margin:20px auto; padding:40px; background:${s.bg || '#0f172a'}; color:${s.bg && s.bg.startsWith('#f') ? '#0f172a' : '#ffffff'}; border-radius:12px; box-sizing:border-box; font-family:'Segoe UI',system-ui,sans-serif; display:flex; flex-direction:column; justify-content:space-between;">
+                  <div>
+                    <span style="font-size:12px; font-weight:700; color:#38bdf8; text-transform:uppercase;">${s.tag || `Slide ${idx + 1}`}</span>
+                    <h1 style="font-size:28px; font-weight:800; margin:12px 0 8px 0;">${s.title || 'Untitled Slide'}</h1>
+                    <p style="font-size:15px; opacity:0.85; line-height:1.6;">${s.desc || ''}</p>
+                  </div>
+                  <div style="display:flex; justify-content:space-between; font-size:11px; opacity:0.6; border-top:1px solid rgba(255,255,255,0.15); padding-top:12px;">
+                    <span>Giri Kinetic Presentation</span>
+                    <span>Slide ${idx + 1} of ${slides.length}</span>
+                  </div>
+                </div>
+              `).join('');
+              output = `<!DOCTYPE html><html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:p='urn:schemas-microsoft-com:office:powerpoint' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>${baseName}</title><!--[if gte mso 9]><xml><p:Presentation><p:SlideWidth>960</p:SlideWidth><p:SlideHeight>540</p:SlideHeight></p:Presentation></xml><![endif]--><style>body{margin:0;background:#000;}@media print{div{page-break-after:always;}}</style></head><body>${slidesHtml}</body></html>`;
+              mime = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+            } else if (destExt === 'html') {
+              output = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${baseName}</title><style>body{margin:0;background:#0f172a;font-family:system-ui,sans-serif;color:#fff;padding:20px;}.slide{background:#1e293b;border-radius:12px;padding:32px;margin:0 auto 24px auto;max-width:900px;border:1px solid #334155;}h2{margin-top:0;color:#38bdf8;}</style></head><body>${slides.map((s, i) => `<div class="slide"><span>SLIDE ${i + 1}</span><h2>${s.title || ''}</h2><p>${s.desc || ''}</p></div>`).join('')}</body></html>`;
+              mime = 'text/html';
+            } else if (destExt === 'txt') {
+              output = slides.map((s, i) => `=== SLIDE ${i + 1}: ${s.title || ''} ===\n${s.desc || ''}\n${(s.features || []).map(f => `  • ${f.title || ''}: ${f.desc || ''}`).join('\n')}\n`).join('\n');
+              mime = 'text/plain';
+            } else if (destExt === 'pdf') {
+              this.showToast('Opening print dialog — choose "Save as PDF"', 'violet');
+              const win = window.open('', '_blank');
+              win.document.write(`<!DOCTYPE html><html><head><title>${baseName}</title><style>@media print{.slide{page-break-after:always;}}body{font-family:system-ui;margin:0;padding:20px;}.slide{border:1px solid #cbd5e1;border-radius:8px;padding:30px;margin-bottom:20px;}</style></head><body>${slides.map((s, i) => `<div class="slide"><strong>SLIDE ${i + 1}</strong><h2>${s.title || ''}</h2><p>${s.desc || ''}</p></div>`).join('')}</body></html>`);
+              win.document.close();
+              win.print();
+              return;
+            }
+          }
+
+          // ── giri → docx/xlsx/pptx/pdf/json/txt ───────────────────────
+          else if (srcExt === 'giri') {
+            let parsed = null;
+            try { parsed = JSON.parse(raw); } catch { parsed = { content: raw }; }
+            if (destExt === 'json') {
+              output = JSON.stringify(parsed, null, 2);
+              mime = 'application/json';
+            } else if (destExt === 'docx') {
+              const html = parsed.html || parsed.content || JSON.stringify(parsed);
+              output = `<!DOCTYPE html><html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><title>${baseName}</title></head><body>${html}</body></html>`;
+              mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+            } else if (destExt === 'xlsx') {
+              output = `<?xml version="1.0"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="Sheet1"><Table><Row><Cell><Data ss:Type="String">${JSON.stringify(parsed).replace(/&/g, '&amp;').replace(/</g, '&lt;')}</Data></Cell></Row></Table></Worksheet></Workbook>`;
+              mime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+            } else if (destExt === 'pptx') {
+              output = `<!DOCTYPE html><html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:p='urn:schemas-microsoft-com:office:powerpoint'><head><meta charset='utf-8'><title>${baseName}</title></head><body><div><h1>${baseName}</h1><p>${JSON.stringify(parsed)}</p></div></body></html>`;
+              mime = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+            } else if (destExt === 'txt') {
+              output = typeof parsed === 'object' ? JSON.stringify(parsed, null, 2) : String(parsed);
+              mime = 'text/plain';
+            } else if (destExt === 'pdf') {
+              this.showToast('Opening print dialog — choose "Save as PDF"', 'violet');
+              const win = window.open('', '_blank');
+              win.document.write(`<!DOCTYPE html><html><head><title>${baseName}</title></head><body><pre>${JSON.stringify(parsed, null, 2)}</pre></body></html>`);
+              win.document.close();
+              win.print();
+              return;
             }
           }
 

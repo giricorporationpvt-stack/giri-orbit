@@ -3,7 +3,7 @@
  * GIRI ORBIT — SEARCHABLE FLUENT FONT PICKER (fontPicker.js)
  * By GIRI Corporation (A Subsidiary of Giri Group)
  * ============================================================================
- * Provides an authentic Microsoft Office on the Web style Font Family Picker:
+ * Provides an authentic Fluent Office style Font Family Picker:
  * - Trigger button displaying active font name in its own typeface (defaulting to Calibri)
  * - Fixed position portal dropdown that NEVER clips on ribbon boundaries
  * - Search bar with instant real-time live filtering and clear button

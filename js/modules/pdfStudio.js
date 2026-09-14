@@ -341,21 +341,59 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
     function refreshCards() {
       cardsGrid.innerHTML = '';
       const query = (searchInp.value || '').toLowerCase().trim();
+      try {
+        const stored = localStorage.getItem('giri_orbit_pdf_custom_templates');
+        if (stored) customTemplates = JSON.parse(stored);
+      } catch (e) {}
+
       let pool = selCat === 'custom' ? customTemplates : (selCat === 'all' ? [...AEGIS_BUILTIN_TEMPLATES, ...customTemplates] : AEGIS_BUILTIN_TEMPLATES.filter(x => x.category === selCat));
       if (query) pool = pool.filter(x => x.name.toLowerCase().includes(query) || x.desc.toLowerCase().includes(query));
 
+      if (selCat === 'custom' && !pool.length) {
+        cardsGrid.innerHTML = `
+          <div style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; background: #18181b; border: 1px dashed #334155; border-radius: 10px;">
+            <span style="font-size: 36px; display: block; margin-bottom: 8px;">📑</span>
+            <strong style="font-size: 15px; color: #f8fafc; display: block; margin-bottom: 4px;">No Custom PDF Templates Saved Yet</strong>
+            <span style="font-size: 12px; color: #94a3b8; display: block; margin-bottom: 16px;">Save any active PDF document or form as a custom template via File &gt; Save as Custom Template.</span>
+            <button id="btn-pdf-hub-create-blank-tpl" class="btn-giri-primary" style="padding: 8px 18px; font-size: 12px;">+ Create Blank Document</button>
+          </div>
+        `;
+        cardsGrid.querySelector('#btn-pdf-hub-create-blank-tpl')?.addEventListener('click', () => {
+          mountPdfEditor(rootEl, null, onUpdate);
+        });
+        return;
+      }
+
       pool.forEach(tpl => {
+        const isCustom = tpl.id && String(tpl.id).startsWith('custom-');
         const card = document.createElement('div');
         card.className = 'tool-template-card';
+        card.style.position = 'relative';
         card.innerHTML = `
           <div class="tool-template-preview-frame">
             ${renderPdfTemplateVisualThumbnail(tpl)}
           </div>
-          <div class="tool-template-meta">
-            <span class="tool-template-title">${tpl.name}</span>
-            <span class="tool-template-cat-label">${tpl.category || 'PDF Document'}</span>
+          <div class="tool-template-meta" style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span class="tool-template-title">${tpl.name}</span>
+              <span class="tool-template-cat-label">${tpl.category || 'PDF Document'}</span>
+            </div>
+            ${isCustom ? `
+              <button class="btn-delete-custom-tpl" title="Delete custom template" style="background:#450a0a; border:1px solid #991b1b; color:#fca5a5; border-radius:4px; padding:3px 7px; font-size:11px; cursor:pointer;">🗑</button>
+            ` : ''}
           </div>
         `;
+
+        card.querySelector('.btn-delete-custom-tpl')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (confirm(`Delete custom template "${tpl.name}"?`)) {
+            customTemplates = customTemplates.filter(t => t.id !== tpl.id);
+            localStorage.setItem('giri_orbit_pdf_custom_templates', JSON.stringify(customTemplates));
+            refreshCards();
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Deleted template "${tpl.name}"`);
+          }
+        });
+
         card.addEventListener('click', () => {
           mountPdfEditor(rootEl, tpl.pages, onUpdate);
         });
@@ -789,6 +827,11 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
           <div class="file-menu-item" data-action="copy">
             <span class="file-menu-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg></span>
             <span>Create a copy</span>
+            <span class="file-menu-arrow">›</span>
+          </div>
+          <div class="file-menu-item" data-action="save-template" id="btn-pdf-save-custom-template" style="color:#38bdf8;">
+            <span class="file-menu-icon">📄</span>
+            <span>Save as Custom Template...</span>
             <span class="file-menu-arrow">›</span>
           </div>
           <div class="file-menu-item" data-action="export">
@@ -1586,7 +1629,7 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
               <label style="font-size:11px; font-weight:600; color:#475569; display:block; margin-bottom:4px;">Font Family</label>
               <select class="fluent-select-dark" id="pdf-dialog-font-family" style="width:100%;">
                 <option value="Calibri" selected>Calibri (Modern Body)</option>
-                <option value="Aptos">Aptos (Microsoft 365 Default)</option>
+                <option value="Aptos">Aptos (Office Standard)</option>
                 <option value="Arial">Arial (Standard Clean)</option>
                 <option value="Times New Roman">Times New Roman (Formal Legal)</option>
                 <option value="Georgia">Georgia (Serif Executive)</option>
@@ -1951,6 +1994,27 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
           localStorage.setItem('giri_orbit_pdf_copy_' + Date.now(), JSON.stringify(pages));
           if (window.orbitPlatform) window.orbitPlatform.triggerToast('Created sovereign local copy of PDF');
           break;
+        case 'save-template': {
+          const name = prompt('Enter custom template name:', 'Custom PDF Contract ' + new Date().toLocaleDateString());
+          if (!name) break;
+          const desc = prompt('Enter template description:', 'Custom sovereign PDF form/template');
+          let customTpls = [];
+          try {
+            const stored = localStorage.getItem('giri_orbit_pdf_custom_templates');
+            if (stored) customTpls = JSON.parse(stored);
+          } catch(e) {}
+          const newTpl = {
+            id: 'custom-pdf-' + Date.now(),
+            name,
+            category: 'custom',
+            desc: desc || 'Custom PDF template',
+            pages: JSON.parse(JSON.stringify(pages))
+          };
+          customTpls.push(newTpl);
+          localStorage.setItem('giri_orbit_pdf_custom_templates', JSON.stringify(customTpls));
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Saved "${name}" as custom PDF template!`);
+          break;
+        }
         case 'export':
           if (window.orbitPlatform) {
             window.orbitPlatform.openExportModal('pdf');

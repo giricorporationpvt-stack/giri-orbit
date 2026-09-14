@@ -1,9 +1,9 @@
 /**
  * ============================================================================
- * GIRI ORBIT — MICROSOFT 365 PRINT STUDIO & ENGINE (printManager.js)
+ * GIRI ORBIT — SOVEREIGN PRINT STUDIO & ENGINE (printManager.js)
  * By GIRI Corporation (A Subsidiary of Giri Group)
  * ============================================================================
- * Provides an authentic Microsoft Office 365 Print Experience:
+ * Provides an authentic Office Print Experience:
  * - Interactive WYSIWYG Print Studio Dialog with live paper page preview
  * - Print settings: Destination, Copies, Page Range, Orientation, Paper Size, Margins, Scale
  * - Instant Vector PDF Download or formatted System Print
@@ -80,7 +80,7 @@ export class PrintStudioManager {
             </div>
             <div>
               <h2 class="print-header-title">Print — ${title}</h2>
-              <span class="print-header-subtitle">Microsoft 365 High-Fidelity Vector Print Engine</span>
+              <span class="print-header-subtitle">High-Fidelity Vector Print Engine</span>
             </div>
           </div>
           <button class="print-modal-close" id="btn-close-print-modal" title="Close (Esc)">✕</button>

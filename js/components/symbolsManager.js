@@ -93,11 +93,11 @@ export const SYMBOLS_DATA = [
   { char: 'Ω', name: 'Omega uppercase ohm resistance electrical', cat: 'greek' },
 
   // Currencies
+  { char: '₹', name: 'indian rupee inr india currency symbol', cat: 'currency' },
   { char: '$', name: 'dollar sign usd united states', cat: 'currency' },
   { char: '€', name: 'euro currency eur europe european', cat: 'currency' },
   { char: '£', name: 'pound sterling gbp british great britain', cat: 'currency' },
   { char: '¥', name: 'yen yuan currency jpy cny japan china', cat: 'currency' },
-  { char: '₹', name: 'indian rupee inr india currency', cat: 'currency' },
   { char: '₽', name: 'russian ruble rub russia currency', cat: 'currency' },
   { char: '₩', name: 'korean won krw south korea currency', cat: 'currency' },
   { char: '₿', name: 'bitcoin cryptocurrency btc crypto digital', cat: 'currency' },

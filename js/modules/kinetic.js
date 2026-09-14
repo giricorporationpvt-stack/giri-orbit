@@ -9,6 +9,7 @@ import {
   getPresentationGoStats
 } from '../data/templates.js';
 import { localSync } from '../components/localFileDirectSync.js';
+import { thesaurusManager } from '../components/thesaurusManager.js';
 /**
  * ============================================================================
  * GIRI ORBIT — GIRI KINETIC: ENTERPRISE PRESENTATION SUITE (kinetic.js)
@@ -2245,6 +2246,11 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
             <span>Global Templates...</span>
             <span class="file-menu-arrow">›</span>
           </div>
+          <div class="file-menu-item" data-action="save-template" id="btn-kinetic-save-custom-template" style="color:#38bdf8;">
+            <span class="file-menu-icon">🎨</span>
+            <span>Save as Custom Template...</span>
+            <span class="file-menu-arrow">›</span>
+          </div>
           <div class="file-menu-item" data-action="save-device" id="file-menu-kinetic-save-device" style="background:rgba(5,150,105,0.15); color:#34d399; font-weight:600;">
             <span class="file-menu-icon">💾</span>
             <span>Save to Device (Direct Sync)</span>
@@ -2647,12 +2653,13 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
               <div class="fluent-group-label">Links &amp; Text</div>
             </div>
 
-            <!-- Symbols -->
+            <!-- Symbols & Proofing -->
             <div class="fluent-ribbon-group">
               <div class="fluent-group-controls">
                 <div class="fluent-group-col">
                   <button class="fluent-btn-small" id="btn-kinetic-equation" style="padding:0 6px;font-style:italic;">∑ Equation</button>
-                  <button class="fluent-btn-small" id="btn-kinetic-symbol" style="padding:0 6px;">Ω Symbol</button>
+                  <button class="fluent-btn-small" id="btn-kinetic-symbol" style="padding:0 6px;">₹ Symbol</button>
+                  <button class="fluent-btn-small" id="btn-kinetic-insert-thesaurus" style="padding:0 6px;">📚 Thesaurus</button>
                 </div>
               </div>
               <div class="fluent-group-label">Symbols</div>
@@ -3035,6 +3042,14 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
             </div>
             <textarea id="kinetic-slide-notes-input" placeholder="Click to add speaker notes for this slide..."></textarea>
           </div>
+
+          <!-- Mobile Touch Navigation Pill -->
+          <div class="kinetic-mobile-slide-nav-pill" id="kinetic-mobile-slide-nav-pill" style="display:none; position:absolute; bottom:12px; left:50%; transform:translateX(-50%); background:rgba(15,23,42,0.88); backdrop-filter:blur(8px); border:1px solid #334155; border-radius:24px; padding:4px 12px; gap:10px; align-items:center; z-index:100; box-shadow:0 4px 16px rgba(0,0,0,0.4); font-size:11.5px; color:#f8fafc; user-select:none;">
+            <button id="btn-kinetic-mobile-prev" style="background:none;border:none;color:#38bdf8;font-size:14px;cursor:pointer;padding:2px 6px;">◀</button>
+            <span id="kinetic-mobile-slide-num" style="font-weight:700; font-family:var(--font-mono); font-size:11px;">1 / 1</span>
+            <button id="btn-kinetic-mobile-next" style="background:none;border:none;color:#38bdf8;font-size:14px;cursor:pointer;padding:2px 6px;">▶</button>
+            <button id="btn-kinetic-mobile-present" style="background:#2563eb;color:#ffffff;border:none;border-radius:12px;padding:3px 8px;font-size:10px;font-weight:700;cursor:pointer;margin-left:2px;">▶ Show</button>
+          </div>
         </div>
 
         <!-- Right Animation Pane Sidebar -->
@@ -3397,6 +3412,12 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     // Update HUD if presenting
     if (isPresenting) {
       updatePresenterSlide();
+    }
+
+    // Update Mobile Slide Nav Pill
+    const mobileSlideNum = container.querySelector('#kinetic-mobile-slide-num');
+    if (mobileSlideNum) {
+      mobileSlideNum.textContent = `${currentSlideIndex + 1} / ${slidesData.length}`;
     }
   }
 
@@ -5043,6 +5064,46 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
   container.querySelector('#btn-present-start')?.addEventListener('click', () => launchPresenter(0));
   container.querySelector('#btn-present-current')?.addEventListener('click', () => launchPresenter(currentSlideIndex));
 
+  // ── Mobile Touch Navigation Pill & Swipe Gestures ─────────────
+  const mobilePrev = container.querySelector('#btn-kinetic-mobile-prev');
+  const mobileNext = container.querySelector('#btn-kinetic-mobile-next');
+  const mobilePresent = container.querySelector('#btn-kinetic-mobile-present');
+
+  mobilePrev?.addEventListener('click', () => {
+    if (currentSlideIndex > 0) switchSlide(currentSlideIndex - 1);
+  });
+  mobileNext?.addEventListener('click', () => {
+    if (currentSlideIndex < slidesData.length - 1) switchSlide(currentSlideIndex + 1);
+  });
+  mobilePresent?.addEventListener('click', () => {
+    launchPresenter(currentSlideIndex);
+  });
+
+  // Mobile Touch Swipe Navigation (Swipe Left = Next, Swipe Right = Prev)
+  let touchStartX = 0;
+  let touchStartY = 0;
+  const stageViewport = container.querySelector('#kinetic-stage-viewport');
+  stageViewport?.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  stageViewport?.addEventListener('touchend', (e) => {
+    if (e.changedTouches.length === 1) {
+      const diffX = e.changedTouches[0].clientX - touchStartX;
+      const diffY = e.changedTouches[0].clientY - touchStartY;
+      if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY) * 1.5) {
+        if (diffX < 0) {
+          if (currentSlideIndex < slidesData.length - 1) switchSlide(currentSlideIndex + 1);
+        } else {
+          if (currentSlideIndex > 0) switchSlide(currentSlideIndex - 1);
+        }
+      }
+    }
+  }, { passive: true });
+
   hudPrev?.addEventListener('click', () => {
     if (presenterAnimStep > 0) {
       updatePresenterSlide();
@@ -5382,8 +5443,8 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
 
   // ── Insert Tab: Symbol ───────────────────────────────────────
   container.querySelector('#btn-kinetic-symbol')?.addEventListener('click', () => {
-    const syms = ['©','®','™','€','£','¥','°','±','×','÷','∞','√','∑','∆','∫','≈','≠','≤','≥','←','→','↑','↓','⭐','♦','▲','●','■'];
-    const sym = prompt('Pick symbol:\n\n' + syms.join('  ') + '\n\nOr type your own:', '★');
+    const syms = ['₹','©','®','™','$','€','£','¥','°','±','×','÷','∞','√','∑','∆','∫','≈','≠','≤','≥','←','→','↑','↓','⭐','♦','▲','●','■'];
+    const sym = prompt('Pick symbol:\n\n' + syms.join('  ') + '\n\nOr type your own:', '₹');
     if (!sym) return;
     const obj = document.createElement('div');
     obj.style.cssText = 'position:absolute;top:120px;left:100px;z-index:10;cursor:move;padding:4px;';
@@ -5392,6 +5453,51 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     const canvas = slideFrame.querySelector('#slide-canvas-objects');
     if (canvas) { canvas.style.pointerEvents='all'; canvas.appendChild(obj); }
     saveDeck();
+  });
+
+  // ── Thesaurus Lookup ─────────────────────────────────────────
+  const openKineticThesaurus = () => {
+    const sel = window.getSelection()?.toString().trim();
+    thesaurusManager.open(sel || '', (replacement) => {
+      if (document.activeElement && document.activeElement.isContentEditable) {
+        document.execCommand('insertText', false, replacement);
+        saveDeck();
+      } else {
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Selected synonym: "${replacement}" (Copied)`);
+        navigator.clipboard?.writeText(replacement);
+      }
+    });
+  };
+
+  container.querySelector('#btn-kinetic-thesaurus')?.addEventListener('click', openKineticThesaurus);
+  container.querySelector('#btn-kinetic-insert-thesaurus')?.addEventListener('click', openKineticThesaurus);
+
+  // ── Save Current Deck as Custom Template ───────────────────────
+  container.querySelector('#btn-kinetic-save-custom-template')?.addEventListener('click', () => {
+    const currentTitle = slidesData[0]?.title || 'Custom Presentation';
+    const name = prompt('Enter custom template name:', currentTitle);
+    if (!name) return;
+    const desc = prompt('Enter template description:', 'Saved executive custom presentation deck');
+
+    const newTpl = {
+      id: 'custom-deck-' + Date.now(),
+      name,
+      category: 'custom',
+      desc: desc || 'Custom presentation template',
+      previewAccent: slidesData[0]?.accent || '#2563eb',
+      previewBg: slidesData[0]?.bg || '#0f172a',
+      slides: JSON.parse(JSON.stringify(slidesData))
+    };
+
+    let storedCustom = [];
+    try {
+      const existing = localStorage.getItem('giri_orbit_kinetic_custom_templates');
+      if (existing) storedCustom = JSON.parse(existing);
+    } catch (e) {}
+
+    storedCustom.push(newTpl);
+    localStorage.setItem('giri_orbit_kinetic_custom_templates', JSON.stringify(storedCustom));
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Saved "${name}" as custom presentation template!`);
   });
 
   // ── Review Tab: Spell Check ──────────────────────────────────

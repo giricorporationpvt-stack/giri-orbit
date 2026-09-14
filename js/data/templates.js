@@ -254,7 +254,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         desc: 'Zero server database overhead means infinite scalability with near-zero marginal infrastructure cost.',
         features: [
           { num: '$0', title: 'Database Cost', desc: 'Zero cloud database hosting expense' },
-          { num: '100%', title: 'File Parity', desc: 'Full native import/export with Microsoft Office' },
+          { num: '100%', title: 'File Parity', desc: 'Full native import/export with standard Office suites' },
           { num: 'Global', title: 'Edge Network', desc: 'Instant load anywhere on Earth' }
         ],
         notes: 'Detail our architectural advantage over legacy software.'
@@ -1001,7 +1001,7 @@ export const DRIFT_BUILTIN_TEMPLATES = [
       <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin-top:24px;">1. Executive Summary</h2>
       <p>This memorandum recommends the formal deployment of Giri Orbit as the organization's sovereign computing environment. Operating 100% in local browser memory with zero database dependencies, this architecture guarantees zero data breach exposure while providing sub-millisecond calculation velocity.</p>
       <h2 style="font-size:16px; font-weight:700; color:#0f172a; margin-top:24px;">2. Recommendation & Next Steps</h2>
-      <p>Authorize immediate migration across all corporate workstation nodes with full file parity across Microsoft Office 365 file formats.</p>
+      <p>Authorize immediate migration across all corporate workstation nodes with full file parity across standard Office file formats.</p>
     `
   },
   {
@@ -1057,7 +1057,7 @@ export const AEGIS_BUILTIN_TEMPLATES = [
           <div style="height:1px; background:#e2e8f0; margin:16px 0;"></div>
           <h2 style="font-size:15px; font-weight:700; color:#0f172a; margin-bottom:8px;">Executive Summary & Formal Authorization</h2>
           <p style="font-size:12.5px; line-height:1.7; color:#334155; margin-bottom:14px;">
-            This executive authorization grants formal deployment permission for <strong>Giri Orbit Zero-Gravity Suite</strong> across enterprise nodes. Operating strictly within local browser memory, this software suite guarantees zero data exfiltration, cryptographic safety, and 100% Microsoft Office 365 file format interchangeability.
+            This executive authorization grants formal deployment permission for <strong>Giri Orbit Suite</strong> across enterprise nodes. Operating strictly within local browser memory, this software suite guarantees zero data exfiltration, cryptographic safety, and 100% standard Office file format interchangeability.
           </p>
           <div style="margin:20px 0; padding:14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px;">
             <h3 style="font-size:13px; font-weight:700; color:#0f172a; margin-bottom:8px;">Authorized System Scope</h3>

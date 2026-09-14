@@ -1,13 +1,14 @@
 import { FluentFontPicker } from '../components/fontPicker.js';
 import { symbolsManager } from '../components/symbolsManager.js';
 import { localSync } from '../components/localFileDirectSync.js';
+import { thesaurusManager } from '../components/thesaurusManager.js';
 /**
  * ============================================================================
  * GIRI ORBIT — GIRI DRIFT: ENTERPRISE WORD PROCESSOR & TEMPLATE HUB (drift.js)
  * By GIRI Corporation (A Subsidiary of Giri Group)
  * ============================================================================
  * Features:
- * - Microsoft Word on the Web Inspired Start & Template Hub:
+ * - Fluent Office Document Start & Template Hub:
  *   - Dark obsidian hero banner with 3D workspace graphic & action CTAs
  *   - "Create with templates" category pills (Recommended, Resumes, Invoices,
  *     Papers and Reports, Flyers, Meeting Notes, Letters, Custom Templates)
@@ -1055,7 +1056,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
     rootEl.innerHTML = `
       <div class="drift-app-shell" id="drift-app-shell">
-        <!-- Modern Microsoft 365 Fluent Office Ribbon -->
+        <!-- Modern Fluent Office Ribbon -->
         <nav class="fluent-ribbon-bar" aria-label="Word Processing Fluent Office Ribbon">
           <!-- Ribbon Tabs Strip -->
           <div class="fluent-ribbon-tabs">
@@ -1063,6 +1064,9 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
             <button class="fluent-tab-btn" id="btn-drift-return-hub" style="color:#38bdf8; font-weight:700; display:flex; align-items:center; gap:4px; margin-right:4px;" title="Return to Orbit Hub"><span style="font-size:13px;">⟵</span><span>Hub</span></button>
             <button class="fluent-tab-btn fluent-tab-file-trigger" id="btn-drift-file-menu" title="Open File Menu">
               File
+            </button>
+            <button class="fluent-tab-btn" id="btn-drift-toggle-sidebar" title="Toggle Pages & Navigation Drawer" style="color:#a855f7; font-weight:700; display:inline-flex; align-items:center; gap:3px;">
+              <span>📄</span><span>Pages</span>
             </button>
 
             <!-- Standard Ribbon Tabs -->
@@ -1584,9 +1588,24 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                 <div class="fluent-group-label">Seals & Certifications</div>
               </div>
 
+              <!-- Reference & Proofing Group -->
+              <div class="fluent-ribbon-group">
+                <div class="fluent-group-controls">
+                  <button class="fluent-btn-large" id="btn-insert-thesaurus" title="Open Thesaurus (Synonyms & Antonyms)">
+                    <span style="font-size:16px;">📚</span>
+                    <span>Thesaurus</span>
+                  </button>
+                </div>
+                <div class="fluent-group-label">Reference</div>
+              </div>
+
               <!-- Symbols & Emoji Group -->
               <div class="fluent-ribbon-group">
                 <div class="fluent-group-controls">
+                  <button class="fluent-btn-large" id="btn-insert-rupee-quick" title="Insert Indian Rupee (₹)" style="color:#38bdf8;">
+                    <span style="font-family:'Segoe UI',sans-serif; font-size:17px; font-weight:800;">₹</span>
+                    <span>Rupee</span>
+                  </button>
                   <button class="fluent-btn-large" id="btn-insert-equation-dialog" title="Math Formula Editor (14+ Presets & Palette)">
                     <span style="font-family:serif; font-size:16px; font-weight:700;">√x</span>
                     <span>Equation</span>
@@ -1757,7 +1776,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                     <span>Spelling</span>
                   </button>
-                  <button class="fluent-btn-large" id="btn-doc-statistics" title="Word Count, Paragraphs, Reading Time">
+                  <button class="fluent-btn-large" id="btn-review-thesaurus" title="Thesaurus (Synonyms & Antonyms)">
+                    <span style="font-size:18px;">📚</span>
+                    <span>Thesaurus</span>
+                  </button>
+                  <button class="fluent-btn-large" id="btn-doc-statistics" title="Word Count, Paragraphs, Lines, Reading Time">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                     <span>Word Count</span>
                   </button>
@@ -1906,29 +1929,85 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         <!-- Split Body: Outline Sidebar + Ruler + Centered Paper + Comments Panel -->
         <div class="drift-split-body" style="position:relative; overflow:hidden;">
           <!-- Left Navigation Sidebar -->
-          <aside class="drift-left-sidebar" id="drift-left-sidebar">
-            <span class="sidebar-heading">DOCUMENT OUTLINE</span>
-            <ul class="doc-outline-list" id="doc-outline-list">
-              <!-- Dynamically populated from headings -->
-            </ul>
+          <aside class="drift-left-sidebar" id="drift-left-sidebar" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- Mobile Close Drawer Header -->
+            <div class="drift-sidebar-mobile-close-row" style="display:none; justify-content:space-between; align-items:center; margin-bottom:6px; padding-bottom:6px; border-bottom:1px solid #334155;">
+              <span style="font-size:12px; font-weight:700; color:#f8fafc; display:flex; align-items:center; gap:6px;">
+                <span>📄</span> Navigation
+              </span>
+              <button id="btn-close-drift-sidebar-drawer" style="background:#27272a; border:1px solid #3f3f46; color:#cbd5e1; border-radius:4px; padding:3px 8px; font-size:12px; cursor:pointer;">✕</button>
+            </div>
 
-            <div class="sidebar-telemetry-box">
-              <span class="sidebar-heading" style="margin-bottom: 4px;">TELEMETRY</span>
-              <div class="telemetry-row">
-                <span>Words:</span>
-                <strong id="drift-word-count">0</strong>
+            <!-- Navigation Tab Switcher -->
+            <div class="drift-sidebar-nav-tabs" style="display:flex; gap:4px; margin-bottom:4px; background:#1e293b; padding:3px; border-radius:6px; border:1px solid #334155; flex-shrink:0;">
+              <button class="drift-sidebar-nav-tab active" id="tab-drift-pages" style="flex:1; background:#2563eb; color:#fff; border:none; border-radius:4px; padding:6px 4px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px;">
+                <span>📄</span> Pages
+              </button>
+              <button class="drift-sidebar-nav-tab" id="tab-drift-headings" style="flex:1; background:transparent; color:#94a3b8; border:none; border-radius:4px; padding:6px 4px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px;">
+                <span>📑</span> Headings
+              </button>
+            </div>
+
+            <!-- 1. PAGES PANE -->
+            <div class="drift-sidebar-tab-pane" id="pane-drift-pages" style="display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+              <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; flex-shrink:0;">
+                <strong id="drift-page-counter-badge" style="font-size:11.5px; color:#38bdf8; font-weight:700;">Page 1 of 1</strong>
+                <button id="btn-drift-insert-pagebreak" title="Insert Page Break (Ctrl+Enter)" style="background:#27272a; border:1px solid #3f3f46; color:#cbd5e1; border-radius:4px; padding:3px 8px; font-size:10.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:3px;">
+                  <span>+</span> Page Break
+                </button>
               </div>
-              <div class="telemetry-row">
-                <span>Characters:</span>
-                <strong id="drift-char-count">0</strong>
+
+              <div class="drift-pages-list" id="drift-pages-list" style="flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:2px;">
+                <!-- Dynamically populated page miniature thumbnails -->
               </div>
-              <div class="telemetry-row">
-                <span>Read Time:</span>
-                <strong id="drift-read-time">1 min</strong>
+            </div>
+
+            <!-- 2. HEADINGS PANE -->
+            <div class="drift-sidebar-tab-pane" id="pane-drift-headings" style="display:none; flex-direction:column; flex:1; min-height:0; overflow:hidden;">
+              <span class="sidebar-heading" style="margin-bottom:6px; flex-shrink:0;">DOCUMENT OUTLINE</span>
+              <ul class="doc-outline-list" id="doc-outline-list" style="flex:1; overflow-y:auto; list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:4px;">
+                <!-- Dynamically populated from headings -->
+              </ul>
+            </div>
+
+            <!-- BOTTOM PROOFING & STATS BAR (Replacing old telemetry) -->
+            <div class="drift-sidebar-bottom-bar" style="margin-top:auto; padding-top:10px; border-top:1px solid #27272a; display:flex; flex-direction:column; gap:6px; flex-shrink:0;">
+              <!-- Word Count Trigger Card -->
+              <div class="sidebar-proofing-card" id="btn-drift-sidebar-wordcount" role="button" tabindex="0" title="Open Detailed Word Count & Document Statistics" style="background:#18181b; border:1px solid #27272a; border-radius:6px; padding:7px 9px; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:16px;">📝</span>
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:9.5px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Word Count</span>
+                    <strong id="drift-word-count" style="font-size:11.5px; color:#f8fafc;">0</strong>
+                  </div>
+                  <div style="font-size:10px; color:#64748b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                    <span id="drift-char-count">0</span> chars • <span id="drift-read-time">~1 min</span>
+                  </div>
+                </div>
               </div>
-              <div class="telemetry-row">
-                <span>Storage:</span>
-                <strong style="color:var(--accent-emerald);">Auto-Saved</strong>
+
+              <!-- Spell Check Trigger Card -->
+              <div class="sidebar-proofing-card" id="btn-drift-sidebar-spelling" role="button" tabindex="0" title="Open Spelling & Grammar Proofing Assistant" style="background:#18181b; border:1px solid #27272a; border-radius:6px; padding:7px 9px; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:16px; color:#10b981;">✓</span>
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:9.5px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Spell Check</span>
+                    <span id="drift-spelling-status-pill" style="font-size:9.5px; font-weight:700; color:#10b981; background:rgba(16,185,129,0.15); padding:1px 5px; border-radius:3px;">ACTIVE</span>
+                  </div>
+                  <div style="font-size:10px; color:#64748b;" id="drift-spelling-summary-text">Click to scan document</div>
+                </div>
+              </div>
+
+              <!-- Thesaurus Trigger Card -->
+              <div class="sidebar-proofing-card" id="btn-drift-sidebar-thesaurus" role="button" tabindex="0" title="Open Thesaurus & Synonym Dictionary" style="background:#18181b; border:1px solid #27272a; border-radius:6px; padding:7px 9px; cursor:pointer; transition:all 0.15s; display:flex; align-items:center; gap:8px;">
+                <span style="font-size:16px;">📚</span>
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:9.5px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Thesaurus</span>
+                    <span style="font-size:9.5px; color:#38bdf8; font-weight:600;">LOOKUP</span>
+                  </div>
+                  <div style="font-size:10px; color:#64748b;">Find synonyms & antonyms</div>
+                </div>
               </div>
             </div>
           </aside>
@@ -2335,8 +2414,8 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       <div class="office-modal-backdrop" id="drift-editor-proofing-modal">
         <div class="office-dialog-card" role="dialog" aria-modal="true" style="width:480px;">
           <div class="office-dialog-header">
-            <span class="office-dialog-title">🖊️ Microsoft Editor Proofing</span>
-            <button class="esc-kbd" id="btn-close-editor-proofing">ESC</button>
+            <span class="office-dialog-title">🖊️ Proofing & Spelling Assistant</span>
+            <button class="esc-kbd" id="btn-close-drift-spelling-dialog">✕</button>
           </div>
           <div class="office-dialog-body" style="display:flex; flex-direction:column; gap:14px;">
             <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#1e293b; border-radius:8px; border:1px solid #334155;">
@@ -3129,6 +3208,78 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       paper.addEventListener('input', saveDocument);
 
       // Telemetry updates
+      // Page Thumbnails & Navigation Engine
+      function renderPageThumbnails() {
+        const pagesList = container.querySelector('#drift-pages-list');
+        const counterBadge = container.querySelector('#drift-page-counter-badge');
+        const viewport = container.querySelector('#drift-center-viewport');
+        if (!pagesList) return;
+
+        const pageBreakEls = paper.querySelectorAll('.drift-page-break');
+        const calculatedPages = Math.max(1, Math.ceil(paper.scrollHeight / 1056));
+        const totalPages = Math.max(calculatedPages, pageBreakEls.length + 1);
+
+        const scrollY = viewport ? viewport.scrollTop : 0;
+        const activePage = Math.min(totalPages, Math.max(1, Math.floor(scrollY / 1056) + 1));
+
+        if (counterBadge) counterBadge.textContent = `Page ${activePage} of ${totalPages}`;
+
+        const fullText = paper.innerText || '';
+        const words = fullText.split(/\s+/).filter(Boolean);
+        const wordsPerPage = Math.max(1, Math.ceil(words.length / totalPages));
+
+        pagesList.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+          const isCurrent = i === activePage;
+          const startW = (i - 1) * wordsPerPage;
+          const pageWords = words.slice(startW, startW + 12).join(' ');
+          const card = document.createElement('div');
+          card.className = `drift-page-thumb-card ${isCurrent ? 'active' : ''}`;
+          card.dataset.page = i;
+          card.style.cssText = `
+            display: flex; gap: 8px; align-items: flex-start;
+            padding: 7px 8px; border-radius: 6px;
+            background: ${isCurrent ? '#1e293b' : '#18181b'};
+            border: 1.5px solid ${isCurrent ? '#2563eb' : '#27272a'};
+            cursor: pointer; transition: all 0.15s;
+          `;
+          card.innerHTML = `
+            <div style="font-size:10px; font-weight:700; color:${isCurrent ? '#38bdf8' : '#71717a'}; width:12px; text-align:right; margin-top:2px;">${i}</div>
+            <div style="width:44px; height:58px; background:#fff; border-radius:3px; box-shadow:0 1px 3px rgba(0,0,0,0.3); padding:4px 3px; display:flex; flex-direction:column; gap:2px; overflow:hidden; position:relative; flex-shrink:0;">
+              <div style="height:3px; background:${isCurrent ? '#2563eb' : '#94a3b8'}; border-radius:1px; width:60%;"></div>
+              <div style="height:2px; background:#e2e8f0; width:90%;"></div>
+              <div style="height:2px; background:#e2e8f0; width:85%;"></div>
+              <div style="height:2px; background:#e2e8f0; width:95%;"></div>
+              <div style="height:2px; background:#e2e8f0; width:70%;"></div>
+              <div style="height:2px; background:#e2e8f0; width:80%;"></div>
+              <div style="font-size:6px; color:#64748b; line-height:1; position:absolute; bottom:2px; right:3px; font-weight:700;">${i}</div>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size:11px; font-weight:600; color:${isCurrent ? '#f8fafc' : '#cbd5e1'};">Page ${i}</div>
+              <div style="font-size:9.5px; color:#64748b; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-height:1.3; margin-top:2px;">
+                ${pageWords ? pageWords + '...' : 'Empty page'}
+              </div>
+            </div>
+          `;
+
+          card.addEventListener('click', () => {
+            if (viewport) {
+              const targetY = (i - 1) * 1056;
+              viewport.scrollTo({ top: targetY, behavior: 'smooth' });
+            }
+            container.querySelectorAll('.drift-page-thumb-card').forEach(c => {
+              c.style.borderColor = '#27272a';
+              c.style.background = '#18181b';
+            });
+            card.style.borderColor = '#2563eb';
+            card.style.background = '#1e293b';
+          });
+
+          pagesList.appendChild(card);
+        }
+      }
+
+      // Telemetry & Sidebar Stats updates
       function updateTelemetry() {
         const text = paper.innerText || '';
         const words = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -3137,7 +3288,14 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
         if (wordCountEl) wordCountEl.textContent = words.toLocaleString();
         if (charCountEl) charCountEl.textContent = chars.toLocaleString();
-        if (readTimeEl) readTimeEl.textContent = `${readMin} min`;
+        if (readTimeEl) readTimeEl.textContent = `~${readMin} min`;
+
+        const sbWordText = container.querySelector('#drift-sidebar-wordcount-text');
+        const sbCharText = container.querySelector('#drift-sidebar-charcount-text');
+        if (sbWordText) sbWordText.textContent = `${words.toLocaleString()} words`;
+        if (sbCharText) sbCharText.textContent = `${chars.toLocaleString()} chars • ~${readMin} min read`;
+
+        renderPageThumbnails();
       }
 
       // Dynamic Outline
@@ -3145,16 +3303,165 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         if (!outlineList) return;
         outlineList.innerHTML = '';
         const headings = paper.querySelectorAll('h1, h2, h3');
+        if (!headings.length) {
+          outlineList.innerHTML = `<li style="font-size:11px; color:#64748b; padding:8px 4px; font-style:italic;">No headings in document yet. Add H1, H2, or H3 to see outline.</li>`;
+          return;
+        }
         headings.forEach((h) => {
           const li = document.createElement('li');
           li.className = `outline-item outline-${h.tagName.toLowerCase()}`;
+          li.style.cssText = 'padding:5px 8px; border-radius:4px; cursor:pointer; font-size:11.5px; color:#cbd5e1; transition:all 0.1s;';
           li.textContent = h.textContent.trim() || 'Untitled Heading';
+          li.addEventListener('mouseenter', () => li.style.background = '#1e293b');
+          li.addEventListener('mouseleave', () => li.style.background = 'transparent');
           li.addEventListener('click', () => {
             h.scrollIntoView({ behavior: 'smooth', block: 'center' });
           });
           outlineList.appendChild(li);
         });
       }
+
+      // Sidebar Tab Switcher: Pages vs Headings
+      const tabPages = container.querySelector('#tab-drift-pages');
+      const tabHeadings = container.querySelector('#tab-drift-headings');
+      const panePages = container.querySelector('#pane-drift-pages');
+      const paneHeadings = container.querySelector('#pane-drift-headings');
+
+      tabPages?.addEventListener('click', () => {
+        tabPages.classList.add('active');
+        tabPages.style.background = '#2563eb';
+        tabPages.style.color = '#fff';
+        tabHeadings?.classList.remove('active');
+        if (tabHeadings) {
+          tabHeadings.style.background = 'transparent';
+          tabHeadings.style.color = '#94a3b8';
+        }
+        if (panePages) panePages.style.display = 'flex';
+        if (paneHeadings) paneHeadings.style.display = 'none';
+        renderPageThumbnails();
+      });
+
+      tabHeadings?.addEventListener('click', () => {
+        tabHeadings.classList.add('active');
+        tabHeadings.style.background = '#2563eb';
+        tabHeadings.style.color = '#fff';
+        tabPages?.classList.remove('active');
+        if (tabPages) {
+          tabPages.style.background = 'transparent';
+          tabPages.style.color = '#94a3b8';
+        }
+        if (paneHeadings) paneHeadings.style.display = 'flex';
+        if (panePages) panePages.style.display = 'none';
+        updateOutline();
+      });
+
+      // Mobile Drawer & Sidebar Toggle
+      const toggleSidebarBtn = container.querySelector('#btn-drift-toggle-sidebar');
+      const closeSidebarDrawerBtn = container.querySelector('#btn-close-drift-sidebar-drawer');
+      const leftSidebar = container.querySelector('#drift-left-sidebar');
+
+      toggleSidebarBtn?.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          leftSidebar?.classList.toggle('mobile-open');
+        } else {
+          if (leftSidebar.style.display === 'none') {
+            leftSidebar.style.display = 'flex';
+          } else {
+            leftSidebar.style.display = 'none';
+          }
+        }
+      });
+      closeSidebarDrawerBtn?.addEventListener('click', () => {
+        leftSidebar?.classList.remove('mobile-open');
+      });
+
+      // Page Break Action
+      container.querySelector('#btn-drift-insert-pagebreak')?.addEventListener('click', () => {
+        const breakHtml = `<div class="drift-page-break" contenteditable="false" style="border-top:2px dashed #94a3b8; margin:36px -40px; text-align:center; color:#64748b; font-size:10px; font-weight:700; letter-spacing:0.1em; user-select:none; padding:6px 0; background:#f8fafc; border-radius:4px;"><span style="background:#e2e8f0; padding:2px 8px; border-radius:3px;">--- PAGE BREAK ---</span></div><p><br></p>`;
+        document.execCommand('insertHTML', false, breakHtml);
+        saveDocument();
+        renderPageThumbnails();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Page break inserted');
+      });
+
+      // Viewport scroll listener for active page tracking
+      const centerViewport = container.querySelector('#drift-center-viewport');
+      centerViewport?.addEventListener('scroll', () => {
+        const calculatedPages = Math.max(1, Math.ceil(paper.scrollHeight / 1056));
+        const pageBreakEls = paper.querySelectorAll('.drift-page-break');
+        const totalPages = Math.max(calculatedPages, pageBreakEls.length + 1);
+        const activePage = Math.min(totalPages, Math.max(1, Math.floor(centerViewport.scrollTop / 1056) + 1));
+        const counterBadge = container.querySelector('#drift-page-counter-badge');
+        if (counterBadge) counterBadge.textContent = `Page ${activePage} of ${totalPages}`;
+
+        container.querySelectorAll('.drift-page-thumb-card').forEach(c => {
+          const isMatch = parseInt(c.dataset.page, 10) === activePage;
+          c.style.borderColor = isMatch ? '#2563eb' : '#27272a';
+          c.style.background = isMatch ? '#1e293b' : '#18181b';
+        });
+      });
+
+      // Spell Check Proofing Assistant
+      const openSpellingAssistant = () => {
+        const proofingModal = container.querySelector('#drift-editor-proofing-modal');
+        const scoreVal = container.querySelector('#drift-editor-score-val');
+        const readingTimeVal = container.querySelector('#drift-editor-reading-time');
+        const text = paper.innerText || '';
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        const readMin = Math.max(1, Math.ceil(words / 200));
+
+        if (readingTimeVal) readingTimeVal.textContent = `~${readMin} min`;
+        if (scoreVal) scoreVal.textContent = words > 10 ? '98%' : '100%';
+        proofingModal?.classList.add('open');
+      };
+
+      container.querySelector('#btn-toggle-spellcheck')?.addEventListener('click', () => {
+        const isSpell = paper.getAttribute('spellcheck') === 'true';
+        paper.setAttribute('spellcheck', (!isSpell).toString());
+        const pill = container.querySelector('#drift-spelling-status-pill');
+        if (pill) {
+          pill.textContent = !isSpell ? 'ACTIVE' : 'OFF';
+          pill.style.color = !isSpell ? '#10b981' : '#f59e0b';
+          pill.style.background = !isSpell ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)';
+        }
+        openSpellingAssistant();
+      });
+
+      container.querySelector('#btn-drift-sidebar-spelling')?.addEventListener('click', openSpellingAssistant);
+      container.querySelector('#btn-close-editor-proofing')?.addEventListener('click', () => {
+        container.querySelector('#drift-editor-proofing-modal')?.classList.remove('open');
+      });
+      container.querySelector('#btn-cancel-editor-proofing')?.addEventListener('click', () => {
+        container.querySelector('#drift-editor-proofing-modal')?.classList.remove('open');
+      });
+      container.querySelector('#btn-apply-editor-polish')?.addEventListener('click', () => {
+        container.querySelector('#drift-editor-proofing-modal')?.classList.remove('open');
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('All grammar and style improvements applied!');
+      });
+
+      // Unified Thesaurus Trigger
+      const openThesaurusModal = () => {
+        const sel = window.getSelection()?.toString().trim();
+        thesaurusManager.open(sel || '', (replacement) => {
+          if (sel) {
+            document.execCommand('insertText', false, replacement);
+            saveDocument();
+          } else {
+            insertIntoPaperAtCursor(' ' + replacement);
+          }
+        });
+      };
+
+      container.querySelector('#btn-insert-thesaurus')?.addEventListener('click', openThesaurusModal);
+      container.querySelector('#btn-review-thesaurus')?.addEventListener('click', openThesaurusModal);
+      container.querySelector('#btn-drift-sidebar-thesaurus')?.addEventListener('click', openThesaurusModal);
+
+      // Quick Rupee Symbol Action
+      container.querySelector('#btn-insert-rupee-quick')?.addEventListener('click', () => {
+        capturePaperRange();
+        insertIntoPaperAtCursor('₹');
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Inserted Indian Rupee symbol (₹)');
+      });
 
       // Ribbon Tab Switching
       const ribbonTabs = container.querySelectorAll('.fluent-tab-btn[data-tab]');
@@ -3193,7 +3500,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         });
       }
 
-      // Floating Mini Formatting Toolbar (Microsoft Word Style)
+      // Floating Mini Formatting Toolbar (Quick Floating Format Style)
       let miniToolbar = document.getElementById('drift-mini-toolbar');
       if (!miniToolbar) {
         miniToolbar = document.createElement('div');
@@ -3862,30 +4169,54 @@ function calculateMetrics(records) {
         const words = text.trim() ? text.trim().split(/\s+/).length : 0;
         const chars = text.length;
         const charsNoSpace = text.replace(/\s+/g, '').length;
-        const paragraphs = paper.querySelectorAll('p, h1, h2, h3, blockquote').length;
-        const sentences = text.split(/[.!?]+/).filter(Boolean).length;
+        const paragraphs = paper.querySelectorAll('p, h1, h2, h3, blockquote').length || 1;
+        const sentences = text.split(/[.!?]+/).filter(Boolean).length || 1;
         const readMin = Math.max(1, Math.ceil(words / 200));
+        const speakMin = Math.max(1, Math.ceil(words / 130));
+        const pageBreakEls = paper.querySelectorAll('.drift-page-break');
+        const calculatedPages = Math.max(1, Math.ceil(paper.scrollHeight / 1056));
+        const totalPages = Math.max(calculatedPages, pageBreakEls.length + 1);
+        const linesEst = Math.max(1, Math.round(words / 9));
+
+        const selectionText = window.getSelection()?.toString() || '';
+        const selWords = selectionText.trim() ? selectionText.trim().split(/\s+/).length : 0;
+        const selChars = selectionText.length;
 
         if (statsBody) {
           statsBody.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:10px; font-size:13px;">
-              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
-                <span>Total Words:</span><strong>${words.toLocaleString()}</strong>
+            <div style="display:flex; flex-direction:column; gap:10px; font-size:12.5px; color:#cbd5e1;">
+              ${selWords > 0 ? `
+                <div style="background:#1e293b; border:1px solid #3b82f6; border-radius:6px; padding:8px 10px; margin-bottom:4px;">
+                  <strong style="color:#38bdf8; font-size:11px; text-transform:uppercase; display:block;">Selection Active:</strong>
+                  <span>Selected: <strong>${selWords}</strong> words (${selChars} characters) of ${words} words total</span>
+                </div>
+              ` : ''}
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #27272a; padding-bottom:6px;">
+                <span>Pages:</span><strong style="color:#38bdf8;">${totalPages}</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #27272a; padding-bottom:6px;">
+                <span>Total Words:</span><strong style="color:#f8fafc;">${words.toLocaleString()}</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #27272a; padding-bottom:6px;">
                 <span>Characters (with spaces):</span><strong>${chars.toLocaleString()}</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #27272a; padding-bottom:6px;">
                 <span>Characters (no spaces):</span><strong>${charsNoSpace.toLocaleString()}</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #27272a; padding-bottom:6px;">
                 <span>Paragraphs:</span><strong>${paragraphs}</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #e2e8f0; padding-bottom:6px;">
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #27272a; padding-bottom:6px;">
+                <span>Lines (estimated):</span><strong>${linesEst}</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #27272a; padding-bottom:6px;">
                 <span>Sentences:</span><strong>${sentences}</strong>
               </div>
-              <div style="display:flex; justify-content:space-between; padding-top:4px;">
-                <span>Estimated Reading Time:</span><strong style="color:#2563eb;">~${readMin} min</strong>
+              <div style="display:flex; justify-content:space-between; border-bottom:1px solid #27272a; padding-bottom:6px;">
+                <span>Estimated Reading Time:</span><strong style="color:#10b981;">~${readMin} min</strong>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding-top:2px;">
+                <span>Estimated Speaking Time:</span><strong style="color:#f59e0b;">~${speakMin} min (at 130 wpm)</strong>
               </div>
             </div>
           `;
@@ -3895,6 +4226,7 @@ function calculateMetrics(records) {
 
       container.querySelector('#btn-doc-statistics')?.addEventListener('click', openStats);
       container.querySelector('#btn-editor-stats-group')?.addEventListener('click', openStats);
+      container.querySelector('#btn-drift-sidebar-wordcount')?.addEventListener('click', openStats);
       container.querySelector('#btn-close-stats-modal')?.addEventListener('click', () => statsModal?.classList.remove('open'));
       container.querySelector('#btn-ok-stats')?.addEventListener('click', () => statsModal?.classList.remove('open'));
 

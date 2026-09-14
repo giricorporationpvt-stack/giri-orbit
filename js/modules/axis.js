@@ -19,7 +19,7 @@ import { localSync } from '../components/localFileDirectSync.js';
  * - Sort Ascending/Descending, AutoFilter toggles, Freeze Panes, Gridlines toggle
  * - Live Calculation Status Bar (Average, Count, Min, Max, Sum)
  * - Export Integration (.xlsx, .xls, .csv, .pdf) & CSV Import
- * - Microsoft Excel Full Grid Capacity: 1,048,576 Rows × 16,384 Columns (A through XFD)
+ * - Standard Spreadsheet Full Grid Capacity: 1,048,576 Rows × 16,384 Columns (A through XFD)
  */
 
 export const EXCEL_MAX_ROWS = 1048576;
@@ -711,7 +711,7 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
 
   container.innerHTML = `
     <div class="axis-app-shell" id="axis-app-shell">
-      <!-- Enterprise Multi-Tab Office Ribbon (Exact Match to Microsoft Office 365 Dark Theme) -->
+      <!-- Enterprise Multi-Tab Office Ribbon (Professional Dark Theme) -->
       <nav class="fluent-ribbon-bar" aria-label="Spreadsheet Fluent Office Ribbon">
         <!-- Ribbon Tabs Strip -->
         <div class="fluent-ribbon-tabs">
@@ -756,6 +756,11 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
           <div class="file-menu-item" data-action="templates" id="btn-axis-file-templates">
             <span class="file-menu-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
             <span>Global Templates...</span>
+            <span class="file-menu-arrow">›</span>
+          </div>
+          <div class="file-menu-item" data-action="save-template" id="btn-axis-save-custom-template" style="color:#38bdf8;">
+            <span class="file-menu-icon">📊</span>
+            <span>Save as Custom Template...</span>
             <span class="file-menu-arrow">›</span>
           </div>
           <div class="file-menu-item" data-action="save-device" id="file-menu-axis-save-device" style="background:rgba(5,150,105,0.15); color:#34d399; font-weight:600;">
@@ -979,6 +984,7 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
                       <option value="general" selected>General ▾</option>
                       <option value="number">Number</option>
                       <option value="currency">Currency ($)</option>
+                      <option value="currency-inr">Rupee (₹)</option>
                       <option value="percent">Percent (%)</option>
                       <option value="accounting">Accounting</option>
                       <option value="date">Short Date</option>
@@ -987,6 +993,7 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
                   </div>
                   <div class="fluent-group-row">
                     <button class="fluent-btn-small" id="btn-axis-quick-curr" title="Currency ($)"><strong>$</strong></button>
+                    <button class="fluent-btn-small" id="btn-axis-quick-rupee" title="Indian Rupee (₹)" style="color:#38bdf8; font-weight:800;"><strong>₹</strong></button>
                     <button class="fluent-btn-small" id="btn-axis-quick-pct" title="Percent (%)"><strong>%</strong></button>
                     <button class="fluent-btn-small" id="btn-axis-quick-comma" title="Comma"><strong>,</strong></button>
                     <button class="fluent-btn-small" id="btn-axis-dec-more" title="Increase Decimal">.00→</button>
@@ -1687,6 +1694,28 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       const action = item.dataset.action;
       fileMenuDropdown.classList.remove('open');
       switch (action) {
+        case 'save-template': {
+          const name = prompt('Enter custom template name:', 'Custom Spreadsheet ' + new Date().toLocaleDateString());
+          if (!name) break;
+          const desc = prompt('Enter template description:', 'User saved custom spreadsheet template');
+          let customTpls = [];
+          try {
+            const stored = localStorage.getItem('giri_orbit_axis_custom_templates');
+            if (stored) customTpls = JSON.parse(stored);
+          } catch(e) {}
+          const newTpl = {
+            id: 'custom-axis-' + Date.now(),
+            name,
+            category: 'custom',
+            desc: desc || 'Custom spreadsheet template',
+            previewAccent: '#107c41',
+            sheetsData: JSON.parse(JSON.stringify(sheetsData))
+          };
+          customTpls.push(newTpl);
+          localStorage.setItem('giri_orbit_axis_custom_templates', JSON.stringify(customTpls));
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Saved "${name}" as custom spreadsheet template!`);
+          break;
+        }
         case 'new': {
           if (confirm('Create a new blank spreadsheet?')) {
             sheetsData = { 'Sheet1': {} };
@@ -3741,6 +3770,8 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
 
     if (format === 'currency') {
       activeCell.textContent = '$' + rawVal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    } else if (format === 'currency-inr') {
+      activeCell.textContent = '₹' + rawVal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     } else if (format === 'percent') {
       activeCell.textContent = (rawVal > 1 ? rawVal : rawVal * 100).toFixed(1) + '%';
     } else if (format === 'number') {
@@ -3761,11 +3792,25 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     targets.forEach(cell => {
       const num = parseFloat(cell.textContent.replace(/[^0-9.-]/g, ''));
       if (!isNaN(num)) {
-        cell.textContent = '$' + num.toLocaleString();
+        cell.textContent = '$' + num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         cell.classList.add('num-cell');
       }
     });
     saveCurrentSheet();
+  });
+
+  container.querySelector('#btn-axis-quick-rupee')?.addEventListener('click', () => {
+    const targets = getTargetCells();
+    if (!targets.length) return;
+    targets.forEach(cell => {
+      const num = parseFloat(cell.textContent.replace(/[^0-9.-]/g, ''));
+      if (!isNaN(num)) {
+        cell.textContent = '₹' + num.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        cell.classList.add('num-cell');
+      }
+    });
+    saveCurrentSheet();
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Formatted with Indian Rupee (₹)');
   });
 
   container.querySelector('#btn-axis-quick-pct')?.addEventListener('click', () => {
@@ -4447,7 +4492,7 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
 
   // 20. Help Tab Controls
   container.querySelector('#btn-axis-help-guide')?.addEventListener('click', () => {
-    alert('Giri Axis Help Guide:\n- Authentic Microsoft Office 365 Dark Ribbon\n- Full row and column matrix\n- Formulas: =SUM, =AVERAGE, =COUNT, =MAX, =MIN, =IF\n- Zero-DB local sovereign security.');
+    alert('Giri Axis Help Guide:\n- Authentic Professional Dark Office Ribbon\n- Full row and column matrix\n- Formulas: =SUM, =AVERAGE, =COUNT, =MAX, =MIN, =IF\n- Zero-DB local sovereign security.');
   });
   container.querySelector('#btn-axis-help-shortcuts')?.addEventListener('click', () => {
     alert('Keyboard Shortcuts:\nCtrl+Z / Ctrl+Y: Undo / Redo\nCtrl+C / Ctrl+X / Ctrl+V: Copy / Cut / Paste\nCtrl+B / Ctrl+I / Ctrl+U: Bold / Italic / Underline\nCtrl+F: Find & Select\nF9: Calculate Now\nEnter: Commit formula edit');
