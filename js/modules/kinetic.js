@@ -28,6 +28,345 @@ import { localSync } from '../components/localFileDirectSync.js';
 /**
  * Authentic Visual Thumbnail Generator for PresentationGO and PowerPoint Templates
  */
+/**
+ * ============================================================================
+ * GIRI KINETIC - EXECUTIVE THEME & VECTOR BACKGROUND ART ENGINE
+ * Dynamically resolves gradients, accent colors, and authentic SVG artwork
+ * for Golden Light Prestige, Corporate Navy, Modern AI, and all presentation decks.
+ * ============================================================================
+ */
+export function resolveSlideTheme(slide) {
+  if (!slide) slide = {};
+  const style = (slide.themeStyle || '').toLowerCase();
+  const title = (slide.title || '').toLowerCase();
+  const tag = (slide.tag || '').toLowerCase();
+  const deck = (slide.deckName || '').toLowerCase();
+  const desc = (slide.desc || '').toLowerCase();
+  const text = `${style} ${title} ${tag} ${deck} ${desc}`;
+
+  // 1. Golden Light Prestige / Luxury Gold
+  if (style === 'golden-light' || style === 'luxury-gold' || text.includes('golden') || text.includes('prestige') || text.includes('gold')) {
+    return {
+      name: 'golden-light',
+      bg: 'radial-gradient(ellipse at bottom left, #422006 0%, #170f05 50%, #09090b 100%)',
+      accent: '#fef08a',
+      accentBorder: 'rgba(234, 179, 8, 0.45)',
+      cardBg: 'rgba(26, 18, 7, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.85; pointer-events:none;">
+          <defs>
+            <linearGradient id="gl-gold-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#fef08a" stop-opacity="0.9"/>
+              <stop offset="50%" stop-color="#eab308" stop-opacity="0.75"/>
+              <stop offset="100%" stop-color="#a16207" stop-opacity="0"/>
+            </linearGradient>
+            <radialGradient id="gl-gold-burst" cx="0%" cy="100%" r="90%">
+              <stop offset="0%" stop-color="#fef08a" stop-opacity="0.45"/>
+              <stop offset="50%" stop-color="#eab308" stop-opacity="0.15"/>
+              <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <rect x="0" y="0" width="920" height="518" fill="url(#gl-gold-burst)"/>
+          <path d="M -50 518 Q 200 200, 600 350 T 1000 100" fill="none" stroke="url(#gl-gold-grad)" stroke-width="45" opacity="0.35"/>
+          <path d="M -30 540 Q 300 250, 650 400 T 1050 150" fill="none" stroke="#fef08a" stroke-width="3" opacity="0.85"/>
+          <path d="M 20 560 Q 400 320, 720 440 T 1100 200" fill="none" stroke="#ca8a04" stroke-width="1.8" opacity="0.6"/>
+          <circle cx="150" cy="420" r="4" fill="#ffffff" filter="drop-shadow(0 0 8px #fef08a)"/>
+          <circle cx="380" cy="270" r="3" fill="#ffffff"/>
+          <circle cx="680" cy="380" r="5" fill="#fef08a" filter="drop-shadow(0 0 10px #eab308)"/>
+          <circle cx="850" cy="180" r="3.5" fill="#ffffff"/>
+        </svg>
+      `
+    };
+  }
+
+  // 2. Corporate Navy / Annual Report / Board Briefing / QBR
+  if (style === 'corporate-navy' || text.includes('corporate') || text.includes('annual report') || text.includes('board briefing') || text.includes('qbr') || text.includes('quarterly business') || text.includes('governance')) {
+    return {
+      name: 'corporate-navy',
+      bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)',
+      accent: '#38bdf8',
+      accentBorder: 'rgba(56, 189, 248, 0.45)',
+      cardBg: 'rgba(7, 25, 47, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.85; pointer-events:none;">
+          <defs>
+            <linearGradient id="cn-navy-mesh" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0.1"/>
+            </linearGradient>
+          </defs>
+          <path d="M -50 150 L 400 420 L 980 100" fill="none" stroke="url(#cn-navy-mesh)" stroke-width="5" opacity="0.7"/>
+          <path d="M 0 250 L 460 520 L 1020 200" fill="none" stroke="#60a5fa" stroke-width="2" opacity="0.5"/>
+          <polygon points="700,50 890,150 890,380 700,280" fill="#0284c7" opacity="0.2"/>
+          <polygon points="500,150 700,50 700,280 500,380" fill="#38bdf8" opacity="0.15"/>
+          <circle cx="400" cy="420" r="6" fill="#38bdf8" filter="drop-shadow(0 0 8px #38bdf8)"/>
+          <circle cx="700" cy="50" r="5" fill="#93c5fd"/>
+        </svg>
+      `
+    };
+  }
+
+  // 3. Crimson Venture / Unicorn Venture Capital Pitch Deck
+  if (style === 'crimson-venture' || text.includes('pitch') || text.includes('venture') || text.includes('unicorn') || text.includes('crimson') || text.includes('capital ask')) {
+    return {
+      name: 'crimson-venture',
+      bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)',
+      accent: '#fb7185',
+      accentBorder: 'rgba(251, 113, 133, 0.45)',
+      cardBg: 'rgba(76, 5, 25, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.9; pointer-events:none;">
+          <defs>
+            <linearGradient id="cv-crimson-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#f43f5e"/>
+              <stop offset="100%" stop-color="#fda4af"/>
+            </linearGradient>
+          </defs>
+          <polygon points="920,0 350,518 920,518" fill="#e11d48" opacity="0.25"/>
+          <polygon points="920,100 500,518 920,518" fill="#f43f5e" opacity="0.18"/>
+          <path d="M -50 450 Q 400 150, 980 80" fill="none" stroke="url(#cv-crimson-grad)" stroke-width="6"/>
+          <circle cx="680" cy="150" r="6" fill="#ffffff" filter="drop-shadow(0 0 12px #f43f5e)"/>
+          <line x1="120" y1="100" x2="300" y2="100" stroke="#fda4af" stroke-width="2" opacity="0.6"/>
+        </svg>
+      `
+    };
+  }
+
+  // 4. Creative Gradient / Modern AI & DeepTech / Neural / Frontier
+  if (style === 'creative-gradient' || text.includes('ai') || text.includes('deeptech') || text.includes('neural') || text.includes('frontier') || text.includes('gradient')) {
+    return {
+      name: 'creative-gradient',
+      bg: 'linear-gradient(135deg, #312e81 0%, #6366f1 40%, #ec4899 100%)',
+      accent: '#f472b6',
+      accentBorder: 'rgba(244, 114, 182, 0.45)',
+      cardBg: 'rgba(49, 46, 129, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.85; pointer-events:none;">
+          <defs>
+            <radialGradient id="cg-orb1" cx="40%" cy="40%" r="60%">
+              <stop offset="0%" stop-color="#c084fc" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#7c3aed" stop-opacity="0"/>
+            </radialGradient>
+            <radialGradient id="cg-orb2" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#f472b6" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#db2777" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+          <circle cx="720" cy="180" r="220" fill="url(#cg-orb1)"/>
+          <circle cx="280" cy="360" r="180" fill="url(#cg-orb2)"/>
+          <path d="M 0 260 Q 300 80, 580 340 T 980 200" fill="none" stroke="#ffffff" stroke-width="3" opacity="0.6"/>
+          <circle cx="580" cy="340" r="5" fill="#fff"/>
+        </svg>
+      `
+    };
+  }
+
+  // 5. Abstract Teal Flow
+  if (style === 'teal-flow' || text.includes('teal') || text.includes('cyan') || text.includes('flow')) {
+    return {
+      name: 'teal-flow',
+      bg: 'radial-gradient(ellipse at top left, #042f2e 0%, #0f172a 60%, #020617 100%)',
+      accent: '#2dd4bf',
+      accentBorder: 'rgba(45, 212, 191, 0.45)',
+      cardBg: 'rgba(4, 47, 46, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.85; pointer-events:none;">
+          <defs>
+            <linearGradient id="tf-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#2dd4bf" stop-opacity="0.8"/>
+              <stop offset="100%" stop-color="#0284c7" stop-opacity="0.2"/>
+            </linearGradient>
+          </defs>
+          <path d="M -50 100 Q 300 400, 650 150 T 1000 450" fill="none" stroke="url(#tf-grad)" stroke-width="24" opacity="0.4"/>
+          <path d="M -20 150 Q 350 450, 700 200 T 1050 500" fill="none" stroke="#2dd4bf" stroke-width="3" opacity="0.75"/>
+          <circle cx="350" cy="380" r="5" fill="#5eead4" filter="drop-shadow(0 0 8px #2dd4bf)"/>
+          <circle cx="700" cy="200" r="4" fill="#ffffff"/>
+        </svg>
+      `
+    };
+  }
+
+  // 6. Neon Data Waves
+  if (style === 'neon-waves' || text.includes('neon') || text.includes('cyber waves')) {
+    return {
+      name: 'neon-waves',
+      bg: 'radial-gradient(ellipse at bottom right, #1e1b4b 0%, #0f172a 50%, #09090b 100%)',
+      accent: '#c084fc',
+      accentBorder: 'rgba(192, 132, 252, 0.45)',
+      cardBg: 'rgba(30, 27, 75, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.85; pointer-events:none;">
+          <defs>
+            <linearGradient id="nw-neon-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" stop-color="#38bdf8"/>
+              <stop offset="50%" stop-color="#a855f7"/>
+              <stop offset="100%" stop-color="#ec4899"/>
+            </linearGradient>
+          </defs>
+          <path d="M 0 350 Q 230 150, 460 350 T 920 350" fill="none" stroke="url(#nw-neon-grad)" stroke-width="5" filter="drop-shadow(0 0 10px #a855f7)"/>
+          <path d="M 0 380 Q 230 180, 460 380 T 920 380" fill="none" stroke="#38bdf8" stroke-width="2" opacity="0.6"/>
+          <circle cx="460" cy="350" r="6" fill="#ffffff" filter="drop-shadow(0 0 8px #a855f7)"/>
+        </svg>
+      `
+    };
+  }
+
+  // 7. Enterprise Cybersecurity & Zero-Trust
+  if (style === 'cyber-matrix' || text.includes('cyber') || text.includes('security') || text.includes('zero-trust')) {
+    return {
+      name: 'cyber-matrix',
+      bg: 'radial-gradient(ellipse at center, #022c22 0%, #031c15 60%, #020617 100%)',
+      accent: '#34d399',
+      accentBorder: 'rgba(52, 211, 153, 0.45)',
+      cardBg: 'rgba(2, 44, 34, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.85; pointer-events:none;">
+          <defs>
+            <pattern id="cm-matrix" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#065f46" stroke-width="1" opacity="0.4"/>
+            </pattern>
+          </defs>
+          <rect width="920" height="518" fill="url(#cm-matrix)"/>
+          <path d="M 50 420 L 350 420 L 520 180 L 880 180" fill="none" stroke="#10b981" stroke-width="4"/>
+          <circle cx="520" cy="180" r="6" fill="#34d399" filter="drop-shadow(0 0 10px #10b981)"/>
+          <polygon points="780,100 830,130 830,190 780,220 730,190 730,130" fill="none" stroke="#34d399" stroke-width="2"/>
+        </svg>
+      `
+    };
+  }
+
+  // 8. Medical, Healthcare & Clinical Research
+  if (style === 'medical-clean' || text.includes('medical') || text.includes('healthcare') || text.includes('clinical') || text.includes('biotech')) {
+    return {
+      name: 'medical-clean',
+      bg: 'linear-gradient(135deg, #082f49 0%, #0369a1 60%, #0ea5e9 100%)',
+      accent: '#38bdf8',
+      accentBorder: 'rgba(56, 189, 248, 0.45)',
+      cardBg: 'rgba(8, 47, 73, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.85; pointer-events:none;">
+          <path d="M 0 300 L 250 300 L 310 120 L 370 420 L 430 220 L 490 360 L 550 300 L 920 300" fill="none" stroke="#7dd3fc" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="310" cy="120" r="6" fill="#fff" filter="drop-shadow(0 0 10px #38bdf8)"/>
+          <circle cx="750" cy="160" r="60" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4"/>
+          <circle cx="750" cy="160" r="8" fill="#38bdf8"/>
+        </svg>
+      `
+    };
+  }
+
+  // 9. Consulting Frameworks & McKinsey Strategy
+  if (style === 'violet-luxury' || text.includes('consulting') || text.includes('strategy') || text.includes('luxury') || text.includes('amethyst')) {
+    return {
+      name: 'violet-luxury',
+      bg: 'radial-gradient(ellipse at bottom left, #4c1d95 0%, #2e1065 50%, #09090b 100%)',
+      accent: '#c084fc',
+      accentBorder: 'rgba(192, 132, 252, 0.45)',
+      cardBg: 'rgba(76, 29, 149, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.85; pointer-events:none;">
+          <defs>
+            <linearGradient id="vl-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#e879f9"/>
+              <stop offset="100%" stop-color="#a855f7"/>
+            </linearGradient>
+          </defs>
+          <path d="M -50 450 Q 300 50, 620 260 T 1000 80" fill="none" stroke="url(#vl-grad)" stroke-width="8" opacity="0.7"/>
+          <circle cx="680" cy="150" r="80" fill="none" stroke="#c084fc" stroke-width="2" opacity="0.4"/>
+          <circle cx="260" cy="320" r="5" fill="#ffffff" filter="drop-shadow(0 0 8px #e879f9)"/>
+          <circle cx="800" cy="120" r="6" fill="#f5d0fe"/>
+        </svg>
+      `
+    };
+  }
+
+  // 10. Omnichannel Marketing Strategy & Growth
+  if (style === 'sunset-warm' || text.includes('sunset') || text.includes('marketing') || text.includes('omnichannel')) {
+    return {
+      name: 'sunset-warm',
+      bg: 'linear-gradient(135deg, #7c2d12 0%, #c2410c 50%, #f97316 100%)',
+      accent: '#fed7aa',
+      accentBorder: 'rgba(254, 215, 170, 0.45)',
+      cardBg: 'rgba(124, 45, 18, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.85; pointer-events:none;">
+          <circle cx="750" cy="200" r="160" fill="#fb923c" opacity="0.3"/>
+          <path d="M 0 420 Q 250 220, 500 350 T 950 180" fill="none" stroke="#ffedd5" stroke-width="5"/>
+          <path d="M 50 480 Q 320 300, 600 400 T 1000 250" fill="none" stroke="#fdba74" stroke-width="2.5" opacity="0.7"/>
+          <circle cx="500" cy="350" r="5" fill="#fff"/>
+        </svg>
+      `
+    };
+  }
+
+  // 11. SaaS Enterprise Sales & Growth
+  if (style === 'emerald-growth' || style === 'forest-eco' || text.includes('saas') || text.includes('sales') || text.includes('emerald') || text.includes('growth')) {
+    return {
+      name: 'emerald-growth',
+      bg: 'linear-gradient(135deg, #022c22 0%, #064e3b 50%, #047857 100%)',
+      accent: '#6ee7b7',
+      accentBorder: 'rgba(110, 231, 183, 0.45)',
+      cardBg: 'rgba(2, 44, 34, 0.72)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.85; pointer-events:none;">
+          <path d="M -50 450 Q 280 450, 500 260 T 950 80" fill="none" stroke="#34d399" stroke-width="5"/>
+          <polygon points="680,360 810,230 810,430 680,430" fill="#10b981" opacity="0.2"/>
+          <circle cx="500" cy="260" r="6" fill="#ffffff" filter="drop-shadow(0 0 8px #34d399)"/>
+        </svg>
+      `
+    };
+  }
+
+  // 12. Minimalist Editorial & Creative Studio
+  if (style === 'obsidian-minimal' || text.includes('minimal') || text.includes('obsidian') || text.includes('monochrome')) {
+    return {
+      name: 'obsidian-minimal',
+      bg: 'linear-gradient(135deg, #09090b 0%, #18181b 50%, #27272a 100%)',
+      accent: '#f4f4f5',
+      accentBorder: 'rgba(244, 244, 245, 0.35)',
+      cardBg: 'rgba(18, 18, 20, 0.85)',
+      isDark: true,
+      svgArt: `
+        <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.7; pointer-events:none;">
+          <rect x="60" y="60" width="800" height="398" fill="none" stroke="#52525b" stroke-width="1.2" stroke-dasharray="4,4"/>
+          <line x1="60" y1="259" x2="860" y2="259" stroke="#3f3f46" stroke-width="1"/>
+          <line x1="460" y1="60" x2="460" y2="458" stroke="#3f3f46" stroke-width="1"/>
+          <circle cx="460" cy="259" r="120" fill="none" stroke="#e4e4e7" stroke-width="1.8"/>
+          <circle cx="460" cy="259" r="6" fill="#ffffff"/>
+        </svg>
+      `
+    };
+  }
+
+  // Default Executive Sapphire Theme
+  const defaultAccent = slide.previewAccent || slide.accent || '#38bdf8';
+  return {
+    name: 'default',
+    bg: slide.bg || 'linear-gradient(135deg, #070d19 0%, #0f172a 50%, #1e293b 100%)',
+    accent: defaultAccent,
+    accentBorder: `${defaultAccent}45`,
+    cardBg: 'rgba(15, 23, 42, 0.72)',
+    isDark: true,
+    svgArt: `
+      <svg viewBox="0 0 920 518" preserveAspectRatio="none" style="position:absolute; inset:0; width:100%; height:100%; opacity:0.35; pointer-events:none;">
+        <circle cx="850" cy="80" r="280" fill="${defaultAccent}" filter="blur(90px)" opacity="0.18"/>
+        <circle cx="80" cy="460" r="220" fill="#3b82f6" filter="blur(90px)" opacity="0.12"/>
+        <path d="M 0 160 Q 460 380, 920 200" fill="none" stroke="${defaultAccent}" stroke-width="2" opacity="0.3"/>
+      </svg>
+    `
+  };
+}
+
 function renderTemplateVisualThumbnail(tpl) {
   const accent = tpl.previewAccent || '#2563eb';
   const type = tpl.diagramType || (tpl.slides?.[0]?.diagramType) || (tpl.slides?.[0]?.layout) || '';
@@ -1117,13 +1456,14 @@ function renderSlideDiagram(container, slide, saveCallback, isReadOnly = false) 
   }
 
   // Default Standard Cards Grid (columns, metrics, title)
+  const theme = resolveSlideTheme(slide);
   container.className = 'slide-cards-grid';
   container.style.gridTemplateColumns = `repeat(${Math.min(features.length || 3, 3)}, 1fr)`;
   container.innerHTML = (features || []).map((f, idx) => `
-    <div class="slide-feature-card" data-fidx="${idx}">
-      <div class="feature-num" ${editableAttr}>${f.num || '0' + (idx + 1)}</div>
-      <div class="feature-title" ${editableAttr}>${f.title || ''}</div>
-      <div class="feature-desc" ${editableAttr}>${f.desc || ''}</div>
+    <div class="slide-feature-card" style="background:${theme.cardBg}; border:1px solid ${theme.accentBorder};" data-fidx="${idx}">
+      <div class="feature-num" style="color:${theme.accent};" ${editableAttr}>${f.num || '0' + (idx + 1)}</div>
+      <div class="feature-title" style="color:#ffffff;" ${editableAttr}>${f.title || ''}</div>
+      <div class="feature-desc" style="color:#cbd5e1;" ${editableAttr}>${f.desc || ''}</div>
     </div>
   `).join('');
   wireDiagramInputListeners(container, slide, saveCallback);
@@ -1473,7 +1813,14 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
           </div>
         `;
         card.addEventListener('click', () => {
-          mountKineticEditor(rootEl, tpl.slides, onUpdate);
+          const themedSlides = (tpl.slides || []).map(s => ({
+            ...s,
+            themeStyle: s.themeStyle || tpl.themeStyle,
+            previewAccent: s.previewAccent || tpl.previewAccent,
+            color: s.color || tpl.color,
+            deckName: tpl.name
+          }));
+          mountKineticEditor(rootEl, themedSlides, onUpdate);
         });
         cardsGrid.appendChild(card);
       });
@@ -1716,6 +2063,17 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
       } catch {}
     }
   }
+
+  // Ensure all slides inherit executive theme gradients, accents, and styles
+  slidesData = slidesData.map(s => {
+    const theme = resolveSlideTheme(s);
+    return {
+      ...s,
+      bg: s.bg || theme.bg,
+      accent: s.accent || theme.accent,
+      themeStyle: s.themeStyle || theme.name
+    };
+  });
 
   let currentSlideIndex = 0;
   let currentTheme = 'theme-minimalist';
@@ -2543,7 +2901,8 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
         <!-- Center Slide Canvas Viewport -->
         <div class="kinetic-stage-viewport" id="kinetic-stage-viewport">
           <article class="kinetic-slide-frame" id="kinetic-active-slide">
-            <div>
+            <div class="slide-canvas-art" id="slide-canvas-art"></div>
+            <div class="slide-header-zone">
               <div class="slide-tag-pill" id="slide-tag" contenteditable="true" spellcheck="false">ARCHITECTURE 01</div>
               <h1 class="slide-h1-editable" id="slide-title" contenteditable="true" spellcheck="false">Title</h1>
               <p class="slide-p-editable" id="slide-desc" contenteditable="true" spellcheck="false">Description</p>
@@ -2810,8 +3169,9 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     navSidebar.innerHTML = '';
     slidesData.forEach((slide, idx) => {
       const isActive = idx === currentSlideIndex;
-      const accent = slide.accent || slide.previewAccent || '#2563eb';
-      const rawBg = slide.bg || '#ffffff';
+      const theme = resolveSlideTheme(slide);
+      const accent = theme.accent;
+      const rawBg = theme.bg;
       const isDark = rawBg.includes('gradient') || rawBg === '#18181b' || rawBg === '#0f172a' || rawBg === '#09090b' || rawBg === '#000000' || rawBg.startsWith('#0') || rawBg.startsWith('#1') || rawBg.startsWith('#2');
       const textColor = isDark ? 'rgba(255,255,255,0.92)' : '#0f172a';
       const title = (slide.title || 'Untitled').replace(/</g,'&lt;').slice(0, 24);
@@ -2879,30 +3239,32 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
       slideFrame.style.animation = 'zoomIn 0.3s ease';
     }
 
-    // ── Apply template background ──────────────────────────────
-    if (slide.bg) {
-      slideFrame.style.background = slide.bg;
-    } else {
-      slideFrame.style.background = '';
+    // ── Apply resolved theme, vector artwork & executive typography ──
+    const theme = resolveSlideTheme(slide);
+    slide.bg = theme.bg;
+    slide.accent = theme.accent;
+    slideFrame.style.background = theme.bg;
+    slideFrame.style.setProperty('--slide-accent', theme.accent);
+    slideFrame.style.boxShadow = '0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.1)';
+
+    // Render background vector art layer
+    let artLayer = slideFrame.querySelector('#slide-canvas-art');
+    if (!artLayer) {
+      artLayer = document.createElement('div');
+      artLayer.className = 'slide-canvas-art';
+      artLayer.id = 'slide-canvas-art';
+      slideFrame.insertBefore(artLayer, slideFrame.firstChild);
     }
-    // ── Detect dark/light theme and apply text colors ──────────
-    const isSlideDark = slide.bg && (
-      slide.bg.includes('gradient') || slide.bg === '#18181b' || slide.bg === '#0f172a' ||
-      slide.bg === '#09090b' || slide.bg === '#000000' || slide.bg.startsWith('#0') ||
-      slide.bg.startsWith('#1') || slide.bg.startsWith('#2')
-    );
-    const slideAccent = slide.accent || slide.previewAccent || '';
-    if (isSlideDark) {
-      tagEl.style.color = slideAccent || '#94a3b8';
-      titleEl.style.color = '#f8fafc';
-      descEl.style.color = '#cbd5e1';
-      slideFrame.style.color = '#f8fafc';
-    } else {
-      tagEl.style.color = slideAccent || '';
-      titleEl.style.color = '';
-      descEl.style.color = '';
-      slideFrame.style.color = '';
-    }
+    artLayer.innerHTML = theme.svgArt || '';
+
+    // Style tag pill, title and desc
+    tagEl.style.color = theme.accent;
+    tagEl.style.borderColor = theme.accentBorder;
+    tagEl.style.background = 'rgba(255, 255, 255, 0.08)';
+    titleEl.style.color = '#ffffff';
+    descEl.style.color = '#cbd5e1';
+    slideFrame.style.color = '#ffffff';
+
     // ── Set slide text content ─────────────────────────────────
     tagEl.textContent = slide.tag || `SLIDE ${index + 1}`;
     titleEl.textContent = slide.title || 'Executive Heading';

@@ -1128,21 +1128,167 @@ body.in-tool .orbit-workspace {
 .axis-cell.active-cell, .axis-cell:focus, .axis-cell:focus-visible { outline: 2px solid #000000 !important; outline-offset: -1px !important; box-shadow: inset 0 0 0 2px #000000, 0 0 0 1px #000000 !important; background-color: #ffffff !important; z-index: 30 !important; position: relative !important; }
 .axis-cell.num-cell { text-align: right; font-variant-numeric: tabular-nums; }
 
-/* Kinetic Slide Frame */
+/* ==========================================================================
+   KINETIC SLIDE CANVAS & EXECUTIVE THEME ENGINE
+   ========================================================================== */
 .kinetic-slide-frame {
-  width: 900px;
-  max-width: 90%;
+  width: 920px;
+  max-width: 92%;
   aspect-ratio: 16 / 9;
-  background: #ffffff;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  box-shadow: var(--shadow-paper);
-  padding: 40px 48px;
+  background: #090d16;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  padding: 38px 46px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   position: relative;
   overflow: hidden;
+  transition: background 0.25s ease, color 0.25s ease;
+  box-sizing: border-box;
+}
+
+/* Background Decorative Artwork Layer (SVG curves, bursts, gradients) */
+.slide-canvas-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
+  border-radius: inherit;
+}
+.slide-canvas-art svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Slide Header & Content Elements (Layered above artwork) */
+.slide-header-zone {
+  position: relative;
+  z-index: 2;
+}
+
+.slide-tag-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  margin-bottom: 10px;
+  outline: none;
+  position: relative;
+  z-index: 2;
+  transition: all 0.15s ease;
+}
+.slide-tag-pill:focus {
+  box-shadow: 0 0 0 2px #38bdf8;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.slide-h1-editable {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  outline: none;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+  position: relative;
+  z-index: 2;
+}
+.slide-h1-editable:focus {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+}
+
+.slide-p-editable {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #cbd5e1;
+  margin: 0;
+  max-width: 820px;
+  outline: none;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.slide-p-editable:focus {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+}
+
+/* Feature Nodes Cards Grid */
+.slide-cards-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+  width: 100%;
+  position: relative;
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.slide-feature-card {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  padding: 18px 20px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  box-sizing: border-box;
+}
+.slide-feature-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 14px 28px -6px rgba(0, 0, 0, 0.55);
+}
+
+.feature-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--slide-accent, #38bdf8);
+  margin-bottom: 8px;
+  outline: none;
+}
+
+.feature-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+  line-height: 1.35;
+  margin-bottom: 6px;
+  outline: none;
+}
+
+.feature-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #cbd5e1;
+  outline: none;
 }
 
 /* ==========================================================================

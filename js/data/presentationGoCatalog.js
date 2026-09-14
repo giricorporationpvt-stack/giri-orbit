@@ -1838,7 +1838,16 @@ const THEME_STYLES = [
  * authentic PowerPoint decks, diverse diagrams, and zero monotonous repetition!
  */
 function buildPresentationGoCatalog() {
-  const catalog = [...CURATED_LANDMARKS];
+  const catalog = CURATED_LANDMARKS.map(tpl => ({
+    ...tpl,
+    slides: (tpl.slides || []).map(s => ({
+      ...s,
+      themeStyle: s.themeStyle || tpl.themeStyle,
+      previewAccent: s.previewAccent || tpl.previewAccent,
+      color: s.color || tpl.color,
+      deckName: tpl.name
+    }))
+  }));
   let idCounter = 1;
   const totalArchetypes = GENERATOR_ARCHETYPES.length;
 
@@ -2053,7 +2062,13 @@ function buildPresentationGoCatalog() {
             isDeck ? 'powerpoint' : 'diagram',
             isDeck ? 'deck' : 'chart'
           ],
-          slides: slides
+          slides: slides.map(s => ({
+            ...s,
+            themeStyle: themeStyle,
+            previewAccent: pal.hex,
+            color: pal.color,
+            deckName: tplName
+          }))
         });
 
     idCounter++;
