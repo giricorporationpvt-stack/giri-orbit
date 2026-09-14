@@ -1981,9 +1981,9 @@ ${(s.features || []).map(f => `- **${f.num}** ${f.title}: ${f.desc}`).join('\n')
         <div class="fc-drop-zone" id="fc-drop-zone">
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           <span>Drop a file here or click to browse</span>
-          <small>Supports: .docx · .xlsx · .csv · .json · .txt · .md · .html</small>
+          <small>Supports: .docx · .xlsx · .pptx · .csv · .json · .txt · .md · .html · .gdoc · .gsheet · .gslide · .giri</small>
         </div>
-        <input type="file" id="fc-file-input" accept=".docx,.doc,.xlsx,.xls,.csv,.json,.txt,.md,.html,.htm" style="display:none;">
+        <input type="file" id="fc-file-input" accept=".docx,.doc,.xlsx,.xls,.pptx,.ppt,.csv,.json,.txt,.md,.html,.htm,.gdoc,.gsheet,.gslide,.giri" style="display:none;">
 
         <div id="fc-file-info"></div>
 
@@ -1991,6 +1991,7 @@ ${(s.features || []).map(f => `- **${f.num}** ${f.title}: ${f.desc}`).join('\n')
           <label for="fc-format-select">Convert to:</label>
           <select id="fc-format-select"></select>
           <button id="fc-convert-btn">Convert &amp; Download</button>
+          <button id="fc-pdf-btn" style="background:#dc2626;color:#fff;border:none;padding:7px 14px;border-radius:6px;cursor:pointer;font-weight:600;font-size:12px;margin-left:6px;display:none;">📄 Export as PDF</button>
         </div>
       </div>
     `;
@@ -2006,28 +2007,41 @@ ${(s.features || []).map(f => `- **${f.num}** ${f.title}: ${f.desc}`).join('\n')
     const formatRow  = backdrop.querySelector('#fc-format-row');
     const formatSel  = backdrop.querySelector('#fc-format-select');
     const convertBtn = backdrop.querySelector('#fc-convert-btn');
+    const pdfBtn     = backdrop.querySelector('#fc-pdf-btn');
 
     // Format map: source-ext → available targets
     const FORMAT_MAP = {
-      docx: ['pdf', 'txt', 'html', 'md'],
-      doc:  ['pdf', 'txt', 'html', 'md'],
-      xlsx: ['json', 'csv', 'html', 'txt'],
-      xls:  ['json', 'csv', 'html', 'txt'],
-      csv:  ['json', 'html', 'txt'],
-      json: ['csv', 'txt'],
-      txt:  ['html', 'md'],
-      md:   ['html', 'txt'],
-      html: ['txt', 'md'],
-      htm:  ['txt', 'md'],
+      docx:   ['pdf', 'txt', 'html', 'md', 'gdoc'],
+      doc:    ['pdf', 'txt', 'html', 'md', 'gdoc'],
+      xlsx:   ['pdf', 'json', 'csv', 'html', 'txt', 'gsheet'],
+      xls:    ['pdf', 'json', 'csv', 'html', 'txt', 'gsheet'],
+      csv:    ['json', 'html', 'txt', 'gsheet'],
+      json:   ['csv', 'txt', 'html'],
+      txt:    ['html', 'md', 'pdf'],
+      md:     ['html', 'txt', 'pdf'],
+      html:   ['txt', 'md', 'pdf'],
+      htm:    ['txt', 'md', 'pdf'],
+      pptx:   ['pdf', 'txt', 'html', 'gslide'],
+      ppt:    ['pdf', 'txt', 'html', 'gslide'],
+      gdoc:   ['docx', 'pdf', 'txt', 'html', 'md'],
+      gsheet: ['csv', 'json', 'html', 'txt'],
+      gslide: ['pdf', 'txt', 'html'],
+      giri:   ['pdf', 'txt', 'json'],
     };
 
     const FORMAT_LABELS = {
-      pdf: 'PDF Document (.pdf)',
-      txt: 'Plain Text (.txt)',
-      html: 'HTML Page (.html)',
-      md: 'Markdown (.md)',
-      json: 'JSON Data (.json)',
-      csv: 'CSV File (.csv)',
+      pdf:    '📄 PDF Document (.pdf)',
+      txt:    '📝 Plain Text (.txt)',
+      html:   '🌐 HTML Page (.html)',
+      md:     '# Markdown (.md)',
+      json:   '{ } JSON Data (.json)',
+      csv:    '📊 CSV Spreadsheet (.csv)',
+      xlsx:   '📗 Excel Workbook (.xlsx)',
+      docx:   '📘 Word Document (.docx)',
+      gdoc:   '🔵 Giri Drift Document (.gdoc)',
+      gsheet: '🟢 Giri Axis Spreadsheet (.gsheet)',
+      gslide: '🔴 Giri Kinetic Presentation (.gslide)',
+      giri:   '⚡ Giri Native Format (.giri)',
     };
 
     const getExt = name => (name.split('.').pop() || '').toLowerCase();
@@ -2221,6 +2235,106 @@ ${(s.features || []).map(f => `- **${f.num}** ${f.title}: ${f.desc}`).join('\n')
       // Read as text for all supported types
       reader.readAsText(uploadedFile);
     });
+
+    // Show/hide PDF quick-export button
+    const showFormatsOrig = showFormats;
+    const showFormatsWrapped = (file) => {
+      showFormatsOrig(file);
+      const ext = getExt(file.name);
+      if (pdfBtn) {
+        const hasPdf = (FORMAT_MAP[ext] || []).includes('pdf');
+        pdfBtn.style.display = hasPdf ? 'inline-flex' : 'none';
+      }
+    };
+    // Re-bind events with wrapped version
+    dropZone.removeEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      const file = e.dataTransfer?.files?.[0];
+      if (file) showFormatsWrapped(file);
+    });
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files?.[0];
+      if (file) showFormatsWrapped(file);
+    });
+
+    // PDF Quick Export Button
+    if (pdfBtn) {
+      pdfBtn.addEventListener('click', () => {
+        if (!uploadedFile) return;
+        const baseName = uploadedFile.name.replace(/\.[^.]+$/, '');
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const raw = ev.target.result;
+          const htmlBody = raw
+            .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+            .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+            .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+            .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+            .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+            .replace(/\*(.+?)\*/g,'<em>$1</em>')
+            .replace(/\n/g,'<br>');
+          const win = window.open('', '_blank');
+          win.document.write(`<!DOCTYPE html><html><head><title>${baseName}</title><style>@page{margin:20mm}body{font-family:Georgia,serif;max-width:720px;margin:40px auto;line-height:1.7;color:#1e293b;font-size:13pt}h1,h2,h3{color:#0f172a}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:8px}</style></head><body><h1>${baseName}</h1>${htmlBody}</body></html>`);
+          win.document.close();
+          setTimeout(() => { win.print(); }, 300);
+          this.showToast('PDF export — choose "Save as PDF" in print dialog', 'violet');
+        };
+        reader.readAsText(uploadedFile);
+      });
+    }
+
+    // Giri native format → export handlers
+    convertBtn.addEventListener('click', () => {
+      if (!uploadedFile) return;
+      const srcExt = getExt(uploadedFile.name);
+      const destExt = formatSel.value;
+      const baseName = uploadedFile.name.replace(/\.[^.]+$/, '');
+
+      // Handle Giri native formats
+      if (['gdoc', 'gsheet', 'gslide', 'giri'].includes(srcExt)) {
+        const reader = new FileReader();
+        reader.onload = ev => {
+          let raw = ev.target.result;
+          let parsed;
+          try { parsed = JSON.parse(raw); } catch { parsed = { content: raw }; }
+          let output = '', mime = 'text/plain';
+          if (destExt === 'txt') {
+            output = typeof parsed === 'object' ? JSON.stringify(parsed, null, 2) : String(raw);
+          } else if (destExt === 'html') {
+            output = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${baseName}</title></head><body><pre>${JSON.stringify(parsed, null, 2).replace(/</g,'&lt;')}</pre></body></html>`;
+            mime = 'text/html';
+          } else if (destExt === 'json') {
+            output = JSON.stringify(parsed, null, 2);
+            mime = 'application/json';
+          } else if (destExt === 'csv' && parsed) {
+            // Try to extract tabular data from gsheet
+            if (Array.isArray(parsed.data)) {
+              output = parsed.data.map(r => Object.values(r).map(v => `"${v}"`).join(',')).join('\n');
+            } else {
+              output = `"key","value"\n${Object.entries(parsed).map(([k,v]) => `"${k}","${JSON.stringify(v)}"`).join('\n')}`;
+            }
+            mime = 'text/csv';
+          } else if (destExt === 'pdf') {
+            const win = window.open('', '_blank');
+            win.document.write(`<!DOCTYPE html><html><head><title>${baseName}</title><style>body{font-family:system-ui,sans-serif;padding:40px;}</style></head><body><h1>${baseName}</h1><pre>${JSON.stringify(parsed, null, 2)}</pre></body></html>`);
+            win.document.close(); win.print(); return;
+          } else if (destExt === 'docx') {
+            // Export as text with docx extension (best effort)
+            output = typeof parsed === 'object' ? JSON.stringify(parsed, null, 2) : String(raw);
+            mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          } else {
+            output = raw;
+          }
+          this.downloadBlob(output, mime, `${baseName}.${destExt}`);
+          this.showToast(`Converted ${srcExt.toUpperCase()} → ${destExt.toUpperCase()}: ${baseName}.${destExt}`, 'violet');
+        };
+        reader.readAsText(uploadedFile);
+        return; // Exit early — no need to run old convertBtn handler
+      }
+    }, { capture: true }); // capture phase so this runs before old handler
 
     // Close handlers
     backdrop.querySelector('#fc-close').addEventListener('click', () => backdrop.remove());

@@ -1736,6 +1736,7 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
           <button class="fluent-tab-btn" data-tab="transitions">Transitions</button>
           <button class="fluent-tab-btn" data-tab="animations">Animations</button>
           <button class="fluent-tab-btn" data-tab="slideshow">Slide Show</button>
+          <button class="fluent-tab-btn" data-tab="review">Review</button>
           <button class="fluent-tab-btn" data-tab="view">View</button>
           <button class="fluent-tab-btn" data-tab="help">Help</button>
 
@@ -2131,6 +2132,114 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
                 </button>
               </div>
               <div class="fluent-group-label">Media & Text</div>
+            </div>
+
+            <!-- Table Group -->
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-kinetic-insert-table" title="Insert Table">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="1"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                  <span>Table ▾</span>
+                </button>
+              </div>
+              <div class="fluent-group-label">Table</div>
+              <div id="kinetic-table-picker" style="display:none;position:fixed;z-index:9999;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:10px;box-shadow:0 8px 24px rgba(0,0,0,0.4);">
+                <div style="font-size:11px;color:#94a3b8;margin-bottom:6px;">Select table size</div>
+                <div id="table-picker-grid" style="display:grid;grid-template-columns:repeat(8,18px);gap:2px;"></div>
+                <div id="table-picker-label" style="font-size:11px;color:#38bdf8;margin-top:6px;text-align:center;">0 × 0</div>
+              </div>
+            </div>
+
+            <!-- Chart Group -->
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <div class="fluent-group-col">
+                  <div class="fluent-group-row">
+                    <button class="fluent-btn-small" data-chart="bar" style="padding:0 5px;">📊 Bar</button>
+                    <button class="fluent-btn-small" data-chart="line" style="padding:0 5px;">📈 Line</button>
+                    <button class="fluent-btn-small" data-chart="pie" style="padding:0 5px;">🥧 Pie</button>
+                  </div>
+                  <div class="fluent-group-row">
+                    <button class="fluent-btn-small" data-chart="donut" style="padding:0 5px;">⭕ Donut</button>
+                    <button class="fluent-btn-small" data-chart="area" style="padding:0 5px;">🏔 Area</button>
+                    <button class="fluent-btn-small" data-chart="scatter" style="padding:0 5px;">⬥ Scatter</button>
+                  </div>
+                </div>
+              </div>
+              <div class="fluent-group-label">Chart</div>
+            </div>
+
+            <!-- Links & Text -->
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <div class="fluent-group-col">
+                  <button class="fluent-btn-small" id="btn-kinetic-insert-link" style="padding:0 6px;">🔗 Hyperlink</button>
+                  <button class="fluent-btn-small" id="btn-kinetic-wordart" style="padding:0 6px;font-weight:900;">A WordArt</button>
+                  <button class="fluent-btn-small" id="btn-kinetic-insert-date" style="padding:0 6px;">📅 Date &amp; Time</button>
+                  <button class="fluent-btn-small" id="btn-kinetic-insert-slidenum" style="padding:0 6px;"># Slide Number</button>
+                </div>
+              </div>
+              <div class="fluent-group-label">Links &amp; Text</div>
+            </div>
+
+            <!-- Symbols -->
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <div class="fluent-group-col">
+                  <button class="fluent-btn-small" id="btn-kinetic-equation" style="padding:0 6px;font-style:italic;">∑ Equation</button>
+                  <button class="fluent-btn-small" id="btn-kinetic-symbol" style="padding:0 6px;">Ω Symbol</button>
+                </div>
+              </div>
+              <div class="fluent-group-label">Symbols</div>
+            </div>
+
+          </div>
+
+          <!-- REVIEW TAB PANE -->
+          <div class="fluent-ribbon-pane" id="pane-kinetic-review">
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-kinetic-spellcheck" title="Spelling &amp; Grammar">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>
+                  <span>Spelling</span>
+                </button>
+                <div class="fluent-group-col">
+                  <button class="fluent-btn-small" id="btn-kinetic-word-count-btn" style="padding:0 6px;">123 Word Count</button>
+                  <button class="fluent-btn-small" id="btn-kinetic-thesaurus" style="padding:0 6px;">📚 Thesaurus</button>
+                </div>
+              </div>
+              <div class="fluent-group-label">Proofing</div>
+            </div>
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <div class="fluent-group-col">
+                  <button class="fluent-btn-small" id="btn-kinetic-translate" style="padding:0 6px;">🌐 Translate</button>
+                  <button class="fluent-btn-small" id="btn-kinetic-lang-set" style="padding:0 6px;">🗣 Language</button>
+                </div>
+              </div>
+              <div class="fluent-group-label">Language</div>
+            </div>
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-kinetic-new-comment" title="New Comment">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="12" y1="8" x2="12" y2="13"/><line x1="9" y1="10" x2="15" y2="10"/></svg>
+                  <span>Comment</span>
+                </button>
+                <div class="fluent-group-col">
+                  <button class="fluent-btn-small" id="btn-kinetic-prev-comment" style="padding:0 6px;">◀ Prev</button>
+                  <button class="fluent-btn-small" id="btn-kinetic-next-comment" style="padding:0 6px;">Next ▶</button>
+                </div>
+              </div>
+              <div class="fluent-group-label">Comments</div>
+            </div>
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-kinetic-accessibility" title="Accessibility Check">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M12 6v6l3 3"/><path d="M6 8.5C7.5 7 9.5 6 12 6s4.5 1 6 2.5"/><path d="M9 21l3-6 3 6"/></svg>
+                  <span>Check Access.</span>
+                </button>
+              </div>
+              <div class="fluent-group-label">Accessibility</div>
             </div>
           </div>
 
@@ -2692,22 +2801,62 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     if (onDeckUpdate) onDeckUpdate();
   }
 
+  function getThumbIcon(layout) {
+    const m = { 'title':'▬','circular-loop':'⭕','chevron-flow':'➤','swot-matrix':'⊞','milestone-journey':'⤳','pyramid-hierarchy':'△','funnel-stages':'▽','radial-cycle':'◎','comparison-table':'≡','metrics':'▦','columns':'▪','blank':'▭','zigzag-process':'⬡' };
+    return m[layout] || '▭';
+  }
+
   function renderThumbnails() {
     navSidebar.innerHTML = '';
     slidesData.forEach((slide, idx) => {
+      const isActive = idx === currentSlideIndex;
+      const accent = slide.accent || slide.previewAccent || '#2563eb';
+      const rawBg = slide.bg || '#ffffff';
+      const isDark = rawBg.includes('gradient') || rawBg === '#18181b' || rawBg === '#0f172a' || rawBg === '#09090b' || rawBg === '#000000' || rawBg.startsWith('#0') || rawBg.startsWith('#1') || rawBg.startsWith('#2');
+      const textColor = isDark ? 'rgba(255,255,255,0.92)' : '#0f172a';
+      const title = (slide.title || 'Untitled').replace(/</g,'&lt;').slice(0, 24);
+      const tag = (slide.tag || '').replace(/</g,'&lt;').slice(0, 16);
+      const nodeCount = slide.features?.length || 0;
+      const icon = getThumbIcon(slide.layout || 'title');
+
       const thumb = document.createElement('div');
-      thumb.className = `slide-thumb-card ${idx === currentSlideIndex ? 'active' : ''}`;
+      thumb.className = `slide-thumb-card${isActive ? ' active' : ''}`;
       thumb.dataset.index = idx;
+      thumb.setAttribute('draggable', 'true');
+      thumb.title = `Slide ${idx + 1}: ${slide.title || 'Untitled'}`;
       thumb.innerHTML = `
-        <span class="thumb-index-num">${idx + 1}</span>
-        <div class="thumb-mini-canvas">
-          <span class="thumb-title-line">${slide.title || 'Untitled Slide'}</span>
-          <span class="thumb-body-line">${slide.features?.length || 0} nodes</span>
+        <div class="thumb-number-badge">${idx + 1}</div>
+        <div class="thumb-mini-canvas" style="background:${rawBg}; color:${textColor};">
+          <div class="thumb-top-stripe" style="background:${accent};"></div>
+          ${tag ? `<div class="thumb-tag-label" style="color:${accent};">${tag}</div>` : ''}
+          <div class="thumb-title-text">${title}</div>
+          <div class="thumb-layout-zone">
+            <span style="font-size:10px;opacity:0.5;">${icon}</span>
+            ${nodeCount > 0 ? `<div class="thumb-node-row">${Array.from({length:Math.min(nodeCount,4)}).map(()=>`<div class="thumb-node-pip" style="background:${accent};"></div>`).join('')}</div>` : ''}
+          </div>
+          <div class="thumb-bottom-bar" style="background:${accent}30;"></div>
         </div>
+        <div class="thumb-context-menu-btn" onclick="event.stopPropagation()" title="Slide options">⋮</div>
       `;
 
-      thumb.addEventListener('click', () => {
-        switchSlide(idx);
+      thumb.addEventListener('click', (e) => {
+        if (!e.target.closest('.thumb-context-menu-btn')) switchSlide(idx);
+      });
+
+      // Drag-to-reorder
+      thumb.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', String(idx)); thumb.classList.add('dragging'); });
+      thumb.addEventListener('dragend', () => thumb.classList.remove('dragging'));
+      thumb.addEventListener('dragover', (e) => { e.preventDefault(); thumb.classList.add('drag-over'); });
+      thumb.addEventListener('dragleave', () => thumb.classList.remove('drag-over'));
+      thumb.addEventListener('drop', (e) => {
+        e.preventDefault(); thumb.classList.remove('drag-over');
+        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+        if (fromIdx !== idx) {
+          const moved = slidesData.splice(fromIdx, 1)[0];
+          slidesData.splice(idx, 0, moved);
+          currentSlideIndex = idx;
+          saveDeck(); renderThumbnails(); switchSlide(currentSlideIndex);
+        }
       });
 
       navSidebar.appendChild(thumb);
@@ -2730,6 +2879,31 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
       slideFrame.style.animation = 'zoomIn 0.3s ease';
     }
 
+    // ── Apply template background ──────────────────────────────
+    if (slide.bg) {
+      slideFrame.style.background = slide.bg;
+    } else {
+      slideFrame.style.background = '';
+    }
+    // ── Detect dark/light theme and apply text colors ──────────
+    const isSlideDark = slide.bg && (
+      slide.bg.includes('gradient') || slide.bg === '#18181b' || slide.bg === '#0f172a' ||
+      slide.bg === '#09090b' || slide.bg === '#000000' || slide.bg.startsWith('#0') ||
+      slide.bg.startsWith('#1') || slide.bg.startsWith('#2')
+    );
+    const slideAccent = slide.accent || slide.previewAccent || '';
+    if (isSlideDark) {
+      tagEl.style.color = slideAccent || '#94a3b8';
+      titleEl.style.color = '#f8fafc';
+      descEl.style.color = '#cbd5e1';
+      slideFrame.style.color = '#f8fafc';
+    } else {
+      tagEl.style.color = slideAccent || '';
+      titleEl.style.color = '';
+      descEl.style.color = '';
+      slideFrame.style.color = '';
+    }
+    // ── Set slide text content ─────────────────────────────────
     tagEl.textContent = slide.tag || `SLIDE ${index + 1}`;
     titleEl.textContent = slide.title || 'Executive Heading';
     descEl.textContent = slide.desc || 'Slide subtitle and overview text...';
@@ -4575,6 +4749,223 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
 
   
   // Alias functions to ensure no runtime errors from menu handlers
+  // ── Insert Tab: Table Picker ─────────────────────────────────
+  const tablePicker = container.querySelector('#kinetic-table-picker');
+  const tablePickerGrid = container.querySelector('#table-picker-grid');
+  const tablePickerLabel = container.querySelector('#table-picker-label');
+  const insertTableBtn = container.querySelector('#btn-kinetic-insert-table');
+  if (insertTableBtn && tablePicker && tablePickerGrid) {
+    for (let r = 1; r <= 8; r++) {
+      for (let c = 1; c <= 8; c++) {
+        const cell = document.createElement('div');
+        cell.style.cssText = 'width:16px;height:16px;border:1px solid #334155;border-radius:2px;cursor:pointer;background:#1e293b;transition:background 0.1s;';
+        cell.dataset.r = r; cell.dataset.c = c;
+        cell.addEventListener('mouseenter', () => {
+          tablePickerGrid.querySelectorAll('div').forEach(d => {
+            d.style.background = (parseInt(d.dataset.r) <= r && parseInt(d.dataset.c) <= c) ? '#2563eb' : '#1e293b';
+          });
+          tablePickerLabel.textContent = `${r} × ${c}`;
+        });
+        cell.addEventListener('click', () => {
+          tablePicker.style.display = 'none';
+          let html = `<table style="border-collapse:collapse;width:100%;"><tbody>`;
+          for (let tr = 0; tr < r; tr++) {
+            html += '<tr>';
+            for (let tc = 0; tc < c; tc++) {
+              html += tr === 0
+                ? `<th style="border:1px solid #cbd5e1;padding:5px 8px;background:#f1f5f9;font-size:11px;font-weight:700;" contenteditable="true">${tc === 0 ? 'Header' : 'Column ' + (tc+1)}</th>`
+                : `<td style="border:1px solid #cbd5e1;padding:5px 8px;font-size:11px;" contenteditable="true"></td>`;
+            }
+            html += '</tr>';
+          }
+          html += '</tbody></table>';
+          const obj = document.createElement('div');
+          obj.style.cssText = 'position:absolute;top:80px;left:60px;z-index:10;cursor:move;min-width:180px;';
+          obj.innerHTML = html;
+          obj.setAttribute('data-shape-type','table');
+          const canvas = slideFrame.querySelector('#slide-canvas-objects');
+          if (canvas) { canvas.style.pointerEvents = 'all'; canvas.appendChild(obj); }
+          saveDeck();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Inserted ${r}×${c} table`);
+        });
+        tablePickerGrid.appendChild(cell);
+      }
+    }
+    insertTableBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const show = tablePicker.style.display === 'none';
+      tablePicker.style.display = show ? 'block' : 'none';
+      if (show) {
+        const rect = insertTableBtn.getBoundingClientRect();
+        tablePicker.style.top = (rect.bottom + 4) + 'px';
+        tablePicker.style.left = rect.left + 'px';
+      }
+    });
+    document.addEventListener('click', () => { if (tablePicker) tablePicker.style.display = 'none'; });
+  }
+
+  // ── Insert Tab: Charts ───────────────────────────────────────
+  container.querySelectorAll('[data-chart]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const t = btn.dataset.chart;
+      const colors = ['#2563eb','#059669','#d97706','#dc2626','#7c3aed'];
+      const data = [65,40,80,55,72];
+      const labels = ['Q1','Q2','Q3','Q4','Q5'];
+      let svg = '';
+      if (t === 'bar') {
+        svg = `<svg viewBox="0 0 210 120" width="210" height="120">${data.map((v,i) => `<rect x="${12+i*38}" y="${118-v}" width="30" height="${v}" fill="${colors[i]}" rx="2"/><text x="${27+i*38}" y="116" font-size="9" text-anchor="middle" fill="#64748b">${labels[i]}</text>`).join('')}</svg>`;
+      } else if (t === 'line') {
+        svg = `<svg viewBox="0 0 210 120" width="210" height="120"><polyline points="${data.map((v,i) => `${12+i*42},${110-v}`).join(' ')}" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round"/>${data.map((v,i) => `<circle cx="${12+i*42}" cy="${110-v}" r="3" fill="#2563eb"/>`).join('')}</svg>`;
+      } else if (t === 'pie' || t === 'donut') {
+        const total = data.reduce((a,b) => a+b, 0);
+        let angle = -Math.PI/2;
+        const r2 = t === 'donut' ? 44 : 54;
+        const ir = t === 'donut' ? 26 : 0;
+        const slices = data.map((v,i) => { const s=angle; angle+=v/total*2*Math.PI; return {v,i,s,e:angle}; });
+        svg = `<svg viewBox="0 0 120 120" width="120" height="120">${slices.map(sl => {
+          const x1=60+r2*Math.cos(sl.s),y1=60+r2*Math.sin(sl.s),x2=60+r2*Math.cos(sl.e),y2=60+r2*Math.sin(sl.e);
+          const lg = sl.e-sl.s>Math.PI?1:0;
+          if (ir) { const ix1=60+ir*Math.cos(sl.s),iy1=60+ir*Math.sin(sl.s),ix2=60+ir*Math.cos(sl.e),iy2=60+ir*Math.sin(sl.e); return `<path d="M ${ix1} ${iy1} L ${x1} ${y1} A ${r2} ${r2} 0 ${lg} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${ir} ${ir} 0 ${lg} 0 ${ix1} ${iy1} Z" fill="${colors[sl.i]}"/>`; }
+          return `<path d="M 60 60 L ${x1} ${y1} A ${r2} ${r2} 0 ${lg} 1 ${x2} ${y2} Z" fill="${colors[sl.i]}"/>`;
+        }).join('')}</svg>`;
+      } else {
+        svg = `<svg viewBox="0 0 210 120" width="210" height="120">${data.map((v,i) => `<rect x="${12+i*38}" y="45" width="30" height="${v}" fill="${colors[i]}" opacity="0.5"/>`).join('')}</svg>`;
+      }
+      const obj = document.createElement('div');
+      obj.style.cssText = 'position:absolute;top:80px;left:80px;background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px;z-index:10;cursor:move;';
+      obj.innerHTML = `<div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">${t.toUpperCase()} CHART</div>${svg}`;
+      obj.setAttribute('data-shape-type','chart');
+      const canvas = slideFrame.querySelector('#slide-canvas-objects');
+      if (canvas) { canvas.style.pointerEvents='all'; canvas.appendChild(obj); }
+      saveDeck();
+      if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Inserted ${t} chart`);
+    });
+  });
+
+  // ── Insert Tab: WordArt ──────────────────────────────────────
+  container.querySelector('#btn-kinetic-wordart')?.addEventListener('click', () => {
+    const text = prompt('WordArt text:', 'Your Text Here');
+    if (!text) return;
+    const styles = ['background:linear-gradient(90deg,#a855f7,#3b82f6);','background:linear-gradient(90deg,#f59e0b,#ef4444);','background:linear-gradient(90deg,#10b981,#3b82f6);'];
+    const st = styles[Math.floor(Math.random()*styles.length)];
+    const obj = document.createElement('div');
+    obj.style.cssText = 'position:absolute;top:60px;left:60px;z-index:10;cursor:move;padding:8px;';
+    obj.innerHTML = `<div contenteditable="true" style="font-size:36px;font-weight:900;${st}-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-family:Plus Jakarta Sans,system-ui;letter-spacing:-1px;">${text}</div>`;
+    obj.setAttribute('data-shape-type','wordart');
+    const canvas = slideFrame.querySelector('#slide-canvas-objects');
+    if (canvas) { canvas.style.pointerEvents='all'; canvas.appendChild(obj); }
+    saveDeck();
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Inserted WordArt');
+  });
+
+  // ── Insert Tab: Hyperlink ────────────────────────────────────
+  container.querySelector('#btn-kinetic-insert-link')?.addEventListener('click', () => {
+    const url = prompt('Enter URL:', 'https://');
+    const label = url ? (prompt('Link label:', url) || url) : null;
+    if (!url || !label) return;
+    const obj = document.createElement('div');
+    obj.style.cssText = 'position:absolute;top:120px;left:80px;z-index:10;cursor:move;';
+    obj.innerHTML = `<a href="${url}" target="_blank" rel="noopener" style="color:#2563eb;text-decoration:underline;font-size:14px;font-weight:500;">${label}</a>`;
+    obj.setAttribute('data-shape-type','hyperlink');
+    const canvas = slideFrame.querySelector('#slide-canvas-objects');
+    if (canvas) { canvas.style.pointerEvents='all'; canvas.appendChild(obj); }
+    saveDeck();
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Inserted hyperlink');
+  });
+
+  // ── Insert Tab: Date & Time ──────────────────────────────────
+  container.querySelector('#btn-kinetic-insert-date')?.addEventListener('click', () => {
+    const dateStr = new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const obj = document.createElement('div');
+    obj.style.cssText = 'position:absolute;bottom:40px;left:30px;z-index:10;cursor:move;padding:4px 8px;';
+    obj.innerHTML = `<span contenteditable="true" style="font-size:12px;color:currentColor;opacity:0.65;font-style:italic;">${dateStr}</span>`;
+    obj.setAttribute('data-shape-type','date');
+    const canvas = slideFrame.querySelector('#slide-canvas-objects');
+    if (canvas) { canvas.style.pointerEvents='all'; canvas.appendChild(obj); }
+    saveDeck();
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Inserted date & time');
+  });
+
+  // ── Insert Tab: Slide Number ─────────────────────────────────
+  container.querySelector('#btn-kinetic-insert-slidenum')?.addEventListener('click', () => {
+    const obj = document.createElement('div');
+    obj.style.cssText = 'position:absolute;bottom:14px;right:50px;z-index:10;cursor:move;';
+    obj.innerHTML = `<span style="font-size:11px;font-weight:600;opacity:0.5;">${currentSlideIndex+1}</span>`;
+    obj.setAttribute('data-shape-type','slidenum');
+    const canvas = slideFrame.querySelector('#slide-canvas-objects');
+    if (canvas) { canvas.style.pointerEvents='all'; canvas.appendChild(obj); }
+    saveDeck();
+  });
+
+  // ── Insert Tab: Equation ─────────────────────────────────────
+  container.querySelector('#btn-kinetic-equation')?.addEventListener('click', () => {
+    const eq = prompt('Enter equation:', 'E = mc²');
+    if (!eq) return;
+    const obj = document.createElement('div');
+    obj.style.cssText = 'position:absolute;top:150px;left:120px;z-index:10;cursor:move;padding:8px 12px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:6px;backdrop-filter:blur(4px);';
+    obj.innerHTML = `<span contenteditable="true" style="font-size:22px;font-family:serif;font-style:italic;">${eq}</span>`;
+    obj.setAttribute('data-shape-type','equation');
+    const canvas = slideFrame.querySelector('#slide-canvas-objects');
+    if (canvas) { canvas.style.pointerEvents='all'; canvas.appendChild(obj); }
+    saveDeck();
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Inserted equation');
+  });
+
+  // ── Insert Tab: Symbol ───────────────────────────────────────
+  container.querySelector('#btn-kinetic-symbol')?.addEventListener('click', () => {
+    const syms = ['©','®','™','€','£','¥','°','±','×','÷','∞','√','∑','∆','∫','≈','≠','≤','≥','←','→','↑','↓','⭐','♦','▲','●','■'];
+    const sym = prompt('Pick symbol:\n\n' + syms.join('  ') + '\n\nOr type your own:', '★');
+    if (!sym) return;
+    const obj = document.createElement('div');
+    obj.style.cssText = 'position:absolute;top:120px;left:100px;z-index:10;cursor:move;padding:4px;';
+    obj.innerHTML = `<span contenteditable="true" style="font-size:32px;">${sym}</span>`;
+    obj.setAttribute('data-shape-type','symbol');
+    const canvas = slideFrame.querySelector('#slide-canvas-objects');
+    if (canvas) { canvas.style.pointerEvents='all'; canvas.appendChild(obj); }
+    saveDeck();
+  });
+
+  // ── Review Tab: Spell Check ──────────────────────────────────
+  container.querySelector('#btn-kinetic-spellcheck')?.addEventListener('click', () => {
+    slideFrame.querySelectorAll('[contenteditable]').forEach(el => el.setAttribute('spellcheck','true'));
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Spell check enabled on all slide text');
+  });
+
+  // ── Review Tab: Word Count ───────────────────────────────────
+  container.querySelector('#btn-kinetic-word-count-btn')?.addEventListener('click', () => {
+    let total = 0;
+    slidesData.forEach(s => {
+      [s.title||'',s.desc||'',s.tag||''].forEach(t => { total += t.split(/\s+/).filter(Boolean).length; });
+      (s.features||[]).forEach(f => { total += ((f.title||'').split(/\s+/).filter(Boolean).length + (f.desc||'').split(/\s+/).filter(Boolean).length); });
+    });
+    alert(`Presentation Statistics\n\nSlides: ${slidesData.length}\nWord Count: ~${total} words\nEst. Read Time: ~${Math.ceil(total/130)} min\nEst. Speak Time: ~${Math.ceil(total/100)} min (100 wpm)`);
+  });
+
+  // ── Review Tab: New Comment ──────────────────────────────────
+  container.querySelector('#btn-kinetic-new-comment')?.addEventListener('click', () => {
+    const text = prompt('Add a comment to slide ' + (currentSlideIndex+1) + ':');
+    if (!text) return;
+    if (!slidesData[currentSlideIndex].comments) slidesData[currentSlideIndex].comments = [];
+    slidesData[currentSlideIndex].comments.push({text, author:'You', time:new Date().toLocaleTimeString()});
+    saveDeck();
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Comment added to slide ' + (currentSlideIndex+1));
+  });
+
+  // ── Review Tab: Accessibility Check ─────────────────────────
+  container.querySelector('#btn-kinetic-accessibility')?.addEventListener('click', () => {
+    const issues = [];
+    slidesData.forEach((s, i) => {
+      if (!s.title || s.title === 'Click to add title') issues.push(`Slide ${i+1}: Missing title`);
+      if (!s.desc && !s.features?.length) issues.push(`Slide ${i+1}: No content — consider adding body text or nodes`);
+    });
+    alert('Accessibility Check\n\n' + (issues.length ? issues.join('\n') : '✓ All slides have titles and content. No issues found.'));
+  });
+
+  // ── Review Tab: Translate ────────────────────────────────────
+  container.querySelector('#btn-kinetic-translate')?.addEventListener('click', () => {
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Translation: Select text on the slide and right-click → Translate in your browser');
+  });
+
   function renderNavThumbnails() { renderThumbnails(); }
   function renderActiveSlide() { switchSlide(currentSlideIndex); }
 

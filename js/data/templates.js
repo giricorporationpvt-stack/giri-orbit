@@ -183,7 +183,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#c43e1c',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'INVESTOR BRIEFING',
+        id: 1, layout: 'title', bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)', accent: '#c43e1c', tag: 'INVESTOR BRIEFING',
         title: 'Giri Orbit // Sovereign Productivity Cloud',
         desc: 'Unbinding enterprise thought: Zero-database in-memory computing with fluid vector motion.',
         features: [
@@ -194,7 +194,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Welcome partners. Introduce the core value proposition of Giri Orbit as the premier sovereign office suite.'
       },
       {
-        id: 2, layout: 'metrics', tag: 'MARKET TRACTION',
+        id: 2, layout: 'metrics', bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)', accent: '#c43e1c', tag: 'MARKET TRACTION',
         title: 'Explosive Enterprise Velocity',
         desc: 'Addressing the 84% cognitive fatigue created by traditional latency-heavy browser software.',
         features: [
@@ -205,7 +205,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Highlight our performance benchmarks compared to legacy suites.'
       },
       {
-        id: 3, layout: 'columns', tag: 'PRODUCT TOPOLOGY',
+        id: 3, layout: 'columns', bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)', accent: '#c43e1c', tag: 'PRODUCT TOPOLOGY',
         title: 'Four Dedicated Power Engines',
         desc: 'Documents, Spreadsheets, Presentations, and PDF Studio unified within a single lightweight zero-cloud shell.',
         features: [
@@ -216,7 +216,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Demonstrate instant tool switching with Ctrl+1 through Ctrl+5.'
       },
       {
-        id: 4, layout: 'comparison', tag: 'BUSINESS MODEL & CAPITAL ASK',
+        id: 4, layout: 'comparison', bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)', accent: '#c43e1c', tag: 'BUSINESS MODEL & CAPITAL ASK',
         title: '$15M Series A Acceleration',
         desc: 'Capital allocation toward global distribution, zero-knowledge sync, and localized enterprise deployments.',
         features: [
@@ -236,7 +236,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#ea580c',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'SEED PITCH',
+        id: 1, layout: 'title', bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)', accent: '#ea580c', tag: 'SEED PITCH',
         title: 'Reinventing the Modern Office Suite',
         desc: 'The fastest, privacy-first software suite running 100% in browser memory with zero tracking.',
         features: [
@@ -247,7 +247,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Keep opening concise: explain why legacy tools are broken.'
       },
       {
-        id: 2, layout: 'columns', tag: 'SECRET SAUCE',
+        id: 2, layout: 'columns', bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)', accent: '#ea580c', tag: 'SECRET SAUCE',
         title: 'Why Giri Orbit Wins',
         desc: 'Zero server database overhead means infinite scalability with near-zero marginal infrastructure cost.',
         features: [
@@ -267,7 +267,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#8b5cf6',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'DEEPTECH 2027',
+        id: 1, layout: 'title', bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)', accent: '#8b5cf6', tag: 'DEEPTECH 2027',
         title: 'Local-First Autonomous Intelligence',
         desc: 'Running frontier cognitive intelligence directly on consumer and enterprise edge hardware.',
         features: [
@@ -278,7 +278,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Present the case for local-first artificial intelligence over centralized API clouds.'
       },
       {
-        id: 2, layout: 'metrics', tag: 'BENCHMARKS',
+        id: 2, layout: 'metrics', bg: 'radial-gradient(ellipse at top right, #881337 0%, #4c0519 50%, #09090b 100%)', accent: '#8b5cf6', tag: 'BENCHMARKS',
         title: 'Unrivaled Inferencing Velocity',
         desc: 'Direct GPU shader execution delivering real-time document analysis and generative design.',
         features: [
@@ -300,7 +300,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#b91c1c',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'STRATEGY 2026',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)', accent: '#b91c1c', tag: 'STRATEGY 2026',
         title: 'Q3 Executive Business Review',
         desc: 'Consolidated performance overview and Strategic Priorities for Giri Corporation subsidiary units.',
         features: [
@@ -311,7 +311,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Begin with broad organizational wins before drilling down into subsidiary financials.'
       },
       {
-        id: 2, layout: 'comparison', tag: 'STRATEGIC PILLARS',
+        id: 2, layout: 'comparison', bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)', accent: '#b91c1c', tag: 'STRATEGIC PILLARS',
         title: 'Infrastructure Independence',
         desc: 'Migrating enterprise workstations from third-party vendor clouds to sovereign local memory.',
         features: [
@@ -322,7 +322,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Emphasize that sovereignty is our competitive moat.'
       },
       {
-        id: 3, layout: 'metrics', tag: 'FINANCIAL HIGHLIGHTS',
+        id: 3, layout: 'metrics', bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)', accent: '#b91c1c', tag: 'FINANCIAL HIGHLIGHTS',
         title: 'Capital Discipline & Unit Margins',
         desc: 'Gross margins expanded 420 bps driven by zero cloud database dependencies.',
         features: [
@@ -342,7 +342,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#0f172a',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'BOARD OF DIRECTORS',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)', accent: '#0f172a', tag: 'BOARD OF DIRECTORS',
         title: 'Executive Board of Directors Briefing',
         desc: 'Fiscal Year 2026 Strategic Governance, Financial Audit, and Risk Committee Review.',
         features: [
@@ -353,7 +353,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Call meeting to order. Acknowledge quorum.'
       },
       {
-        id: 2, layout: 'columns', tag: 'GOVERNANCE AGENDA',
+        id: 2, layout: 'columns', bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)', accent: '#0f172a', tag: 'GOVERNANCE AGENDA',
         title: 'Four Core Resolutions for Vote',
         desc: 'Review and ratification of executive equity plan, R&D expansion, and subsidiary consolidation.',
         features: [
@@ -373,7 +373,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#0284c7',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'MARKET POSITIONING',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)', accent: '#0284c7', tag: 'MARKET POSITIONING',
         title: 'Global Competitive Strategy & SWOT Matrix',
         desc: 'Navigating enterprise office suite consolidation and capturing sovereign market share.',
         features: [
@@ -384,7 +384,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Set the macro landscape: enterprises are seeking alternatives to cloud vendor lock-in.'
       },
       {
-        id: 2, layout: 'columns', tag: 'STRATEGIC EVALUATION',
+        id: 2, layout: 'columns', bg: 'linear-gradient(135deg, #07192f 0%, #0f2c59 55%, #1e40af 100%)', accent: '#0284c7', tag: 'STRATEGIC EVALUATION',
         title: 'SWOT Quadrant Synthesis',
         desc: 'Converting architectural strengths into defensible enterprise market moats.',
         features: [
@@ -406,7 +406,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#ea580c',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KEYNOTE 2026',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#ea580c', tag: 'KEYNOTE 2026',
         title: 'Meet Giri Orbit 2.0',
         desc: 'The world\'s fastest in-memory productivity suite. Completely free on the web.',
         features: [
@@ -417,7 +417,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Cue the demo video right after reading the opening tagline.'
       },
       {
-        id: 2, layout: 'metrics', tag: 'PERFORMANCE BREAKTHROUGHS',
+        id: 2, layout: 'metrics', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#ea580c', tag: 'PERFORMANCE BREAKTHROUGHS',
         title: 'Sub-Millisecond Engine Physics',
         desc: 'Engineered from the silicon up for zero lag, fluid typography, and instant calculation.',
         features: [
@@ -437,7 +437,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#10b981',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'ENGINEERING HORIZON',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#10b981', tag: 'ENGINEERING HORIZON',
         title: 'Product Engineering Roadmap 2026-2027',
         desc: 'Strategic engineering milestones across core computational engines and UI frameworks.',
         features: [
@@ -448,7 +448,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Align technical leads on delivery commitments.'
       },
       {
-        id: 2, layout: 'timeline', tag: 'EXECUTION TIMELINE',
+        id: 2, layout: 'timeline', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#10b981', tag: 'EXECUTION TIMELINE',
         title: 'Three Continuous Release Horizons',
         desc: 'Continuous delivery model shipping sub-millisecond optimizations weekly.',
         features: [
@@ -468,7 +468,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#06b6d4',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'SYSTEM TOPOLOGY',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#06b6d4', tag: 'SYSTEM TOPOLOGY',
         title: 'Zero-Database Distributed Architecture',
         desc: 'Cryptographically sovereign client execution with zero central points of failure.',
         features: [
@@ -479,7 +479,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Explain how our architecture eliminates data breach liability.'
       },
       {
-        id: 2, layout: 'columns', tag: 'SECURITY LAYERS',
+        id: 2, layout: 'columns', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#06b6d4', tag: 'SECURITY LAYERS',
         title: 'Triple-Layer Cryptographic Isolation',
         desc: 'Every file edit and formula evaluation is bound to the user local security realm.',
         features: [
@@ -501,7 +501,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#2563eb',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'COMMERCIAL PROPOSAL',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#2563eb', tag: 'COMMERCIAL PROPOSAL',
         title: 'Sovereign Productivity for Global Enterprises',
         desc: 'Prepared exclusively for Enterprise Decision Makers by GIRI Corporation.',
         features: [
@@ -512,7 +512,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Thank client executive committee for the opportunity to present.'
       },
       {
-        id: 2, layout: 'comparison', tag: 'ROI & TCO COMPARISON',
+        id: 2, layout: 'comparison', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#2563eb', tag: 'ROI & TCO COMPARISON',
         title: 'Total Cost of Ownership Transformation',
         desc: 'Eliminating bloated cloud infrastructure and compliance liabilities permanently.',
         features: [
@@ -532,7 +532,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#059669',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'GTM STRATEGY',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#059669', tag: 'GTM STRATEGY',
         title: 'Zero-Friction Product-Led Growth',
         desc: 'How Giri Orbit scales globally through frictionless browser execution and word-of-mouth adoption.',
         features: [
@@ -554,7 +554,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#dc2626',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'ALL-HANDS 2026',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#dc2626', tag: 'ALL-HANDS 2026',
         title: 'Building the Future of Knowledge Work',
         desc: 'Giri Corporation Company Town Hall // Celebrating our collective velocity and vision.',
         features: [
@@ -565,7 +565,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Express deep gratitude to every team member across engineering, design, and operations.'
       },
       {
-        id: 2, layout: 'metrics', tag: 'CORE VALUES',
+        id: 2, layout: 'metrics', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#dc2626', tag: 'CORE VALUES',
         title: 'The Giri Corporation Principles',
         desc: 'Guiding how we design, build, and deliver software that honors human intelligence.',
         features: [
@@ -585,7 +585,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#16a34a',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'DEV SUMMIT 2026',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#16a34a', tag: 'DEV SUMMIT 2026',
         title: 'The Edge-Native Computing Revolution',
         desc: 'Why the future of software runs on consumer hardware, in WebAssembly, and in local memory.',
         features: [
@@ -607,7 +607,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#107c41',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // FACET',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#107c41', tag: 'KINETIC // FACET',
         title: 'Modern Minimalist Architecture',
         desc: 'Clean corporate design emphasizing clarity, negative space, and crisp vector layout.',
         features: [
@@ -618,7 +618,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Welcome participants and set a calm, executive tone.'
       },
       {
-        id: 2, layout: 'columns', tag: 'FACET COLUMNS',
+        id: 2, layout: 'columns', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#107c41', tag: 'FACET COLUMNS',
         title: 'Three Pillars of Modern Execution',
         desc: 'Structured breakdown aligned across distinct geometric columns.',
         features: [
@@ -638,7 +638,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#f59e0b',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // INTEGRAL',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#f59e0b', tag: 'KINETIC // INTEGRAL',
         title: 'Celestial Horizon Keynote',
         desc: 'High-contrast cinematic presentation crafted for darkened auditoriums and stages.',
         features: [
@@ -649,7 +649,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Pause after opening statement to let the high-contrast title sink in.'
       },
       {
-        id: 2, layout: 'metrics', tag: 'INTEGRAL METRICS',
+        id: 2, layout: 'metrics', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#f59e0b', tag: 'INTEGRAL METRICS',
         title: 'Strategic Impact & Growth Indicators',
         desc: 'Empirical verification across key performance parameters.',
         features: [
@@ -669,7 +669,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#06b6d4',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // ION',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#06b6d4', tag: 'KINETIC // ION',
         title: 'Next-Gen Cybernetic Systems',
         desc: 'Futuristic technical briefing designed for engineering symposiums and software architecture reviews.',
         features: [
@@ -680,7 +680,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Introduce the core architectural leap forward.'
       },
       {
-        id: 2, layout: 'comparison', tag: 'ION BENCHMARK',
+        id: 2, layout: 'comparison', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#06b6d4', tag: 'ION BENCHMARK',
         title: 'Legacy Cloud vs. In-Memory Edge',
         desc: 'Direct head-to-head comparison demonstrating quantum leaps in throughput and security.',
         features: [
@@ -700,7 +700,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#d97706',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // DIVIDEND',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#d97706', tag: 'KINETIC // DIVIDEND',
         title: 'Executive Boardroom & Capital Review',
         desc: 'Formal institutional presentation format used by Fortune 100 CFOs and audit committees.',
         features: [
@@ -711,7 +711,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Call executive session to order and establish governance context.'
       },
       {
-        id: 2, layout: 'metrics', tag: 'CAPITAL ALLOCATION',
+        id: 2, layout: 'metrics', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#d97706', tag: 'CAPITAL ALLOCATION',
         title: 'FY2026 Sovereign Treasury Position',
         desc: 'Consolidated capital reserves, operational runway, and risk mitigation metrics.',
         features: [
@@ -731,7 +731,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#ea580c',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // BERLIN',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#ea580c', tag: 'KINETIC // BERLIN',
         title: 'Creative Agency & Design Brief',
         desc: 'Dynamic, confident, and energetic presentation with signature Berlin geometric blocks.',
         features: [
@@ -742,7 +742,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Kick off creative sprint presentation with enthusiasm.'
       },
       {
-        id: 2, layout: 'columns', tag: 'CAMPAIGN PHASES',
+        id: 2, layout: 'columns', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#ea580c', tag: 'CAMPAIGN PHASES',
         title: 'Three-Stage Brand Rollout',
         desc: 'Milestone schedule for global creative deployment.',
         features: [
@@ -762,7 +762,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#65a30d',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // SAVON',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#65a30d', tag: 'KINETIC // SAVON',
         title: 'Literary & Academic Discourse',
         desc: 'Warm paper texture aesthetic tailored for research symposiums, legal analysis, and historical reviews.',
         features: [
@@ -773,7 +773,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Introduce the academic thesis with historical context.'
       },
       {
-        id: 2, layout: 'comparison', tag: 'LITERATURE REVIEW',
+        id: 2, layout: 'comparison', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#65a30d', tag: 'LITERATURE REVIEW',
         title: 'Methodological Comparison',
         desc: 'Critical contrast between historical models and empirical findings.',
         features: [
@@ -793,7 +793,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#b91c1c',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // MADISON',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#b91c1c', tag: 'KINETIC // MADISON',
         title: 'Annual Shareholder Conference',
         desc: 'Classic corporate prestige delivering annual returns, dividend distributions, and future guidance.',
         features: [
@@ -804,7 +804,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Welcome shareholders and board members.'
       },
       {
-        id: 2, layout: 'metrics', tag: 'SHAREHOLDER VALUE',
+        id: 2, layout: 'metrics', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#b91c1c', tag: 'SHAREHOLDER VALUE',
         title: 'Key Financial Metrics & EPS Growth',
         desc: 'Delivering record-breaking shareholder value through disciplined capital reinvestment.',
         features: [
@@ -824,7 +824,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#0284c7',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // DROPLET',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#0284c7', tag: 'KINETIC // DROPLET',
         title: 'Environmental & Sustainability Report',
         desc: 'Fresh, modern environmental and clean-tech presentation with oceanic blue accents.',
         features: [
@@ -835,7 +835,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Highlight our commitment to zero carbon impact.'
       },
       {
-        id: 2, layout: 'columns', tag: 'ESG INITIATIVES',
+        id: 2, layout: 'columns', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#0284c7', tag: 'ESG INITIATIVES',
         title: 'Three Pillars of Environmental Stewardship',
         desc: 'Actionable decarbonization programs across all facilities.',
         features: [
@@ -855,7 +855,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#15803d',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // ORGANIC',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#15803d', tag: 'KINETIC // ORGANIC',
         title: 'Holistic Health & Wellness Summit',
         desc: 'Warm earthy presentation style suited for healthcare, agricultural science, and nutrition workshops.',
         features: [
@@ -866,7 +866,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Set an uplifting, human-centered tone for attendees.'
       },
       {
-        id: 2, layout: 'metrics', tag: 'CLINICAL OUTCOMES',
+        id: 2, layout: 'metrics', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#15803d', tag: 'CLINICAL OUTCOMES',
         title: 'Patient Vitality & Recovery Rates',
         desc: 'Longitudinal clinical trials showing statistically significant wellness improvements.',
         features: [
@@ -886,7 +886,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#ca8a04',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // RETROSPECT',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#ca8a04', tag: 'KINETIC // RETROSPECT',
         title: 'Mid-Century Design Principles',
         desc: 'Sophisticated vintage aesthetics combining modernist architecture, warm amber, and structured grids.',
         features: [
@@ -897,7 +897,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Introduce historical roots of the design movement.'
       },
       {
-        id: 2, layout: 'columns', tag: 'DESIGN PILLARS',
+        id: 2, layout: 'columns', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#ca8a04', tag: 'DESIGN PILLARS',
         title: 'Form Follows Function in Modern Computing',
         desc: 'Applying timeless industrial design lessons to 21st-century software.',
         features: [
@@ -917,7 +917,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#4f46e5',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // BADGE',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#4f46e5', tag: 'KINETIC // BADGE',
         title: 'The Quarterly Editorial Review',
         desc: 'New York Times and Monocle inspired editorial presentation layout with distinctive section badges.',
         features: [
@@ -928,7 +928,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Introduce the publication overview and editorial themes.'
       },
       {
-        id: 2, layout: 'comparison', tag: 'GLOBAL TRENDS',
+        id: 2, layout: 'comparison', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#4f46e5', tag: 'GLOBAL TRENDS',
         title: 'East vs. West Technology Adoption',
         desc: 'Comparative editorial essay exploring differing paces of cloud and edge migration.',
         features: [
@@ -948,7 +948,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
     previewAccent: '#eab308',
     slides: [
       {
-        id: 1, layout: 'title', tag: 'KINETIC // METAPHOR',
+        id: 1, layout: 'title', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#eab308', tag: 'KINETIC // METAPHOR',
         title: 'Maximum Contrast Critical Briefing',
         desc: 'Uncompromising high-visibility black & yellow presentation for emergency responses, incident RCAs, and audits.',
         features: [
@@ -959,7 +959,7 @@ export const KINETIC_BUILTIN_TEMPLATES = [
         notes: 'Brief incident response commanders on current operational status.'
       },
       {
-        id: 2, layout: 'metrics', tag: 'INCIDENT TELEMETRY',
+        id: 2, layout: 'metrics', bg: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', accent: '#eab308', tag: 'INCIDENT TELEMETRY',
         title: 'Root Cause Analysis & Mitigation Speed',
         desc: 'Real-time telemetry captured during simulated system fault and automated containment.',
         features: [
