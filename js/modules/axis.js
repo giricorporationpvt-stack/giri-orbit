@@ -204,10 +204,11 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
               <button class="btn-tool-new-template-cta" id="btn-axis-hero-custom">
                 <span>+ Custom Template</span>
               </button>
-              <button class="btn-tool-new-template-cta" id="btn-axis-hero-import-tpl" style="background:#1e293b; color:#38bdf8; border:1px solid #334155;" title="Import Custom Template (.json)">
+              <button class="btn-tool-new-template-cta" id="btn-axis-hero-import-tpl" style="background:#1e293b; color:#38bdf8; border:1px solid #334155;" title="Import Custom Template (.json, .csv, .tsv, .xlsx, .txt)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>↑ Import Template</span>
               </button>
-              <input type="file" id="axis-import-tpl-input" accept=".json" style="display:none;">
+              <input type="file" id="axis-import-tpl-input" accept=".json,.csv,.tsv,.xlsx,.xls,.txt" style="display:none;">
             </div>
           </div>
 
@@ -612,30 +613,115 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
 
     const importTplInput = rootEl.querySelector('#axis-import-tpl-input');
     rootEl.querySelector('#btn-axis-hero-import-tpl')?.addEventListener('click', () => importTplInput?.click());
+    function activateCustomTab() {
+      pills.forEach(p => {
+        if (p.dataset.cat === 'custom') {
+          p.classList.add('active');
+          const badge = p.querySelector('.pill-counter-badge');
+          if (badge) badge.textContent = customTemplates.length;
+        } else {
+          p.classList.remove('active');
+        }
+      });
+      selCat = 'custom';
+      refreshCards();
+    }
+
     importTplInput?.addEventListener('change', (e) => {
       const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (re) => {
-          try {
-            const parsed = JSON.parse(re.target.result);
-            if (!parsed.name || (!parsed.sheetsData && !parsed.data)) {
-              alert('Invalid Axis template JSON file.');
-              return;
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (re) => {
+        try {
+          const raw = re.target.result;
+          const ext = file.name.split('.').pop().toLowerCase();
+          let tplName = file.name.replace(/\.[^/.]+$/, '');
+          let sheetsData = null;
+
+          if (ext === 'json') {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              if (parsed.length > 0 && parsed[0].sheetsData) {
+                parsed.forEach((p, idx) => {
+                  customTemplates.push({
+                    id: 'custom-axis-' + Date.now() + '-' + idx,
+                    name: p.name || `${tplName} ${idx + 1}`,
+                    category: 'custom',
+                    desc: p.desc || `Custom spreadsheet template (${file.name})`,
+                    sheetsData: p.sheetsData || [{ name: 'Sheet1', data: p.data || {} }],
+                    isCustom: true
+                  });
+                });
+                localStorage.setItem('giri_orbit_axis_custom_templates', JSON.stringify(customTemplates));
+                activateCustomTab();
+                if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported ${parsed.length} custom templates!`);
+                return;
+              } else {
+                const data = {};
+                if (parsed.length > 0 && typeof parsed[0] === 'object' && !Array.isArray(parsed[0])) {
+                  const headers = Object.keys(parsed[0]);
+                  headers.forEach((h, cI) => {
+                    data[`${indexToColName(cI)}1`] = String(h);
+                  });
+                  parsed.forEach((row, rI) => {
+                    headers.forEach((h, cI) => {
+                      data[`${indexToColName(cI)}${rI + 2}`] = String(row[h] ?? '');
+                    });
+                  });
+                } else if (parsed.length > 0 && Array.isArray(parsed[0])) {
+                  parsed.forEach((row, rI) => {
+                    row.forEach((val, cI) => {
+                      data[`${indexToColName(cI)}${rI + 1}`] = String(val ?? '');
+                    });
+                  });
+                }
+                sheetsData = [{ name: 'Sheet1', data }];
+              }
+            } else if (parsed.sheetsData || parsed.data) {
+              sheetsData = parsed.sheetsData || [{ name: 'Sheet1', data: parsed.data }];
+              tplName = parsed.name || tplName;
+            } else {
+              const data = {};
+              Object.entries(parsed).forEach(([k, v], i) => {
+                data[`A${i + 1}`] = String(k);
+                data[`B${i + 1}`] = typeof v === 'object' ? JSON.stringify(v) : String(v);
+              });
+              sheetsData = [{ name: 'Sheet1', data }];
             }
-            parsed.id = 'custom-axis-' + Date.now();
-            parsed.category = 'custom';
-            parsed.isCustom = true;
-            customTemplates.push(parsed);
-            localStorage.setItem('giri_orbit_axis_custom_templates', JSON.stringify(customTemplates));
-            refreshCards();
-            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${parsed.name}"`);
-          } catch(err) {
-            alert('Failed to import JSON template: ' + err.message);
+          } else {
+            const delim = ext === 'tsv' ? '\t' : ',';
+            const rows = raw.split(/\r?\n/);
+            const data = {};
+            rows.forEach((rowStr, rI) => {
+              if (!rowStr.trim() && rI === rows.length - 1) return;
+              rowStr.split(delim).forEach((cVal, cI) => {
+                if (cI < EXCEL_MAX_COLS && rI < EXCEL_MAX_ROWS) {
+                  data[`${indexToColName(cI)}${rI + 1}`] = cVal.trim().replace(/^"|"$/g, '');
+                }
+              });
+            });
+            sheetsData = [{ name: 'Sheet1', data }];
           }
-        };
-        reader.readAsText(file);
-      }
+
+          const newTemplate = {
+            id: 'custom-axis-' + Date.now(),
+            name: tplName,
+            category: 'custom',
+            desc: `Custom spreadsheet template (${file.name})`,
+            sheetsData,
+            isCustom: true
+          };
+
+          customTemplates.push(newTemplate);
+          localStorage.setItem('giri_orbit_axis_custom_templates', JSON.stringify(customTemplates));
+          activateCustomTab();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${tplName}"!`);
+        } catch (err) {
+          alert('Failed to import template: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      importTplInput.value = '';
     });
 
     pills.forEach(btn => {
@@ -838,6 +924,12 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
             <span>Save as Custom Template...</span>
             <span class="file-menu-arrow">›</span>
           </div>
+          <div class="file-menu-item" data-action="import-template" id="btn-axis-import-custom-template" style="color:#38bdf8;">
+            <span class="file-menu-icon">📥</span>
+            <span>Import Custom Template...</span>
+            <span class="file-menu-arrow">›</span>
+          </div>
+          <input type="file" id="axis-editor-import-tpl-input" accept=".json,.csv,.tsv,.xlsx,.xls,.txt" style="display:none;">
           <div class="file-menu-item" data-action="save-device" id="file-menu-axis-save-device" style="background:rgba(5,150,105,0.15); color:#34d399; font-weight:600;">
             <span class="file-menu-icon">💾</span>
             <span>Save to Device (Direct Sync)</span>
@@ -1580,6 +1672,10 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
           <span>📐</span>
           <span style="font-weight:600; font-size:11px;">Formulas</span>
         </button>
+        <button class="axis-formula-action-btn" id="btn-axis-quick-download-csv" title="Download Active Sheet as CSV" style="width:auto; padding:0 8px; font-size:11px; gap:4px; margin-left:4px; height:24px; border:1px solid #10b981; border-radius:4px; background:rgba(16,185,129,0.1); color:#059669; font-weight:600; cursor:pointer;">
+          <span>📥</span>
+          <span>CSV</span>
+        </button>
         <div class="axis-formula-suggest-box" id="axis-formula-suggest-box" style="display:none;"></div>
       </div>
 
@@ -1804,6 +1900,10 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
           customTpls.push(newTpl);
           localStorage.setItem('giri_orbit_axis_custom_templates', JSON.stringify(customTpls));
           if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Saved "${name}" as custom spreadsheet template!`);
+          break;
+        }
+        case 'import-template': {
+          container.querySelector('#axis-editor-import-tpl-input')?.click();
           break;
         }
         case 'new': {
@@ -4923,6 +5023,134 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     };
     reader.readAsText(file);
     fileInput.value = '';
+  });
+
+  // Quick Download CSV for active sheet
+  container.querySelector('#btn-axis-quick-download-csv')?.addEventListener('click', () => {
+    const curData = (sheetsData && sheetsData[activeSheet]) ? sheetsData[activeSheet] : {};
+    let maxR = 1;
+    let maxC = 0;
+    Object.keys(curData).forEach(cellKey => {
+      const match = cellKey.match(/^([A-Z]+)(\d+)$/);
+      if (match) {
+        const colStr = match[1];
+        const rNum = parseInt(match[2], 10);
+        let cNum = 0;
+        for (let i = 0; i < colStr.length; i++) {
+          cNum = cNum * 26 + (colStr.charCodeAt(i) - 64);
+        }
+        if (rNum > maxR) maxR = rNum;
+        if (cNum > maxC) maxC = cNum;
+      }
+    });
+    maxR = Math.min(Math.max(maxR, 20), 500);
+    maxC = Math.min(Math.max(maxC, 8), 52);
+
+    let csv = '';
+    for (let r = 1; r <= maxR; r++) {
+      const rowVals = [];
+      for (let c = 0; c < maxC; c++) {
+        const col = indexToColName(c);
+        const cell = gridTable?.querySelector(`[data-cell-id="${col}${r}"]`);
+        const val = cell?.textContent || curData[`${col}${r}`] || '';
+        rowVals.push(`"${String(val).replace(/"/g, '""')}"`);
+      }
+      csv += rowVals.join(',') + '\n';
+    }
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Giri-Axis-${activeSheet || 'Sheet1'}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Downloaded "${activeSheet || 'Sheet1'}.csv"`);
+  });
+
+  // Editor Import Custom Template
+  const editorImportInput = container.querySelector('#axis-editor-import-tpl-input');
+  editorImportInput?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (re) => {
+      try {
+        const raw = re.target.result;
+        const ext = file.name.split('.').pop().toLowerCase();
+        let tplName = file.name.replace(/\.[^/.]+$/, '');
+        let newSheetsData = null;
+
+        if (ext === 'json') {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            const data = {};
+            if (parsed.length > 0 && typeof parsed[0] === 'object' && !Array.isArray(parsed[0])) {
+              const headers = Object.keys(parsed[0]);
+              headers.forEach((h, cI) => { data[`${indexToColName(cI)}1`] = String(h); });
+              parsed.forEach((row, rI) => {
+                headers.forEach((h, cI) => { data[`${indexToColName(cI)}${rI + 2}`] = String(row[h] ?? ''); });
+              });
+            } else if (parsed.length > 0 && Array.isArray(parsed[0])) {
+              parsed.forEach((row, rI) => {
+                row.forEach((val, cI) => { data[`${indexToColName(cI)}${rI + 1}`] = String(val ?? ''); });
+              });
+            }
+            newSheetsData = { 'Sheet1': data };
+          } else if (parsed.sheetsData || parsed.data) {
+            newSheetsData = parsed.sheetsData || { 'Sheet1': parsed.data };
+            tplName = parsed.name || tplName;
+          }
+        } else {
+          const delim = ext === 'tsv' ? '\t' : ',';
+          const rows = raw.split(/\r?\n/);
+          const data = {};
+          rows.forEach((rowStr, rI) => {
+            if (!rowStr.trim() && rI === rows.length - 1) return;
+            rowStr.split(delim).forEach((cVal, cI) => {
+              if (cI < EXCEL_MAX_COLS && rI < EXCEL_MAX_ROWS) {
+                data[`${indexToColName(cI)}${rI + 1}`] = cVal.trim().replace(/^"|"$/g, '');
+              }
+            });
+          });
+          newSheetsData = { 'Sheet1': data };
+        }
+
+        if (newSheetsData) {
+          let customTpls = [];
+          try {
+            const stored = localStorage.getItem('giri_orbit_axis_custom_templates');
+            if (stored) customTpls = JSON.parse(stored);
+          } catch(err) {}
+
+          const newTpl = {
+            id: 'custom-axis-' + Date.now(),
+            name: tplName,
+            category: 'custom',
+            desc: `Custom spreadsheet template (${file.name})`,
+            previewAccent: '#107c41',
+            sheetsData: newSheetsData,
+            isCustom: true
+          };
+          customTpls.push(newTpl);
+          localStorage.setItem('giri_orbit_axis_custom_templates', JSON.stringify(customTpls));
+
+          const loadNow = confirm(`Custom template "${tplName}" imported!\n\nLoad into active workbook now?`);
+          if (loadNow) {
+            sheetsData = newSheetsData;
+            activeSheet = Object.keys(sheetsData)[0] || 'Sheet1';
+            loadSheet(activeSheet);
+            renderSheetTabs();
+            saveAllSheets();
+          }
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${tplName}"!`);
+        }
+      } catch (err) {
+        alert('Failed to import template: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    editorImportInput.value = '';
   });
 
   // =========================================================================

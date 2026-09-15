@@ -1736,10 +1736,11 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
               <button class="btn-tool-new-template-cta" id="btn-kinetic-hero-custom">
                 <span>+ Custom Template</span>
               </button>
-              <button class="btn-tool-new-template-cta" id="btn-kinetic-hero-import-tpl" style="background:#1e293b; color:#38bdf8; border:1px solid #334155;" title="Import Custom Template (.json)">
+              <button class="btn-tool-new-template-cta" id="btn-kinetic-hero-import-tpl" style="background:#1e293b; color:#38bdf8; border:1px solid #334155;" title="Import Custom Template (.json, .txt, .md, .html)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>↑ Import Template</span>
               </button>
-              <input type="file" id="kinetic-import-tpl-input" accept=".json" style="display:none;">
+              <input type="file" id="kinetic-import-tpl-input" accept=".json,.txt,.md,.html" style="display:none;">
             </div>
           </div>
 
@@ -2094,33 +2095,145 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
       const reader = new FileReader();
       reader.onload = (evt) => {
         try {
-          const parsed = JSON.parse(evt.target.result);
+          const raw = evt.target.result;
           let slides = [];
-          if (Array.isArray(parsed)) slides = parsed;
-          else if (parsed.slides && Array.isArray(parsed.slides)) slides = parsed.slides;
-          else throw new Error('Invalid slides data format');
+          let tplName = file.name.replace(/\.[^/.]+$/, '');
+          let desc = `Imported custom presentation template (${file.name})`;
+          let previewAccent = '#3b82f6';
+          let previewBg = '#0f172a';
 
-          const tplName = parsed.name || file.name.replace(/\.[^/.]+$/, '');
+          if (file.name.endsWith('.json')) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              if (parsed.length > 0 && parsed[0].slides) {
+                parsed.forEach((t, idx) => {
+                  customTemplates.push({
+                    id: 'custom-tpl-' + Date.now() + '-' + idx,
+                    name: t.name || `${tplName} ${idx + 1}`,
+                    category: 'custom',
+                    desc: t.desc || desc,
+                    previewAccent: t.previewAccent || previewAccent,
+                    previewBg: t.previewBg || previewBg,
+                    slides: t.slides || []
+                  });
+                });
+                localStorage.setItem('giri_orbit_kinetic_custom_templates', JSON.stringify(customTemplates));
+                selCat = 'custom';
+                pills.forEach(p => {
+                  const isC = p.dataset.cat === 'custom';
+                  p.classList.toggle('active', isC);
+                  if (isC) {
+                    const b = p.querySelector('.pill-counter-badge');
+                    if (b) b.textContent = customTemplates.length;
+                  }
+                });
+                renderCards(false);
+                if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported ${parsed.length} presentation templates!`);
+                return;
+              } else {
+                slides = parsed;
+              }
+            } else if (parsed.slides && Array.isArray(parsed.slides)) {
+              slides = parsed.slides;
+              if (parsed.name) tplName = parsed.name;
+              if (parsed.desc) desc = parsed.desc;
+              if (parsed.previewAccent) previewAccent = parsed.previewAccent;
+              if (parsed.previewBg) previewBg = parsed.previewBg;
+            } else {
+              slides = [parsed];
+            }
+          } else if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+            const rawSections = raw.split(/\n---+\n/);
+            rawSections.forEach((sec, sIdx) => {
+              const lines = sec.trim().split('\n').map(l => l.trim()).filter(Boolean);
+              if (!lines.length) return;
+              let sTitle = `Slide ${sIdx + 1}`;
+              let sDesc = '';
+              let sTag = `PART ${sIdx + 1}`;
+              const features = [];
+
+              lines.forEach(line => {
+                if (line.startsWith('# ')) {
+                  sTitle = line.slice(2).trim();
+                  if (sIdx === 0) tplName = sTitle;
+                } else if (line.startsWith('## ') || line.startsWith('### ')) {
+                  sDesc = line.replace(/^#+\s*/, '').trim();
+                } else if (line.startsWith('- ') || line.startsWith('* ') || line.match(/^\d+\.\s/)) {
+                  const itemText = line.replace(/^[-*\d.]+\s*/, '').trim();
+                  features.push({
+                    num: `0${features.length + 1}`,
+                    title: itemText,
+                    desc: ''
+                  });
+                } else if (!sDesc && !line.startsWith('#')) {
+                  sDesc = line;
+                }
+              });
+
+              slides.push({
+                id: Date.now() + sIdx,
+                layout: sIdx === 0 ? 'title' : (features.length >= 3 ? 'circular-loop' : 'chevron-flow'),
+                tag: sTag,
+                title: sTitle,
+                desc: sDesc || 'Key strategic overview points',
+                accent: previewAccent,
+                bg: sIdx === 0 ? '#0f172a' : '#ffffff',
+                features: features.length ? features : [
+                  { num: '01', title: 'Strategy', desc: 'Core execution milestone' },
+                  { num: '02', title: 'Impact', desc: 'Measurable organizational value' }
+                ]
+              });
+            });
+          } else {
+            slides = [
+              {
+                id: Date.now(),
+                layout: 'title',
+                tag: 'IMPORTED SLIDE',
+                title: tplName,
+                desc: raw.replace(/<[^>]*>/g, ' ').slice(0, 150).trim() || 'Custom imported presentation slide',
+                accent: previewAccent,
+                bg: '#0f172a',
+                features: [
+                  { num: '01', title: 'Slide Content', desc: 'Imported from ' + file.name }
+                ]
+              }
+            ];
+          }
+
+          if (!slides.length) {
+            slides = [{ id: Date.now(), layout: 'title', tag: 'SLIDE 1', title: tplName, desc: 'Presentation Overview', features: [] }];
+          }
+
           const newTpl = {
             id: 'custom-tpl-' + Date.now(),
             name: tplName,
             category: 'custom',
-            desc: parsed.desc || `Imported custom presentation template`,
-            previewAccent: parsed.previewAccent || '#3b82f6',
-            previewBg: parsed.previewBg || '#0f172a',
+            desc,
+            previewAccent,
+            previewBg,
             slides
           };
+
           customTemplates.push(newTpl);
           localStorage.setItem('giri_orbit_kinetic_custom_templates', JSON.stringify(customTemplates));
           selCat = 'custom';
-          pills.forEach(p => p.classList.toggle('active', p.dataset.cat === 'custom'));
+          pills.forEach(p => {
+            const isC = p.dataset.cat === 'custom';
+            p.classList.toggle('active', isC);
+            if (isC) {
+              const b = p.querySelector('.pill-counter-badge');
+              if (b) b.textContent = customTemplates.length;
+            }
+          });
           renderCards(false);
-          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${tplName}"!`);
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${tplName}" (${slides.length} slides)!`);
         } catch (err) {
-          alert('Failed to import JSON template: ' + err.message);
+          alert('Failed to import template: ' + err.message);
         }
       };
       reader.readAsText(file);
+      kineticImportInput.value = '';
     });
     rootEl.querySelector('#btn-kinetic-nav-custom')?.addEventListener('click', () => {
       selCat = 'custom';
@@ -2332,6 +2445,12 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
             <span>Save as Custom Template...</span>
             <span class="file-menu-arrow">›</span>
           </div>
+          <div class="file-menu-item" data-action="import-template" id="btn-kinetic-import-custom-template" style="color:#38bdf8;">
+            <span class="file-menu-icon">📥</span>
+            <span>Import Custom Template...</span>
+            <span class="file-menu-arrow">›</span>
+          </div>
+          <input type="file" id="kinetic-editor-import-tpl-input" accept=".json,.txt,.md,.html" style="display:none;">
           <div class="file-menu-item" data-action="save-device" id="file-menu-kinetic-save-device" style="background:rgba(5,150,105,0.15); color:#34d399; font-weight:600;">
             <span class="file-menu-icon">💾</span>
             <span>Save to Device (Direct Sync)</span>
@@ -3416,6 +3535,41 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
 
       thumb.addEventListener('click', (e) => {
         if (!e.target.closest('.thumb-context-menu-btn')) switchSlide(idx);
+      });
+
+      thumb.querySelector('.thumb-context-menu-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = prompt(`Slide ${idx + 1} Options:\n1. Duplicate Slide\n2. Delete Slide\n3. Move Up\n4. Move Down\n\nEnter 1, 2, 3, or 4:`, '1');
+        if (action === '1') {
+          const clone = JSON.parse(JSON.stringify(slidesData[idx]));
+          clone.id = Date.now();
+          clone.title = (clone.title || 'Slide') + ' (Copy)';
+          slidesData.splice(idx + 1, 0, clone);
+          currentSlideIndex = idx + 1;
+          saveDeck(); renderThumbnails(); switchSlide(currentSlideIndex);
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Duplicated slide ${idx + 1}`);
+        } else if (action === '2') {
+          if (slidesData.length <= 1) {
+            alert('Cannot delete the only slide in the deck.');
+            return;
+          }
+          if (confirm(`Delete slide ${idx + 1}?`)) {
+            slidesData.splice(idx, 1);
+            currentSlideIndex = Math.min(idx, slidesData.length - 1);
+            saveDeck(); renderThumbnails(); switchSlide(currentSlideIndex);
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Deleted slide ${idx + 1}`);
+          }
+        } else if (action === '3' && idx > 0) {
+          const item = slidesData.splice(idx, 1)[0];
+          slidesData.splice(idx - 1, 0, item);
+          currentSlideIndex = idx - 1;
+          saveDeck(); renderThumbnails(); switchSlide(currentSlideIndex);
+        } else if (action === '4' && idx < slidesData.length - 1) {
+          const item = slidesData.splice(idx, 1)[0];
+          slidesData.splice(idx + 1, 0, item);
+          currentSlideIndex = idx + 1;
+          saveDeck(); renderThumbnails(); switchSlide(currentSlideIndex);
+        }
       });
 
       // Drag-to-reorder
@@ -5620,6 +5774,115 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     storedCustom.push(newTpl);
     localStorage.setItem('giri_orbit_kinetic_custom_templates', JSON.stringify(storedCustom));
     if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Saved "${name}" as custom presentation template!`);
+  });
+
+  // ── Import Custom Template into Editor ─────────────────────────
+  const editorKineticImportInput = container.querySelector('#kinetic-editor-import-tpl-input');
+  container.querySelector('#btn-kinetic-import-custom-template')?.addEventListener('click', () => {
+    editorKineticImportInput?.click();
+  });
+  editorKineticImportInput?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const raw = evt.target.result;
+        let importedSlides = [];
+        let tplName = file.name.replace(/\.[^/.]+$/, '');
+        let desc = `Imported presentation template (${file.name})`;
+        let previewAccent = '#3b82f6';
+        let previewBg = '#0f172a';
+
+        if (file.name.endsWith('.json')) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            importedSlides = parsed;
+          } else if (parsed.slides && Array.isArray(parsed.slides)) {
+            importedSlides = parsed.slides;
+            if (parsed.name) tplName = parsed.name;
+            if (parsed.desc) desc = parsed.desc;
+            if (parsed.previewAccent) previewAccent = parsed.previewAccent;
+            if (parsed.previewBg) previewBg = parsed.previewBg;
+          } else {
+            importedSlides = [parsed];
+          }
+        } else if (file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+          const rawSections = raw.split(/\n---+\n/);
+          rawSections.forEach((sec, sIdx) => {
+            const lines = sec.trim().split('\n').map(l => l.trim()).filter(Boolean);
+            if (!lines.length) return;
+            let sTitle = `Slide ${sIdx + 1}`;
+            let sDesc = '';
+            let sTag = `PART ${sIdx + 1}`;
+            const features = [];
+
+            lines.forEach(line => {
+              if (line.startsWith('# ')) {
+                sTitle = line.slice(2).trim();
+                if (sIdx === 0) tplName = sTitle;
+              } else if (line.startsWith('## ') || line.startsWith('### ')) {
+                sDesc = line.replace(/^#+\s*/, '').trim();
+              } else if (line.startsWith('- ') || line.startsWith('* ') || line.match(/^\d+\.\s/)) {
+                features.push({
+                  num: `0${features.length + 1}`,
+                  title: line.replace(/^[-*\d.]+\s*/, '').trim(),
+                  desc: ''
+                });
+              } else if (!sDesc && !line.startsWith('#')) {
+                sDesc = line;
+              }
+            });
+
+            importedSlides.push({
+              id: Date.now() + sIdx,
+              layout: sIdx === 0 ? 'title' : (features.length >= 3 ? 'circular-loop' : 'chevron-flow'),
+              tag: sTag,
+              title: sTitle,
+              desc: sDesc || 'Key strategic overview points',
+              accent: previewAccent,
+              bg: sIdx === 0 ? '#0f172a' : '#ffffff',
+              features: features.length ? features : [
+                { num: '01', title: 'Strategy', desc: 'Core execution milestone' }
+              ]
+            });
+          });
+        }
+
+        if (importedSlides.length > 0) {
+          const newTpl = {
+            id: 'custom-deck-' + Date.now(),
+            name: tplName,
+            category: 'custom',
+            desc,
+            previewAccent,
+            previewBg,
+            slides: importedSlides
+          };
+          let storedCustom = [];
+          try {
+            const existing = localStorage.getItem('giri_orbit_kinetic_custom_templates');
+            if (existing) storedCustom = JSON.parse(existing);
+          } catch (e) {}
+          storedCustom.push(newTpl);
+          localStorage.setItem('giri_orbit_kinetic_custom_templates', JSON.stringify(storedCustom));
+
+          const loadChoice = confirm(`Imported "${tplName}" (${importedSlides.length} slides).\n\nClick OK to replace current presentation, or Cancel to keep working.`);
+          if (loadChoice) {
+            slidesData = importedSlides;
+            currentSlideIndex = 0;
+            renderNavThumbnails();
+            renderActiveSlide();
+            saveDeck();
+          }
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${tplName}"!`);
+        }
+      } catch (err) {
+        alert('Failed to import template: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    editorKineticImportInput.value = '';
   });
 
   // ── Review Tab: Spell Check ──────────────────────────────────

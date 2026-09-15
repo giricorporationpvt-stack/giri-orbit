@@ -678,6 +678,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
               <button class="btn-drift-new-template-cta" id="btn-hub-new-custom-template">
                 <span>+ Custom Template</span>
               </button>
+              <button class="btn-drift-new-template-cta" id="btn-drift-hero-import-tpl" style="background:#1e293b; color:#38bdf8; border:1px solid #334155;" title="Import Custom Template (.json, .html, .docx, .md, .txt)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>↑ Import Template</span>
+              </button>
+              <input type="file" id="drift-import-tpl-input" accept=".json,.html,.htm,.md,.txt,.docx,.gdrift" style="display:none;">
             </div>
           </div>
 
@@ -842,7 +847,10 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
         card.innerHTML = `
           ${item.isCustom ? `
-            <button class="custom-template-del-btn" title="Delete custom template" data-del-id="${item.id}">✕</button>
+            <div class="custom-tpl-actions" style="position:absolute; top:8px; right:8px; display:flex; gap:4px; z-index:5;">
+              <button class="custom-template-export-btn" title="Export template as JSON" data-export-id="${item.id}" style="background:#1e293b; border:1px solid #334155; color:#38bdf8; border-radius:4px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; cursor:pointer;">↓</button>
+              <button class="custom-template-del-btn" title="Delete custom template" data-del-id="${item.id}" style="background:#450a0a; border:1px solid #991b1b; color:#fca5a5; border-radius:4px; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; cursor:pointer;">✕</button>
+            </div>
           ` : ''}
           <div class="drift-template-preview-frame" style="background:${item.previewBg || '#ffffff'};">
             ${previewHtml}
@@ -855,8 +863,29 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
         // Click to launch template in Editor
         card.addEventListener('click', (e) => {
-          if (e.target.closest('.custom-template-del-btn')) return;
+          if (e.target.closest('.custom-tpl-actions') || e.target.closest('.custom-template-del-btn') || e.target.closest('.custom-template-export-btn')) return;
           mountEditor(rootEl, item.content, item.name, onUpdate);
+        });
+
+        // Export button for custom template
+        const exportBtn = card.querySelector('.custom-template-export-btn');
+        exportBtn?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const tplData = {
+            id: item.id,
+            name: item.name,
+            category: item.category || 'custom',
+            desc: item.desc || 'Custom Drift Document Template',
+            previewBg: item.previewBg || '#ffffff',
+            content: item.content,
+            isCustom: true
+          };
+          const blob = new Blob([JSON.stringify(tplData, null, 2)], { type: 'application/json' });
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = `${(item.name || 'drift_template').toLowerCase().replace(/[^a-z0-9]/g, '_')}.json`;
+          a.click();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Exported "${item.name}" JSON template`);
         });
 
         // Delete button for custom template
@@ -909,6 +938,103 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
     rootEl.querySelector('#btn-hub-new-custom-template')?.addEventListener('click', () => {
       promptCreateCustomTemplate(rootEl, onUpdate);
     });
+
+    // Import Custom Template File
+    const importTplInput = rootEl.querySelector('#drift-import-tpl-input');
+    rootEl.querySelector('#btn-drift-hero-import-tpl')?.addEventListener('click', () => importTplInput?.click());
+    importTplInput?.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (re) => {
+        try {
+          const raw = re.target.result;
+          let tplName = file.name.replace(/\.[^/.]+$/, '');
+          let content = '';
+          let category = 'custom';
+          let desc = `Custom imported document template (${file.name})`;
+
+          if (file.name.endsWith('.json')) {
+            try {
+              const parsed = JSON.parse(raw);
+              if (Array.isArray(parsed)) {
+                parsed.forEach((p, i) => {
+                  customTemplates.push({
+                    id: 'custom-' + Date.now() + '-' + i,
+                    name: p.name || `${tplName} ${i + 1}`,
+                    category: p.category || 'custom',
+                    desc: p.desc || desc,
+                    content: p.content || p.html || '<p><br></p>',
+                    isCustom: true
+                  });
+                });
+                localStorage.setItem('giri_orbit_custom_templates', JSON.stringify(customTemplates));
+                activateCustomTab();
+                if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported ${parsed.length} custom templates!`);
+                return;
+              } else if (parsed.content || parsed.html || parsed.text) {
+                tplName = parsed.name || tplName;
+                category = parsed.category || 'custom';
+                desc = parsed.desc || desc;
+                content = parsed.content || parsed.html || `<p>${parsed.text}</p>`;
+              } else {
+                content = `<pre style="font-family:monospace; font-size:12px;">${JSON.stringify(parsed, null, 2)}</pre>`;
+              }
+            } catch {
+              content = `<pre style="font-family:monospace; font-size:12px;">${raw}</pre>`;
+            }
+          } else if (file.name.endsWith('.md')) {
+            const lines = raw.split('\n');
+            let html = '';
+            lines.forEach(l => {
+              const trimmed = l.trim();
+              if (trimmed.startsWith('# ')) {
+                tplName = trimmed.slice(2).trim();
+                html += `<h1 style="font-size:24px; font-weight:800; color:#0f172a; margin:18px 0 10px 0;">${tplName}</h1>`;
+              } else if (trimmed.startsWith('## ')) {
+                html += `<h2 style="font-size:18px; font-weight:700; color:#1e293b; margin:16px 0 8px 0;">${trimmed.slice(3)}</h2>`;
+              } else if (trimmed.startsWith('### ')) {
+                html += `<h3 style="font-size:15px; font-weight:700; color:#334155; margin:14px 0 6px 0;">${trimmed.slice(4)}</h3>`;
+              } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+                html += `<li style="margin-left:20px; font-size:13px; color:#334155; line-height:1.6;">${trimmed.slice(2)}</li>`;
+              } else if (trimmed.length > 0) {
+                html += `<p style="font-size:13px; color:#334155; line-height:1.6; margin-bottom:12px;">${trimmed}</p>`;
+              }
+            });
+            content = html || `<p>${raw}</p>`;
+          } else {
+            content = raw.includes('<') && raw.includes('>') ? raw : `<p style="font-size:13px; line-height:1.7; color:#334155;">${raw.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+          }
+
+          const newTemplate = {
+            id: 'custom-' + Date.now(),
+            name: tplName,
+            category: 'custom',
+            desc,
+            content,
+            isCustom: true
+          };
+
+          customTemplates.push(newTemplate);
+          localStorage.setItem('giri_orbit_custom_templates', JSON.stringify(customTemplates));
+          activateCustomTab();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${tplName}"!`);
+        } catch (err) {
+          alert('Failed to import template: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      importTplInput.value = '';
+    });
+
+    function activateCustomTab() {
+      const customPill = rootEl.querySelector('#pill-custom-templates');
+      categoryPills.forEach(p => p.classList.remove('active'));
+      customPill?.classList.add('active');
+      currentCategory = 'custom';
+      if (customCountBadge) customCountBadge.textContent = customTemplates.length;
+      renderCards();
+    }
 
     // File Upload
     const uploadBtn = rootEl.querySelector('#btn-hub-upload-file');
@@ -1138,6 +1264,18 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
               <span>Open from Device (Direct Sync)</span>
               <span class="file-menu-arrow">›</span>
             </div>
+            <div class="file-menu-sep"></div>
+            <div class="file-menu-item" data-action="save-template" id="file-menu-save-template">
+              <span class="file-menu-icon">📄</span>
+              <span>Save as Custom Template...</span>
+              <span class="file-menu-arrow">›</span>
+            </div>
+            <div class="file-menu-item" data-action="import-template" id="file-menu-import-template">
+              <span class="file-menu-icon">📥</span>
+              <span>Import Custom Template...</span>
+              <span class="file-menu-arrow">›</span>
+            </div>
+            <input type="file" id="drift-editor-import-tpl-input" accept=".json,.html,.htm,.md,.txt,.docx,.gdrift" style="display:none;">
             <div class="file-menu-sep"></div>
             <div class="file-menu-item" data-action="new">
               <span class="file-menu-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></span>
@@ -2457,49 +2595,97 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         </div>
       </div>
 
-      <!-- Proofing Editor Modal -->
+      <!-- Proofing & Writing Intelligence Modal -->
       <div class="office-modal-backdrop" id="drift-editor-proofing-modal">
-        <div class="office-dialog-card" role="dialog" aria-modal="true" style="width:480px;">
-          <div class="office-dialog-header">
-            <span class="office-dialog-title">🖊️ Proofing & Spelling Assistant</span>
-            <button class="esc-kbd" id="btn-close-drift-spelling-dialog">✕</button>
-          </div>
-          <div class="office-dialog-body" style="display:flex; flex-direction:column; gap:14px;">
-            <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#1e293b; border-radius:8px; border:1px solid #334155;">
+        <div class="office-dialog-card proofing-dialog-card-dark" role="dialog" aria-modal="true" style="width:580px; max-width:94vw; background:#0f172a; color:#f8fafc; border:1px solid rgba(255,255,255,0.12); box-shadow:0 25px 60px -15px rgba(0,0,0,0.8); border-radius:12px; overflow:hidden;">
+          <div class="office-dialog-header" style="background:#1e293b; border-bottom:1px solid #334155; padding:14px 20px; display:flex; align-items:center; justify-content:space-between;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:18px;">🖊️</span>
               <div>
-                <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.05em; color:#94a3b8; display:block;">Editor Score</span>
-                <strong style="font-size:28px; font-weight:800; color:#10b981;" id="drift-editor-score-val">98%</strong>
+                <span class="office-dialog-title" style="color:#f8fafc; font-size:14.5px; font-weight:700;">Proofing &amp; Writing Intelligence</span>
+                <div style="font-size:10.5px; color:#94a3b8; display:flex; align-items:center; gap:6px; margin-top:2px;">
+                  <span style="width:6px; height:6px; background:#10b981; border-radius:50%; display:inline-block; box-shadow:0 0 8px #10b981;"></span>
+                  <span>Sovereign Local NLP Engine • 100% Private</span>
+                </div>
+              </div>
+            </div>
+            <button class="esc-kbd" id="btn-close-drift-spelling-dialog" style="color:#94a3b8; border-color:#334155; background:rgba(255,255,255,0.05); cursor:pointer;">✕</button>
+          </div>
+          <div class="office-dialog-body" style="padding:18px 20px; display:flex; flex-direction:column; gap:14px; background:#0f172a;">
+            <!-- Target Tone Selector -->
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+              <span style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Target Tone:</span>
+              <div class="proofing-tone-strip" id="drift-proofing-tone-strip" style="display:flex; gap:6px;">
+                <button class="proofing-tone-btn active" data-tone="formal" style="padding:3px 10px; font-size:11px; border-radius:14px; border:1px solid #3b82f6; background:rgba(59,130,246,0.25); color:#93c5fd; cursor:pointer; font-weight:600;">Executive</button>
+                <button class="proofing-tone-btn" data-tone="clear" style="padding:3px 10px; font-size:11px; border-radius:14px; border:1px solid #334155; background:#1e293b; color:#94a3b8; cursor:pointer; font-weight:500;">Direct</button>
+                <button class="proofing-tone-btn" data-tone="technical" style="padding:3px 10px; font-size:11px; border-radius:14px; border:1px solid #334155; background:#1e293b; color:#94a3b8; cursor:pointer; font-weight:500;">Technical</button>
+                <button class="proofing-tone-btn" data-tone="creative" style="padding:3px 10px; font-size:11px; border-radius:14px; border:1px solid #334155; background:#1e293b; color:#94a3b8; cursor:pointer; font-weight:500;">Creative</button>
+              </div>
+            </div>
+
+            <!-- Hero Overall Document Score -->
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border-radius:10px; border:1px solid #334155; box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);">
+              <div>
+                <span style="font-size:10.5px; text-transform:uppercase; letter-spacing:0.05em; color:#94a3b8; display:block;">Overall Document Score</span>
+                <div style="display:flex; align-items:baseline; gap:8px; margin-top:2px;">
+                  <strong style="font-size:32px; font-weight:900; color:#10b981; font-family:monospace;" id="drift-editor-score-val">98%</strong>
+                  <span style="font-size:11.5px; color:#10b981; font-weight:600;" id="drift-editor-score-pill">● Pristine</span>
+                </div>
+                <div style="width:160px; height:5px; background:#334155; border-radius:3px; overflow:hidden; margin-top:6px;">
+                  <div id="drift-editor-score-bar" style="width:98%; height:100%; background:linear-gradient(90deg, #10b981, #3b82f6); border-radius:3px; transition:width 0.3s ease;"></div>
+                </div>
               </div>
               <div style="text-align:right;">
-                <span style="font-size:11.5px; color:#38bdf8; font-weight:600; display:block;">Executive Document</span>
-                <span style="font-size:11px; color:#64748b;">Formal Tone</span>
+                <span style="font-size:12.5px; color:#38bdf8; font-weight:700; display:block;" id="drift-editor-grade-level">Grade 10 Level</span>
+                <span style="font-size:11px; color:#94a3b8; display:block; margin-top:2px;" id="drift-editor-tone-desc">Executive &amp; Formal Tone</span>
+                <span style="font-size:10.5px; color:#64748b; font-family:monospace; display:block; margin-top:3px;" id="drift-editor-stats-mini">0 issues • High clarity</span>
               </div>
             </div>
+
+            <!-- 4 Live Proofing Telemetry Metrics -->
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-              <div style="padding:10px; background:#18181b; border:1px solid #27272a; border-radius:6px;">
-                <span style="font-size:11px; color:#71717a; display:block;">Spelling</span>
-                <strong style="font-size:14px; color:#10b981;">✓ 0 Issues</strong>
+              <div style="padding:12px; background:#18181b; border:1px solid #27272a; border-radius:8px;">
+                <span style="font-size:10px; color:#94a3b8; text-transform:uppercase; font-weight:600; display:block;">Spelling &amp; Typos</span>
+                <strong style="font-size:13.5px; color:#10b981; display:block; margin-top:3px;" id="drift-proofing-spelling-stat">✓ 0 Issues</strong>
+                <span style="font-size:10px; color:#64748b; display:block; margin-top:1px;" id="drift-proofing-spelling-sub">No repeated words</span>
               </div>
-              <div style="padding:10px; background:#18181b; border:1px solid #27272a; border-radius:6px;">
-                <span style="font-size:11px; color:#71717a; display:block;">Grammar</span>
-                <strong style="font-size:14px; color:#10b981;">✓ Concise & Clear</strong>
+              <div style="padding:12px; background:#18181b; border:1px solid #27272a; border-radius:8px;">
+                <span style="font-size:10px; color:#94a3b8; text-transform:uppercase; font-weight:600; display:block;">Grammar &amp; Flow</span>
+                <strong style="font-size:13.5px; color:#10b981; display:block; margin-top:3px;" id="drift-proofing-grammar-stat">✓ Concise &amp; Clear</strong>
+                <span style="font-size:10px; color:#64748b; display:block; margin-top:1px;" id="drift-proofing-grammar-sub">~14 words/sent</span>
               </div>
-              <div style="padding:10px; background:#18181b; border:1px solid #27272a; border-radius:6px;">
-                <span style="font-size:11px; color:#71717a; display:block;">Reading Ease</span>
-                <strong style="font-size:14px; color:#38bdf8;">Standard (68.4)</strong>
+              <div style="padding:12px; background:#18181b; border:1px solid #27272a; border-radius:8px;">
+                <span style="font-size:10px; color:#94a3b8; text-transform:uppercase; font-weight:600; display:block;">Reading Ease</span>
+                <strong style="font-size:13.5px; color:#38bdf8; display:block; margin-top:3px;" id="drift-proofing-ease-stat">Standard (68.4)</strong>
+                <span style="font-size:10px; color:#64748b; display:block; margin-top:1px;" id="drift-proofing-ease-sub">Flesch-Kincaid index</span>
               </div>
-              <div style="padding:10px; background:#18181b; border:1px solid #27272a; border-radius:6px;">
-                <span style="font-size:11px; color:#71717a; display:block;">Reading Time</span>
-                <strong style="font-size:14px; color:#f59e0b;" id="drift-editor-reading-time">~1 min</strong>
+              <div style="padding:12px; background:#18181b; border:1px solid #27272a; border-radius:8px;">
+                <span style="font-size:10px; color:#94a3b8; text-transform:uppercase; font-weight:600; display:block;">Time to Consume</span>
+                <strong style="font-size:13.5px; color:#f59e0b; display:block; margin-top:3px;" id="drift-editor-reading-time">~1 min</strong>
+                <span style="font-size:10px; color:#64748b; display:block; margin-top:1px;" id="drift-proofing-speak-time">~1 min speaking (130 wpm)</span>
               </div>
             </div>
-            <div style="font-size:12px; color:#94a3b8; line-height:1.5; padding:10px; background:rgba(59,130,246,0.08); border-left:3px solid #3b82f6; border-radius:0 6px 6px 0;">
-              <strong>Writing Suggestions:</strong> Your document demonstrates exemplary clarity and coherence. Vocabulary is elevated and professional.
+
+            <!-- Interactive Suggestions Area -->
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; font-weight:700; color:#cbd5e1; text-transform:uppercase; letter-spacing:0.04em;">Writing Suggestions &amp; Enhancements</span>
+                <span style="font-size:11px; color:#38bdf8; font-weight:600;" id="drift-suggestions-count-badge">0 Alerts</span>
+              </div>
+              <div id="drift-proofing-suggestions-list" style="max-height:170px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:4px;">
+                <!-- Populated dynamically with actual issues or exemplary card -->
+              </div>
             </div>
           </div>
-          <div class="office-dialog-footer">
-            <button class="export-cancel-btn" id="btn-cancel-editor-proofing">Close</button>
-            <button class="btn-giri-primary" id="btn-apply-editor-polish" style="padding:7px 18px; font-size:12px;">Accept All Suggestions</button>
+          <div class="office-dialog-footer" style="background:#1e293b; border-top:1px solid #334155; padding:12px 20px; display:flex; justify-content:space-between; align-items:center;">
+            <button class="btn-tool-secondary" id="btn-copy-proofing-report" style="background:#334155; color:#f8fafc; border:none; padding:7px 14px; border-radius:6px; font-size:11.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;">
+              <span>📋</span>
+              <span>Copy Report</span>
+            </button>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button class="export-cancel-btn" id="btn-cancel-editor-proofing" style="background:transparent; border:1px solid #475569; color:#94a3b8; padding:7px 14px; border-radius:6px; font-size:12px; cursor:pointer;">Close</button>
+              <button class="btn-giri-primary" id="btn-apply-editor-polish" style="padding:7px 18px; font-size:12px; font-weight:700; background:#2563eb; color:#ffffff; border:none; border-radius:6px; cursor:pointer;">Accept All Suggestions</button>
+            </div>
           </div>
         </div>
       </div>
@@ -2716,6 +2902,15 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           switch (action) {
             case 'save-device': {
               performDirectSave(true);
+              break;
+            }
+            case 'save-template': {
+              saveDocAsTemplateBtn?.click();
+              break;
+            }
+            case 'import-template': {
+              const editorImportInput = container.querySelector('#drift-editor-import-tpl-input');
+              editorImportInput?.click();
               break;
             }
             case 'open-device': {
@@ -3233,6 +3428,98 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Saved "${name}" as a custom template!`);
       });
 
+      // Editor Import Custom Template Handler
+      const editorImportTplInput = container.querySelector('#drift-editor-import-tpl-input');
+      editorImportTplInput?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (re) => {
+          try {
+            const raw = re.target.result;
+            let tplName = file.name.replace(/\.[^/.]+$/, '');
+            let content = '';
+            let category = 'custom';
+            let desc = `Custom imported document template (${file.name})`;
+
+            if (file.name.endsWith('.json')) {
+              try {
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed)) {
+                  parsed.forEach((p, i) => {
+                    customTemplates.push({
+                      id: 'custom-' + Date.now() + '-' + i,
+                      name: p.name || `${tplName} ${i + 1}`,
+                      category: p.category || 'custom',
+                      desc: p.desc || desc,
+                      content: p.content || p.html || '<p><br></p>',
+                      isCustom: true
+                    });
+                  });
+                  localStorage.setItem('giri_orbit_custom_templates', JSON.stringify(customTemplates));
+                  if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported ${parsed.length} custom templates!`);
+                  return;
+                } else if (parsed.content || parsed.html || parsed.text) {
+                  tplName = parsed.name || tplName;
+                  category = parsed.category || 'custom';
+                  desc = parsed.desc || desc;
+                  content = parsed.content || parsed.html || `<p>${parsed.text}</p>`;
+                } else {
+                  content = `<pre style="font-family:monospace; font-size:12px;">${JSON.stringify(parsed, null, 2)}</pre>`;
+                }
+              } catch {
+                content = `<pre style="font-family:monospace; font-size:12px;">${raw}</pre>`;
+              }
+            } else if (file.name.endsWith('.md')) {
+              const lines = raw.split('\n');
+              let html = '';
+              lines.forEach(l => {
+                const trimmed = l.trim();
+                if (trimmed.startsWith('# ')) {
+                  tplName = trimmed.slice(2).trim();
+                  html += `<h1 style="font-size:24px; font-weight:800; color:#0f172a; margin:18px 0 10px 0;">${tplName}</h1>`;
+                } else if (trimmed.startsWith('## ')) {
+                  html += `<h2 style="font-size:18px; font-weight:700; color:#1e293b; margin:16px 0 8px 0;">${trimmed.slice(3)}</h2>`;
+                } else if (trimmed.startsWith('### ')) {
+                  html += `<h3 style="font-size:15px; font-weight:700; color:#334155; margin:14px 0 6px 0;">${trimmed.slice(4)}</h3>`;
+                } else if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+                  html += `<li style="margin-left:20px; font-size:13px; color:#334155; line-height:1.6;">${trimmed.slice(2)}</li>`;
+                } else if (trimmed.length > 0) {
+                  html += `<p style="font-size:13px; color:#334155; line-height:1.6; margin-bottom:12px;">${trimmed}</p>`;
+                }
+              });
+              content = html || `<p>${raw}</p>`;
+            } else {
+              content = raw.includes('<') && raw.includes('>') ? raw : `<p style="font-size:13px; line-height:1.7; color:#334155;">${raw.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
+            }
+
+            const newTemplate = {
+              id: 'custom-' + Date.now(),
+              name: tplName,
+              category: 'custom',
+              desc,
+              content,
+              isCustom: true
+            };
+
+            customTemplates.push(newTemplate);
+            localStorage.setItem('giri_orbit_custom_templates', JSON.stringify(customTemplates));
+            
+            const loadNow = confirm(`Custom template "${tplName}" imported successfully!\n\nWould you like to load it into the active editor now?`);
+            if (loadNow && paper) {
+              paper.innerHTML = content;
+              currentDocTitle = tplName;
+              saveDocument();
+            }
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${tplName}"!`);
+          } catch (err) {
+            alert('Failed to import template: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+        editorImportTplInput.value = '';
+      });
+
       // Auto-Save Document Content
       function saveDocument() {
         const html = paper.innerHTML;
@@ -3558,19 +3845,260 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         });
       });
 
-      // Spell Check Proofing Assistant
+      // Real-Time Intelligent Proofing & Writing Intelligence Engine
+      let activeProofingTone = 'formal';
+      let currentProofingIssues = [];
+
+      function countWordSyllables(word) {
+        word = (word || '').toLowerCase().replace(/[^a-z]/g, '');
+        if (word.length <= 3) return 1;
+        word = word.replace(/(?:[^laeiouy]|ed|es|e)$/, '');
+        word = word.replace(/^y/, '');
+        const matches = word.match(/[aeiouy]{1,2}/g);
+        return matches ? Math.max(1, matches.length) : 1;
+      }
+
       const openSpellingAssistant = () => {
         const proofingModal = container.querySelector('#drift-editor-proofing-modal');
-        const scoreVal = container.querySelector('#drift-editor-score-val');
-        const readingTimeVal = container.querySelector('#drift-editor-reading-time');
+        if (!proofingModal) return;
+
         const text = paper.innerText || '';
-        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        const wordsArr = text.trim() ? text.trim().split(/\s+/).filter(Boolean) : [];
+        const words = wordsArr.length;
+        const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean);
+        const sentenceCount = Math.max(1, sentences.length);
+        const avgWordsPerSentence = words > 0 ? (words / sentenceCount).toFixed(1) : 0;
+        
+        let totalSyllables = 0;
+        wordsArr.forEach(w => { totalSyllables += countWordSyllables(w); });
+
+        // Flesch Reading Ease Formula
+        let readingEase = 72;
+        if (words > 0 && sentenceCount > 0) {
+          readingEase = Math.round(206.835 - (1.015 * (words / sentenceCount)) - (84.6 * (totalSyllables / words)));
+          readingEase = Math.max(15, Math.min(100, readingEase));
+        }
+
+        // Flesch-Kincaid Grade Level
+        let gradeLevel = 'Grade 10 Level';
+        if (words > 0) {
+          const gl = Math.round(0.39 * (words / sentenceCount) + 11.8 * (totalSyllables / words) - 15.59);
+          if (gl <= 6) gradeLevel = 'Middle School (Grade 6)';
+          else if (gl <= 9) gradeLevel = 'Plain English (Grade 8-9)';
+          else if (gl <= 12) gradeLevel = `High School (Grade ${Math.max(10, gl)})`;
+          else gradeLevel = 'Executive / College Level';
+        }
+
         const readMin = Math.max(1, Math.ceil(words / 200));
+        const speakMin = Math.max(1, Math.ceil(words / 130));
+
+        // Scan for issues
+        currentProofingIssues = [];
+
+        // 1. Repeated words: "the the", "in in", "is is"
+        const repRegex = /\b([a-zA-Z]{2,})\s+\1\b/gi;
+        let repMatch;
+        while ((repMatch = repRegex.exec(text)) !== null) {
+          currentProofingIssues.push({
+            id: 'rep-' + currentProofingIssues.length,
+            type: 'Repetition',
+            label: 'Repeated Word',
+            original: repMatch[0],
+            replacement: repMatch[1],
+            reason: `Repeated word "${repMatch[0]}" detected.`
+          });
+        }
+
+        // 2. Wordy / Redundant phrases
+        const wordyPairs = [
+          { pattern: /\bin order to\b/gi, fix: 'to', reason: 'Concise phrasing: Replace "in order to" with "to".' },
+          { pattern: /\bdue to the fact that\b/gi, fix: 'because', reason: 'Concise phrasing: Replace with "because".' },
+          { pattern: /\bat this point in time\b/gi, fix: 'now', reason: 'Concise phrasing: Replace with "now".' },
+          { pattern: /\butilize\b/gi, fix: 'use', reason: 'Plain vocabulary: Prefer "use" over "utilize".' },
+          { pattern: /\butilizes\b/gi, fix: 'uses', reason: 'Plain vocabulary: Prefer "uses" over "utilizes".' },
+          { pattern: /\bfor the purpose of\b/gi, fix: 'for', reason: 'Concise phrasing: Replace with "for".' },
+          { pattern: /\bin the event that\b/gi, fix: 'if', reason: 'Concise phrasing: Replace with "if".' },
+          { pattern: /\bas a matter of fact\b/gi, fix: 'in fact', reason: 'Concise phrasing: Replace with "in fact".' },
+          { pattern: /\bvery unique\b/gi, fix: 'unique', reason: 'Unique is absolute; avoid "very unique".' }
+        ];
+
+        wordyPairs.forEach(wp => {
+          let wm;
+          while ((wm = wp.pattern.exec(text)) !== null) {
+            currentProofingIssues.push({
+              id: 'wordy-' + currentProofingIssues.length,
+              type: 'Wordy',
+              label: 'Wordy Phrase',
+              original: wm[0],
+              replacement: wp.fix,
+              reason: wp.reason
+            });
+          }
+        });
+
+        // 3. Double spaces
+        if (/\s{2,}/.test(text)) {
+          currentProofingIssues.push({
+            id: 'space-' + currentProofingIssues.length,
+            type: 'Spacing',
+            label: 'Multiple Spaces',
+            original: '  ',
+            replacement: ' ',
+            reason: 'Consecutive spaces detected. Standard typography recommends single spaces.'
+          });
+        }
+
+        // Calculate dynamic Editor Score
+        const penalty = currentProofingIssues.length * 4;
+        const score = words > 15 ? Math.max(68, 100 - penalty) : 100;
+
+        // Update DOM
+        const scoreVal = container.querySelector('#drift-editor-score-val');
+        const scorePill = container.querySelector('#drift-editor-score-pill');
+        const scoreBar = container.querySelector('#drift-editor-score-bar');
+        const gradeLevelEl = container.querySelector('#drift-editor-grade-level');
+        const toneDescEl = container.querySelector('#drift-editor-tone-desc');
+        const statsMiniEl = container.querySelector('#drift-editor-stats-mini');
+        const spellingStat = container.querySelector('#drift-proofing-spelling-stat');
+        const spellingSub = container.querySelector('#drift-proofing-spelling-sub');
+        const grammarStat = container.querySelector('#drift-proofing-grammar-stat');
+        const grammarSub = container.querySelector('#drift-proofing-grammar-sub');
+        const easeStat = container.querySelector('#drift-proofing-ease-stat');
+        const easeSub = container.querySelector('#drift-proofing-ease-sub');
+        const readingTimeVal = container.querySelector('#drift-editor-reading-time');
+        const speakTimeVal = container.querySelector('#drift-proofing-speak-time');
+        const suggestionsBadge = container.querySelector('#drift-suggestions-count-badge');
+        const suggestionsList = container.querySelector('#drift-proofing-suggestions-list');
+
+        if (scoreVal) scoreVal.textContent = `${score}%`;
+        if (scorePill) {
+          scorePill.textContent = score >= 95 ? '● Pristine' : (score >= 85 ? '● Good Clarity' : '● Needs Polish');
+          scorePill.style.color = score >= 90 ? '#10b981' : (score >= 80 ? '#38bdf8' : '#f59e0b');
+        }
+        if (scoreBar) {
+          scoreBar.style.width = `${score}%`;
+          scoreBar.style.background = score >= 90 ? 'linear-gradient(90deg, #10b981, #3b82f6)' : 'linear-gradient(90deg, #f59e0b, #ef4444)';
+        }
+
+        if (gradeLevelEl) gradeLevelEl.textContent = gradeLevel;
+        if (toneDescEl) {
+          toneDescEl.textContent = activeProofingTone === 'formal' ? 'Executive & Formal Tone' :
+                                   activeProofingTone === 'clear' ? 'Direct & Action-Oriented' :
+                                   activeProofingTone === 'technical' ? 'Rigorous Technical Precision' : 'Engaging & Expressive';
+        }
+        if (statsMiniEl) statsMiniEl.textContent = `${words} words • ${sentenceCount} sentences • ${currentProofingIssues.length} alerts`;
+
+        const repIssues = currentProofingIssues.filter(i => i.type === 'Repetition');
+        if (spellingStat) {
+          spellingStat.textContent = repIssues.length ? `⚠️ ${repIssues.length} Repetitions` : '✓ 0 Issues';
+          spellingStat.style.color = repIssues.length ? '#f59e0b' : '#10b981';
+        }
+        if (spellingSub) spellingSub.textContent = repIssues.length ? 'Repeated words detected' : 'No repeated words';
+
+        if (grammarStat) {
+          grammarStat.textContent = avgWordsPerSentence > 25 ? '⚠️ Long Sentences' : '✓ Concise & Clear';
+          grammarStat.style.color = avgWordsPerSentence > 25 ? '#f59e0b' : '#10b981';
+        }
+        if (grammarSub) grammarSub.textContent = `~${avgWordsPerSentence} words/sent avg`;
+
+        if (easeStat) easeStat.textContent = readingEase >= 80 ? `Easy (${readingEase})` : (readingEase >= 60 ? `Standard (${readingEase})` : `Complex (${readingEase})`);
+        if (easeSub) easeSub.textContent = `Flesch score • ${words} total words`;
 
         if (readingTimeVal) readingTimeVal.textContent = `~${readMin} min`;
-        if (scoreVal) scoreVal.textContent = words > 10 ? '98%' : '100%';
-        proofingModal?.classList.add('open');
+        if (speakTimeVal) speakTimeVal.textContent = `~${speakMin} min speaking (130 wpm)`;
+
+        if (suggestionsBadge) {
+          suggestionsBadge.textContent = `${currentProofingIssues.length} ${currentProofingIssues.length === 1 ? 'Alert' : 'Alerts'}`;
+          suggestionsBadge.style.color = currentProofingIssues.length ? '#f59e0b' : '#10b981';
+        }
+
+        // Render suggestions list
+        if (suggestionsList) {
+          suggestionsList.innerHTML = '';
+          if (currentProofingIssues.length === 0) {
+            suggestionsList.innerHTML = `
+              <div style="padding:14px 16px; background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:8px; display:flex; gap:12px; align-items:center;">
+                <span style="font-size:22px; color:#10b981;">✓</span>
+                <div style="font-size:12px; color:#cbd5e1; line-height:1.5;">
+                  <strong style="color:#10b981; font-size:13px; display:block;">Pristine Writing Quality</strong>
+                  Zero typographical repetition, spacing defects, or wordy phrasing detected. Writing adheres to executive standards.
+                </div>
+              </div>
+            `;
+          } else {
+            currentProofingIssues.forEach(issue => {
+              const card = document.createElement('div');
+              card.className = 'proofing-suggestion-item';
+              card.style.cssText = 'padding:10px 14px; background:#18181b; border:1px solid #27272a; border-left:3px solid #3b82f6; border-radius:6px; display:flex; justify-content:space-between; align-items:center; gap:10px; transition:all 0.15s;';
+              card.innerHTML = `
+                <div style="flex:1; min-width:0;">
+                  <div style="display:flex; align-items:center; gap:6px;">
+                    <span style="font-size:9.5px; font-weight:700; text-transform:uppercase; background:#1e293b; color:#38bdf8; padding:2px 6px; border-radius:3px;">${issue.type}</span>
+                    <strong style="font-size:12px; color:#f8fafc;">"${issue.original}" &rarr; <span style="color:#10b981;">"${issue.replacement}"</span></strong>
+                  </div>
+                  <div style="font-size:11px; color:#94a3b8; margin-top:3px;">${issue.reason}</div>
+                </div>
+                <div style="display:flex; gap:6px; align-items:center;">
+                  <button class="btn-fix-issue" style="background:#2563eb; color:#ffffff; border:none; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:600; cursor:pointer;">Fix</button>
+                  <button class="btn-ignore-issue" style="background:transparent; color:#94a3b8; border:1px solid #3f3f46; padding:4px 8px; border-radius:4px; font-size:11px; cursor:pointer;">Ignore</button>
+                </div>
+              `;
+
+              card.querySelector('.btn-fix-issue')?.addEventListener('click', () => {
+                if (paper) {
+                  paper.innerHTML = paper.innerHTML.replace(issue.original, issue.replacement);
+                  saveDocument();
+                  updateTelemetry();
+                }
+                card.style.background = 'rgba(16,185,129,0.1)';
+                card.style.borderLeftColor = '#10b981';
+                card.innerHTML = `<span style="font-size:11.5px; color:#10b981; font-weight:600;">✓ Applied: "${issue.replacement}"</span>`;
+                currentProofingIssues = currentProofingIssues.filter(i => i.id !== issue.id);
+                if (suggestionsBadge) suggestionsBadge.textContent = `${currentProofingIssues.length} Alerts`;
+                if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Fixed: "${issue.original}" → "${issue.replacement}"`);
+              });
+
+              card.querySelector('.btn-ignore-issue')?.addEventListener('click', () => {
+                card.remove();
+                currentProofingIssues = currentProofingIssues.filter(i => i.id !== issue.id);
+                if (suggestionsBadge) suggestionsBadge.textContent = `${currentProofingIssues.length} Alerts`;
+              });
+
+              suggestionsList.appendChild(card);
+            });
+          }
+        }
+
+        proofingModal.classList.add('open');
       };
+
+      // Proofing Tone Switching
+      container.querySelectorAll('.proofing-tone-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          container.querySelectorAll('.proofing-tone-btn').forEach(b => {
+            b.classList.remove('active');
+            b.style.background = '#1e293b';
+            b.style.color = '#94a3b8';
+            b.style.borderColor = '#334155';
+          });
+          btn.classList.add('active');
+          btn.style.background = 'rgba(59,130,246,0.25)';
+          btn.style.color = '#93c5fd';
+          btn.style.borderColor = '#3b82f6';
+          activeProofingTone = btn.dataset.tone;
+          openSpellingAssistant();
+        });
+      });
+
+      // Copy Proofing Report
+      container.querySelector('#btn-copy-proofing-report')?.addEventListener('click', () => {
+        const text = paper.innerText || '';
+        const words = text.trim() ? text.trim().split(/\s+/).filter(Boolean).length : 0;
+        const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(Boolean).length || 1;
+        const report = `Giri Drift Writing Intelligence Report\n====================================\nWords: ${words}\nSentences: ${sentences}\nAverage Sentence Length: ${(words / sentences).toFixed(1)} words\nTarget Tone: ${activeProofingTone.toUpperCase()}\nIssues Pending: ${currentProofingIssues.length}\nGenerated: ${new Date().toLocaleString()}`;
+        navigator.clipboard?.writeText(report);
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Proofing report copied to clipboard!');
+      });
 
       container.querySelector('#btn-toggle-spellcheck')?.addEventListener('click', () => {
         const isSpell = paper.getAttribute('spellcheck') === 'true';
@@ -3585,6 +4113,9 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       });
 
       container.querySelector('#btn-drift-sidebar-spelling')?.addEventListener('click', openSpellingAssistant);
+      container.querySelector('#btn-close-drift-spelling-dialog')?.addEventListener('click', () => {
+        container.querySelector('#drift-editor-proofing-modal')?.classList.remove('open');
+      });
       container.querySelector('#btn-close-editor-proofing')?.addEventListener('click', () => {
         container.querySelector('#drift-editor-proofing-modal')?.classList.remove('open');
       });
@@ -3592,6 +4123,13 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         container.querySelector('#drift-editor-proofing-modal')?.classList.remove('open');
       });
       container.querySelector('#btn-apply-editor-polish')?.addEventListener('click', () => {
+        if (currentProofingIssues.length > 0 && paper) {
+          currentProofingIssues.forEach(issue => {
+            paper.innerHTML = paper.innerHTML.replace(issue.original, issue.replacement);
+          });
+          saveDocument();
+          updateTelemetry();
+        }
         container.querySelector('#drift-editor-proofing-modal')?.classList.remove('open');
         if (window.orbitPlatform) window.orbitPlatform.triggerToast('All grammar and style improvements applied!');
       });

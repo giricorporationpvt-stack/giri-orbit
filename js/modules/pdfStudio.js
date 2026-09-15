@@ -159,10 +159,11 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
               <button class="btn-tool-new-template-cta" id="btn-pdf-hero-custom">
                 <span>+ Custom Template</span>
               </button>
-              <button class="btn-tool-new-template-cta" id="btn-pdf-hero-import-tpl" style="background:#1e293b; color:#38bdf8; border:1px solid #334155;" title="Import Custom Template (.json)">
+              <button class="btn-tool-new-template-cta" id="btn-pdf-hero-import-tpl" style="background:#1e293b; color:#38bdf8; border:1px solid #334155;" title="Import Custom Template (.json, .html, .txt, .md, .pdf)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 <span>↑ Import Template</span>
               </button>
-              <input type="file" id="pdf-import-tpl-input" accept=".json" style="display:none;">
+              <input type="file" id="pdf-import-tpl-input" accept=".json,.html,.htm,.txt,.md,.pdf" style="display:none;">
             </div>
           </div>
 
@@ -435,30 +436,109 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
 
     const importTplInput = rootEl.querySelector('#pdf-import-tpl-input');
     rootEl.querySelector('#btn-pdf-hero-import-tpl')?.addEventListener('click', () => importTplInput?.click());
+    function activateCustomTab() {
+      pills.forEach(p => {
+        const isC = p.dataset.cat === 'custom';
+        p.classList.toggle('active', isC);
+        if (isC) {
+          const b = p.querySelector('.pill-counter-badge');
+          if (b) b.textContent = customTemplates.length;
+        }
+      });
+      selCat = 'custom';
+      refreshCards();
+    }
+
     importTplInput?.addEventListener('change', (e) => {
       const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (re) => {
-          try {
-            const parsed = JSON.parse(re.target.result);
-            if (!parsed.name || (!parsed.pages && !parsed.htmlContent)) {
-              alert('Invalid PDF template JSON file.');
-              return;
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (re) => {
+        try {
+          const raw = re.target.result;
+          let tplName = file.name.replace(/\.[^/.]+$/, '');
+          let pages = [];
+          let desc = `Custom PDF template (${file.name})`;
+
+          if (file.name.endsWith('.json')) {
+            const parsed = JSON.parse(raw);
+            if (Array.isArray(parsed)) {
+              if (parsed.length > 0 && parsed[0].pages) {
+                parsed.forEach((t, idx) => {
+                  customTemplates.push({
+                    id: 'custom-pdf-' + Date.now() + '-' + idx,
+                    name: t.name || `${tplName} ${idx + 1}`,
+                    category: 'custom',
+                    desc: t.desc || desc,
+                    previewAccent: t.previewAccent || '#dc2626',
+                    pages: t.pages || [],
+                    isCustom: true
+                  });
+                });
+                localStorage.setItem('giri_orbit_pdf_custom_templates', JSON.stringify(customTemplates));
+                activateCustomTab();
+                if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported ${parsed.length} PDF templates!`);
+                return;
+              } else {
+                pages = parsed;
+              }
+            } else if (parsed.pages && Array.isArray(parsed.pages)) {
+              pages = parsed.pages;
+              if (parsed.name) tplName = parsed.name;
+              if (parsed.desc) desc = parsed.desc;
+            } else if (parsed.htmlContent) {
+              pages = [{ id: Date.now(), rotation: 0, title: parsed.name || tplName, htmlContent: parsed.htmlContent }];
+            } else {
+              pages = [{ id: Date.now(), rotation: 0, title: tplName, htmlContent: `<pre style="font-family:monospace; font-size:12px;">${JSON.stringify(parsed, null, 2)}</pre>` }];
             }
-            parsed.id = 'custom-pdf-' + Date.now();
-            parsed.category = 'custom';
-            parsed.isCustom = true;
-            customTemplates.push(parsed);
-            localStorage.setItem('giri_orbit_pdf_custom_templates', JSON.stringify(customTemplates));
-            refreshCards();
-            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${parsed.name}"`);
-          } catch(err) {
-            alert('Failed to import JSON template: ' + err.message);
+          } else if (file.name.endsWith('.md')) {
+            const lines = raw.split('\n');
+            let bodyHtml = '';
+            lines.forEach(l => {
+              const tr = l.trim();
+              if (tr.startsWith('# ')) bodyHtml += `<h1 style="font-size:22px; font-weight:800; color:#0f172a; margin:16px 0 8px 0;">${tr.slice(2)}</h1>`;
+              else if (tr.startsWith('## ')) bodyHtml += `<h2 style="font-size:17px; font-weight:700; color:#1e293b; margin:14px 0 6px 0;">${tr.slice(3)}</h2>`;
+              else if (tr.startsWith('- ') || tr.startsWith('* ')) bodyHtml += `<li style="margin-left:18px; font-size:12px; color:#334155; line-height:1.6;">${tr.slice(2)}</li>`;
+              else if (tr.length > 0) bodyHtml += `<p style="font-size:12px; line-height:1.6; color:#334155; margin-bottom:8px;">${tr}</p>`;
+            });
+            pages = [{
+              id: Date.now(),
+              rotation: 0,
+              title: tplName,
+              ref: `DOC-${Date.now().toString().slice(-6)}`,
+              htmlContent: `<div style="padding:24px; font-family:var(--font-body);">${bodyHtml}</div>`
+            }];
+          } else {
+            const content = raw.includes('<') && raw.includes('>') ? raw : `<div style="padding:24px; font-family:var(--font-body); line-height:1.7; color:#334155;">${raw.replace(/\n\n/g, '<br><br>')}</div>`;
+            pages = [{
+              id: Date.now(),
+              rotation: 0,
+              title: tplName,
+              ref: `DOC-${Date.now().toString().slice(-6)}`,
+              htmlContent: content
+            }];
           }
-        };
-        reader.readAsText(file);
-      }
+
+          const newTemplate = {
+            id: 'custom-pdf-' + Date.now(),
+            name: tplName,
+            category: 'custom',
+            desc,
+            previewAccent: '#dc2626',
+            pages,
+            isCustom: true
+          };
+
+          customTemplates.push(newTemplate);
+          localStorage.setItem('giri_orbit_pdf_custom_templates', JSON.stringify(customTemplates));
+          activateCustomTab();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${tplName}"!`);
+        } catch (err) {
+          alert('Failed to import template: ' + err.message);
+        }
+      };
+      reader.readAsText(file);
+      importTplInput.value = '';
     });
 
     pills.forEach(btn => {
@@ -894,6 +974,12 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
             <span>Save as Custom Template...</span>
             <span class="file-menu-arrow">›</span>
           </div>
+          <div class="file-menu-item" data-action="import-template" id="btn-pdf-import-custom-template" style="color:#38bdf8;">
+            <span class="file-menu-icon">📥</span>
+            <span>Import Custom Template...</span>
+            <span class="file-menu-arrow">›</span>
+          </div>
+          <input type="file" id="pdf-editor-import-tpl-input" accept=".json,.html,.htm,.txt,.md,.pdf" style="display:none;">
           <div class="file-menu-item" data-action="export">
             <span class="file-menu-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
             <span>Export PDF</span>
@@ -2090,6 +2176,9 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
           if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Saved "${name}" as custom PDF template!`);
           break;
         }
+        case 'import-template':
+          container.querySelector('#pdf-editor-import-tpl-input')?.click();
+          break;
         case 'export':
           if (window.orbitPlatform) {
             window.orbitPlatform.openExportModal('pdf');
@@ -2126,6 +2215,98 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
           break;
       }
     });
+  });
+
+  // Editor Import Custom Template
+  const editorPdfImportInput = container.querySelector('#pdf-editor-import-tpl-input');
+  container.querySelector('#btn-pdf-import-custom-template')?.addEventListener('click', () => {
+    editorPdfImportInput?.click();
+  });
+  editorPdfImportInput?.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (re) => {
+      try {
+        const raw = re.target.result;
+        let tplName = file.name.replace(/\.[^/.]+$/, '');
+        let newPages = [];
+        let desc = `Custom PDF template (${file.name})`;
+
+        if (file.name.endsWith('.json')) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            newPages = parsed;
+          } else if (parsed.pages && Array.isArray(parsed.pages)) {
+            newPages = parsed.pages;
+            if (parsed.name) tplName = parsed.name;
+            if (parsed.desc) desc = parsed.desc;
+          } else if (parsed.htmlContent) {
+            newPages = [{ id: Date.now(), rotation: 0, title: parsed.name || tplName, htmlContent: parsed.htmlContent }];
+          } else {
+            newPages = [{ id: Date.now(), rotation: 0, title: tplName, htmlContent: `<pre style="font-family:monospace; font-size:12px;">${JSON.stringify(parsed, null, 2)}</pre>` }];
+          }
+        } else if (file.name.endsWith('.md')) {
+          const lines = raw.split('\n');
+          let bodyHtml = '';
+          lines.forEach(l => {
+            const tr = l.trim();
+            if (tr.startsWith('# ')) bodyHtml += `<h1 style="font-size:22px; font-weight:800; color:#0f172a; margin:16px 0 8px 0;">${tr.slice(2)}</h1>`;
+            else if (tr.startsWith('## ')) bodyHtml += `<h2 style="font-size:17px; font-weight:700; color:#1e293b; margin:14px 0 6px 0;">${tr.slice(3)}</h2>`;
+            else if (tr.startsWith('- ') || tr.startsWith('* ')) bodyHtml += `<li style="margin-left:18px; font-size:12px; color:#334155; line-height:1.6;">${tr.slice(2)}</li>`;
+            else if (tr.length > 0) bodyHtml += `<p style="font-size:12px; line-height:1.6; color:#334155; margin-bottom:8px;">${tr}</p>`;
+          });
+          newPages = [{
+            id: Date.now(),
+            rotation: 0,
+            title: tplName,
+            ref: `DOC-${Date.now().toString().slice(-6)}`,
+            htmlContent: `<div style="padding:24px; font-family:var(--font-body);">${bodyHtml}</div>`
+          }];
+        } else {
+          const content = raw.includes('<') && raw.includes('>') ? raw : `<div style="padding:24px; font-family:var(--font-body); line-height:1.7; color:#334155;">${raw.replace(/\n\n/g, '<br><br>')}</div>`;
+          newPages = [{
+            id: Date.now(),
+            rotation: 0,
+            title: tplName,
+            ref: `DOC-${Date.now().toString().slice(-6)}`,
+            htmlContent: content
+          }];
+        }
+
+        if (newPages.length > 0) {
+          let customTpls = [];
+          try {
+            const stored = localStorage.getItem('giri_orbit_pdf_custom_templates');
+            if (stored) customTpls = JSON.parse(stored);
+          } catch(err) {}
+          const newTpl = {
+            id: 'custom-pdf-' + Date.now(),
+            name: tplName,
+            category: 'custom',
+            desc,
+            previewAccent: '#dc2626',
+            pages: newPages,
+            isCustom: true
+          };
+          customTpls.push(newTpl);
+          localStorage.setItem('giri_orbit_pdf_custom_templates', JSON.stringify(customTpls));
+
+          const loadNow = confirm(`Imported "${tplName}" (${newPages.length} pages).\n\nLoad into active document now?`);
+          if (loadNow) {
+            pages = newPages;
+            activePageIndex = 0;
+            renderPagesSidebar();
+            switchPage(0);
+          }
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported custom template "${tplName}"!`);
+        }
+      } catch (err) {
+        alert('Failed to import template: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+    editorPdfImportInput.value = '';
   });
 
   // Top action pills
@@ -2245,6 +2426,7 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
       thumb.className = `pdf-page-thumb ${idx === activePageIndex ? 'active' : ''}`;
       thumb.dataset.index = idx;
       thumb.style.cursor = 'pointer';
+      thumb.style.position = 'relative';
       thumb.innerHTML = `
         <span class="thumb-index-num">${idx + 1}</span>
         <div class="pdf-thumb-canvas" style="transform: rotate(${p.rotation || 0}deg);">
@@ -2253,8 +2435,45 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
           <div style="height:2px; width:85%; background:#cbd5e1; margin-bottom:2px;"></div>
           <div style="height:2px; width:60%; background:#cbd5e1;"></div>
         </div>
+        <div class="pdf-thumb-menu-btn" title="Page options" style="position:absolute; top:4px; right:4px; font-size:12px; line-height:1; color:#94a3b8; cursor:pointer; padding:2px 4px; border-radius:3px;">⋮</div>
       `;
-      thumb.addEventListener('click', () => switchPage(idx));
+      thumb.addEventListener('click', (e) => {
+        if (!e.target.closest('.pdf-thumb-menu-btn')) switchPage(idx);
+      });
+      thumb.querySelector('.pdf-thumb-menu-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = prompt(`Page ${idx + 1} Options:\n1. Duplicate Page\n2. Delete Page\n3. Move Up\n4. Move Down\n\nEnter 1, 2, 3, or 4:`, '1');
+        if (action === '1') {
+          const cloned = JSON.parse(JSON.stringify(pages[idx]));
+          cloned.id = Date.now();
+          cloned.title = (cloned.title || 'Page') + ' (Copy)';
+          pages.splice(idx + 1, 0, cloned);
+          renderPagesSidebar();
+          switchPage(idx + 1);
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Duplicated Page ${idx + 1}`);
+        } else if (action === '2') {
+          if (pages.length <= 1) {
+            alert('Cannot delete the only page.');
+            return;
+          }
+          if (confirm(`Delete page ${idx + 1}?`)) {
+            pages.splice(idx, 1);
+            renderPagesSidebar();
+            switchPage(Math.min(idx, pages.length - 1));
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Deleted page`);
+          }
+        } else if (action === '3' && idx > 0) {
+          const item = pages.splice(idx, 1)[0];
+          pages.splice(idx - 1, 0, item);
+          renderPagesSidebar();
+          switchPage(idx - 1);
+        } else if (action === '4' && idx < pages.length - 1) {
+          const item = pages.splice(idx, 1)[0];
+          pages.splice(idx + 1, 0, item);
+          renderPagesSidebar();
+          switchPage(idx + 1);
+        }
+      });
       thumbsList.appendChild(thumb);
     });
   }
