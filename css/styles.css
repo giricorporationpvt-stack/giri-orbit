@@ -3996,3 +3996,44 @@ body.in-tool .orbit-workspace {
 .kinetic-slide-frame .pgo-swot-quadrant .pgo-node-desc {
   color: #f1f5f9 !important;
 }
+
+/* ==========================================================================
+   GIRI DRIFT — MAIL MERGE SYSTEM STYLES
+   ========================================================================== */
+.drift-merge-field-chip {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(56, 189, 248, 0.15);
+  color: #0284c7;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 4px;
+  padding: 0 5px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.9em;
+  font-weight: 600;
+  margin: 0 1px;
+  vertical-align: baseline;
+  user-select: all;
+  transition: all 0.15s ease;
+}
+body.dark .drift-merge-field-chip {
+  background: rgba(56, 189, 248, 0.22);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.5);
+}
+#drift-paper-canvas.highlight-merge-fields .drift-merge-field-chip,
+#drift-paper-canvas.highlight-merge-fields [data-field] {
+  background: #fef08a !important;
+  color: #854d0e !important;
+  border-color: #eab308 !important;
+  box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.35) !important;
+}
+.drift-merge-action-card:hover {
+  border-color: #38bdf8 !important;
+  background: rgba(56, 189, 248, 0.08) !important;
+  transform: translateY(-1px);
+}
+.drift-popover-item:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+

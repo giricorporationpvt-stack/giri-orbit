@@ -1214,6 +1214,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
             <button class="fluent-tab-btn" data-tab="insert">Insert</button>
             <button class="fluent-tab-btn" data-tab="layout">Layout</button>
             <button class="fluent-tab-btn" data-tab="references">References</button>
+            <button class="fluent-tab-btn" data-tab="mailings">Mailings</button>
             <button class="fluent-tab-btn" data-tab="review">Review</button>
             <button class="fluent-tab-btn" data-tab="view">View</button>
             <button class="fluent-tab-btn" data-tab="help">Help</button>
@@ -1305,6 +1306,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
             <div class="file-menu-item" data-action="print">
               <span class="file-menu-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>
               <span>Print</span>
+            </div>
+            <div class="file-menu-item" data-action="mail-merge" id="file-menu-mail-merge" style="color:#38bdf8;">
+              <span class="file-menu-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span>
+              <span>Mail Merge Wizard...</span>
+              <span class="file-menu-arrow">›</span>
             </div>
             <div class="file-menu-sep"></div>
             <div class="file-menu-item" data-action="rename">
@@ -1919,6 +1925,87 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                   </div>
                 </div>
                 <div class="fluent-group-label">Citations & Bibliography</div>
+              </div>
+            </div>
+
+            <!-- 4.5 MAILINGS TAB PANE -->
+            <div class="fluent-ribbon-pane" id="pane-mailings">
+              <!-- Start Mail Merge Group -->
+              <div class="fluent-ribbon-group">
+                <div class="fluent-group-controls">
+                  <button class="fluent-btn-large" id="btn-start-mail-merge" title="Start Mail Merge: Letters, Envelopes, Labels, Emails">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                    <span>Start Merge ▾</span>
+                  </button>
+                  <button class="fluent-btn-large" id="btn-select-recipients" title="Select Recipients: Upload CSV, Excel, Axis Sheets, or Edit Table">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Recipients ▾</span>
+                  </button>
+                  <button class="fluent-btn-large" id="btn-edit-recipients-list" title="View, Filter & Edit Recipient Data Table">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <span>Edit List</span>
+                  </button>
+                </div>
+                <div class="fluent-group-label">Start Mail Merge</div>
+              </div>
+
+              <!-- Write & Insert Fields Group -->
+              <div class="fluent-ribbon-group">
+                <div class="fluent-group-controls">
+                  <button class="fluent-btn-large" id="btn-highlight-merge-fields" title="Highlight all {{MergeFields}} in document">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    <span>Highlight Fields</span>
+                  </button>
+                  <div class="fluent-group-col">
+                    <button class="fluent-btn-small" id="btn-insert-address-block" title="Insert Standard Address Block" style="padding:0 6px;">
+                      <span>📬 Address Block</span>
+                    </button>
+                    <button class="fluent-btn-small" id="btn-insert-greeting-line" title="Insert Greeting Line (Dear ...)" style="padding:0 6px;">
+                      <span>👋 Greeting Line</span>
+                    </button>
+                    <div class="fluent-group-row">
+                      <button class="fluent-btn-small" id="btn-insert-merge-field-btn" title="Insert Specific Merge Field" style="color:#38bdf8; font-weight:700; padding:0 6px;">
+                        <span>{a} Insert Field ▾</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="fluent-group-label">Write &amp; Insert Fields</div>
+              </div>
+
+              <!-- Preview Results Group -->
+              <div class="fluent-ribbon-group">
+                <div class="fluent-group-controls">
+                  <button class="fluent-btn-large" id="btn-preview-merge-results" title="Toggle Live Preview of Merged Documents">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span id="txt-preview-merge-label">Preview</span>
+                  </button>
+                  <div class="fluent-group-col" style="align-items:center;">
+                    <div class="fluent-group-row" style="align-items:center; gap:3px;">
+                      <button class="fluent-btn-small" id="btn-merge-first" title="First Record (1)" style="padding:0 4px; min-width:20px;">|◀</button>
+                      <button class="fluent-btn-small" id="btn-merge-prev" title="Previous Record" style="padding:0 4px; min-width:20px;">◀</button>
+                      <input type="text" id="input-merge-record-idx" value="1" style="width:28px; height:18px; text-align:center; font-size:11px; font-weight:700; background:#0f172a; color:#38bdf8; border:1px solid #334155; border-radius:3px;">
+                      <span style="font-size:11px; color:#94a3b8;" id="txt-merge-total-count">/ 5</span>
+                      <button class="fluent-btn-small" id="btn-merge-next" title="Next Record" style="padding:0 4px; min-width:20px;">▶</button>
+                      <button class="fluent-btn-small" id="btn-merge-last" title="Last Record" style="padding:0 4px; min-width:20px;">▶|</button>
+                    </div>
+                    <button class="fluent-btn-small" id="btn-find-merge-recipient" title="Search Recipient" style="width:100%; justify-content:center; padding:0 4px; font-size:10.5px;">
+                      <span>🔍 Find Recipient</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="fluent-group-label">Preview Results</div>
+              </div>
+
+              <!-- Finish & Merge Group -->
+              <div class="fluent-ribbon-group">
+                <div class="fluent-group-controls">
+                  <button class="fluent-btn-large" id="btn-finish-mail-merge" title="Finish &amp; Merge: Generate All Documents, Print Batch, or Export" style="background:#1d4ed8; color:#ffffff; font-weight:700; border-color:#2563eb;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    <span>Finish &amp; Merge ▾</span>
+                  </button>
+                </div>
+                <div class="fluent-group-label">Finish</div>
               </div>
             </div>
 
@@ -2780,6 +2867,144 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           </div>
         </div>
       </div>
+
+      <!-- Mail Merge Recipients Manager Dialog -->
+      <div class="office-modal-backdrop" id="drift-mail-merge-recipients-modal">
+        <div class="office-dialog-card" style="width:920px; max-width:96vw; max-height:88vh; display:flex; flex-direction:column;" role="dialog" aria-modal="true">
+          <div class="office-dialog-header" style="background:#1e293b; border-bottom:1px solid #334155; padding:12px 18px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:18px;">✉</span>
+              <span class="office-dialog-title" style="color:#ffffff; font-size:14px; font-weight:700;">Mail Merge Recipients &amp; Data Source</span>
+            </div>
+            <button class="esc-kbd" id="btn-close-merge-recipients">ESC</button>
+          </div>
+          <div class="office-dialog-body" style="flex:1; overflow:hidden; display:flex; flex-direction:column; gap:12px; padding:16px 18px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="fluent-btn-small" id="btn-merge-modal-add-row" style="background:#2563eb; color:#ffffff; padding:4px 10px; font-weight:600;">+ Add Contact</button>
+                <button class="fluent-btn-small" id="btn-merge-modal-upload" style="background:#1e293b; border:1px solid #334155; color:#cbd5e1; padding:4px 10px;">📁 Upload CSV/JSON</button>
+                <button class="fluent-btn-small" id="btn-merge-modal-axis" style="background:#107c41; color:#ffffff; padding:4px 10px; font-weight:600;">📊 Import Axis Sheet</button>
+                <button class="fluent-btn-small" id="btn-merge-modal-sample" style="background:#1e293b; border:1px solid #334155; color:#38bdf8; padding:4px 10px;">↺ Sample Data</button>
+                <button class="fluent-btn-small" id="btn-merge-modal-export" style="background:#1e293b; border:1px solid #334155; color:#cbd5e1; padding:4px 10px;">⬇ Export CSV</button>
+              </div>
+              <input type="text" id="input-merge-table-search" placeholder="Filter recipients..." style="padding:4px 10px; font-size:12px; background:#0f172a; border:1px solid #334155; border-radius:4px; color:#ffffff; width:180px;">
+            </div>
+            
+            <div style="flex:1; overflow:auto; border:1px solid #334155; border-radius:6px; background:#0f172a;" id="drift-merge-table-container">
+              <!-- Dynamically populated interactive recipient table -->
+            </div>
+
+            <div style="font-size:11px; color:#94a3b8; display:flex; justify-content:space-between; align-items:center;">
+              <span id="txt-merge-table-stats">5 recipients loaded • Click any cell to edit • Checked rows will be included in merge</span>
+              <span>Available in document as {{ColumnName}}</span>
+            </div>
+          </div>
+          <div class="office-dialog-footer" style="background:#18181b; border-top:1px solid #27272a; padding:12px 18px; display:flex; justify-content:space-between; align-items:center;">
+            <button class="export-cancel-btn" id="btn-cancel-merge-recipients">Cancel</button>
+            <button class="btn-giri-primary" id="btn-apply-merge-recipients" style="padding:7px 20px; font-size:12.5px; font-weight:600;">Save &amp; Apply List</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Finish & Merge Dialog -->
+      <div class="office-modal-backdrop" id="drift-finish-merge-modal">
+        <div class="office-dialog-card" style="width:580px; max-width:95vw;" role="dialog" aria-modal="true">
+          <div class="office-dialog-header" style="background:#1e293b; border-bottom:1px solid #334155; padding:12px 18px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:18px;">⚡</span>
+              <span class="office-dialog-title" style="color:#ffffff; font-size:14px; font-weight:700;">Finish &amp; Merge Document</span>
+            </div>
+            <button class="esc-kbd" id="btn-close-finish-merge">ESC</button>
+          </div>
+          <div class="office-dialog-body" style="padding:16px 18px; display:flex; flex-direction:column; gap:16px;">
+            <div>
+              <label style="display:block; font-size:12px; font-weight:700; color:#cbd5e1; margin-bottom:8px;">1. Select Recipient Scope:</label>
+              <div style="display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:#cbd5e1; background:#0f172a; padding:10px 12px; border-radius:6px; border:1px solid #334155;">
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="radio" name="merge-scope" value="all" checked id="radio-merge-all">
+                  <span>All Recipients (<span id="txt-modal-merge-all-count">5</span>)</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="radio" name="merge-scope" value="current" id="radio-merge-current">
+                  <span>Current Record only (<span id="txt-modal-merge-cur-name">Record 1</span>)</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="radio" name="merge-scope" value="range" id="radio-merge-range">
+                  <span>Range: From <input type="number" id="input-merge-range-from" value="1" min="1" style="width:40px; padding:2px; font-size:11px; background:#1e293b; border:1px solid #334155; color:#fff; text-align:center; border-radius:3px;"> to <input type="number" id="input-merge-range-to" value="5" min="1" style="width:40px; padding:2px; font-size:11px; background:#1e293b; border:1px solid #334155; color:#fff; text-align:center; border-radius:3px;"></span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label style="display:block; font-size:12px; font-weight:700; color:#cbd5e1; margin-bottom:8px;">2. Choose Merge Output Action:</label>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="drift-merge-action-card" id="card-action-master-doc" style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:12px; cursor:pointer; transition:all 0.15s; display:flex; flex-direction:column; gap:6px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:20px;">📄</span>
+                    <strong style="font-size:12.5px; color:#ffffff;">Merge to Master Doc</strong>
+                  </div>
+                  <p style="font-size:11px; color:#94a3b8; margin:0; line-height:1.4;">Generates all letters into a single multi-page document with page breaks in Drift.</p>
+                </div>
+
+                <div class="drift-merge-action-card" id="card-action-print-all" style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:12px; cursor:pointer; transition:all 0.15s; display:flex; flex-direction:column; gap:6px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:20px;">🖨️</span>
+                    <strong style="font-size:12.5px; color:#ffffff;">Print / PDF Batch</strong>
+                  </div>
+                  <p style="font-size:11px; color:#94a3b8; margin:0; line-height:1.4;">Directly prints all recipient letters or saves as an encrypted combined PDF.</p>
+                </div>
+
+                <div class="drift-merge-action-card" id="card-action-download-files" style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:12px; cursor:pointer; transition:all 0.15s; display:flex; flex-direction:column; gap:6px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:20px;">💾</span>
+                    <strong style="font-size:12.5px; color:#ffffff;">Download Files</strong>
+                  </div>
+                  <p style="font-size:11px; color:#94a3b8; margin:0; line-height:1.4;">Downloads individual customized document files (.html / .docx) for each recipient.</p>
+                </div>
+
+                <div class="drift-merge-action-card" id="card-action-copy-emails" style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:12px; cursor:pointer; transition:all 0.15s; display:flex; flex-direction:column; gap:6px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:20px;">✉️</span>
+                    <strong style="font-size:12.5px; color:#ffffff;">Email Drafts Preview</strong>
+                  </div>
+                  <p style="font-size:11px; color:#94a3b8; margin:0; line-height:1.4;">Generates individual email copy blocks with 1-click clipboard buttons.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="office-dialog-footer" style="background:#18181b; border-top:1px solid #27272a; padding:12px 18px; display:flex; justify-content:flex-end;">
+            <button class="export-cancel-btn" id="btn-cancel-finish-merge">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden file input for uploading CSV/JSON recipients -->
+      <input type="file" id="drift-mail-merge-file-input" accept=".csv,.tsv,.json,.txt" style="display:none;">
+
+      <!-- Floating Popover for Start Merge Types -->
+      <div id="drift-start-merge-popover" style="display:none; position:fixed; z-index:9999; background:#1e293b; border:1px solid #334155; border-radius:6px; padding:6px; box-shadow:0 12px 30px rgba(0,0,0,0.5); width:230px;">
+        <div style="font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase; padding:4px 8px;">Document Type</div>
+        <button class="drift-popover-item" data-type="letters" style="width:100%; text-align:left; background:transparent; border:none; color:#ffffff; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px;">✉ Letters</button>
+        <button class="drift-popover-item" data-type="email" style="width:100%; text-align:left; background:transparent; border:none; color:#ffffff; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px;">📧 Email Messages</button>
+        <button class="drift-popover-item" data-type="envelopes" style="width:100%; text-align:left; background:transparent; border:none; color:#ffffff; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px;">🏷 Envelopes &amp; Labels</button>
+        <div style="height:1px; background:#334155; margin:4px 0;"></div>
+        <div style="font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase; padding:4px 8px;">Starter Templates</div>
+        <button class="drift-popover-item" data-template="letter" style="width:100%; text-align:left; background:transparent; border:none; color:#38bdf8; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer;">★ Insert Formal Letter</button>
+        <button class="drift-popover-item" data-template="invoice" style="width:100%; text-align:left; background:transparent; border:none; color:#38bdf8; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer;">★ Insert Billing Notice</button>
+      </div>
+
+      <!-- Floating Popover for Select Recipients -->
+      <div id="drift-select-recipients-popover" style="display:none; position:fixed; z-index:9999; background:#1e293b; border:1px solid #334155; border-radius:6px; padding:6px; box-shadow:0 12px 30px rgba(0,0,0,0.5); width:240px;">
+        <button class="drift-popover-item" id="btn-popover-upload-csv" style="width:100%; text-align:left; background:transparent; border:none; color:#ffffff; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px;">📁 Upload CSV / JSON List...</button>
+        <button class="drift-popover-item" id="btn-popover-import-axis" style="width:100%; text-align:left; background:transparent; border:none; color:#10b981; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px;">📊 Import from Giri Axis Sheet...</button>
+        <button class="drift-popover-item" id="btn-popover-edit-list" style="width:100%; text-align:left; background:transparent; border:none; color:#ffffff; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px;">✏️ Type &amp; Edit Recipient List...</button>
+        <button class="drift-popover-item" id="btn-popover-sample-data" style="width:100%; text-align:left; background:transparent; border:none; color:#38bdf8; padding:6px 8px; border-radius:4px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px;">↺ Reset to Demo Contacts</button>
+      </div>
+
+      <!-- Floating Popover for Insert Merge Field -->
+      <div id="drift-insert-field-popover" style="display:none; position:fixed; z-index:9999; background:#1e293b; border:1px solid #334155; border-radius:6px; padding:6px; box-shadow:0 12px 30px rgba(0,0,0,0.5); min-width:200px; max-height:280px; overflow-y:auto;">
+        <!-- Dynamically populated with field items -->
+      </div>
     `;
 
     initEditorWorkspace(rootEl, onUpdate);
@@ -2982,6 +3207,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
             }
             case 'print': {
               window.print();
+              break;
+            }
+            case 'mail-merge': {
+              container.querySelector('.fluent-tab-btn[data-tab="mailings"]')?.click();
+              openMailMergeRecipientsModal();
               break;
             }
             case 'rename': {
@@ -5220,6 +5450,822 @@ function calculateMetrics(records) {
         e.currentTarget.querySelector('span').textContent = isEditingMode ? 'Editing ▾' : 'Viewing ▾';
         if (window.orbitPlatform) window.orbitPlatform.triggerToast(isEditingMode ? 'Switched to Editing Mode' : 'Switched to Viewing (Read-Only) Mode');
       });
+
+      // =========================================================================
+      // 7. MAIL MERGE ENGINE & AUTOMATION (Mailings Tab)
+      // =========================================================================
+      const DEFAULT_MERGE_RECIPIENTS = [
+        { FirstName: 'Alexander', LastName: 'Wright', Company: 'Apex Ventures', Email: 'awright@apexventures.com', Address: '742 Evergreen Terrace', City: 'Springfield', State: 'OR', Zip: '97477', Amount: '$5,400', DueDate: 'October 15, 2026' },
+        { FirstName: 'Sophia', LastName: 'Chen', Company: 'Quantum Innovations', Email: 'sophia.chen@quantuminno.tech', Address: '100 Silicon Ave, Suite 400', City: 'San Jose', State: 'CA', Zip: '95113', Amount: '$18,750', DueDate: 'November 1, 2026' },
+        { FirstName: 'Marcus', LastName: 'Vance', Company: 'Vanguard Logistics', Email: 'm.vance@vanguardlog.com', Address: '88 Harbor Boulevard', City: 'Seattle', State: 'WA', Zip: '98104', Amount: '$9,200', DueDate: 'October 30, 2026' },
+        { FirstName: 'Priya', LastName: 'Sharma', Company: 'Starlight Media', Email: 'priya.sharma@starlightmedia.in', Address: '45 Connaught Place', City: 'New Delhi', State: 'DL', Zip: '110001', Amount: '$14,500', DueDate: 'November 15, 2026' },
+        { FirstName: 'Liam', LastName: 'O\'Connor', Company: 'Emerald Capital', Email: 'loconnor@emeraldcapital.ie', Address: '12 Grafton Street', City: 'Dublin', State: 'D02', Zip: 'D02 CH77', Amount: '$7,800', DueDate: 'October 25, 2026' }
+      ];
+
+      let mergeRecipients = [];
+      try {
+        const savedRecipients = localStorage.getItem('giri_orbit_drift_merge_recipients');
+        mergeRecipients = savedRecipients ? JSON.parse(savedRecipients) : DEFAULT_MERGE_RECIPIENTS.slice();
+      } catch (e) {
+        mergeRecipients = DEFAULT_MERGE_RECIPIENTS.slice();
+      }
+      mergeRecipients.forEach(r => { if (typeof r._selected === 'undefined') r._selected = true; });
+
+      let activeMergeRecordIndex = 0;
+      let isMergePreviewActive = false;
+      let mergeTemplateHtmlBackup = '';
+      let isMergeFieldsHighlighted = false;
+
+      // DOM Elements
+      const recipientsModal = container.querySelector('#drift-mail-merge-recipients-modal');
+      const finishMergeModal = container.querySelector('#drift-finish-merge-modal');
+      const startMergePopover = container.querySelector('#drift-start-merge-popover');
+      const selectRecipientsPopover = container.querySelector('#drift-select-recipients-popover');
+      const insertFieldPopover = container.querySelector('#drift-insert-field-popover');
+      const mailMergeFileInput = container.querySelector('#drift-mail-merge-file-input');
+      const tableContainer = container.querySelector('#drift-merge-table-container');
+      const tableStatsText = container.querySelector('#txt-merge-table-stats');
+      const recordIdxInput = container.querySelector('#input-merge-record-idx');
+      const recordTotalCountSpan = container.querySelector('#txt-merge-total-count');
+      const previewMergeBtn = container.querySelector('#btn-preview-merge-results');
+      const previewMergeLabel = container.querySelector('#txt-preview-merge-label');
+      const highlightFieldsBtn = container.querySelector('#btn-highlight-merge-fields');
+
+      function getMergeFieldsList() {
+        const keysSet = new Set();
+        mergeRecipients.forEach(r => {
+          Object.keys(r).forEach(k => {
+            if (k !== '_selected') keysSet.add(k);
+          });
+        });
+        if (!keysSet.has('FullName')) keysSet.add('FullName');
+        if (!keysSet.has('Date')) keysSet.add('Date');
+        return Array.from(keysSet);
+      }
+
+      function updateMergeNavigatorUI() {
+        const total = mergeRecipients.length;
+        if (recordIdxInput) recordIdxInput.value = total > 0 ? (activeMergeRecordIndex + 1) : 0;
+        if (recordTotalCountSpan) recordTotalCountSpan.textContent = `/ ${total}`;
+        const curNameEl = container.querySelector('#txt-modal-merge-cur-name');
+        if (curNameEl) {
+          const cur = mergeRecipients[activeMergeRecordIndex];
+          curNameEl.textContent = cur ? `${cur.FirstName || ''} ${cur.LastName || ''}`.trim() || `Record ${activeMergeRecordIndex + 1}` : 'None';
+        }
+        const allCountEl = container.querySelector('#txt-modal-merge-all-count');
+        if (allCountEl) allCountEl.textContent = total;
+        const rangeToInput = container.querySelector('#input-merge-range-to');
+        if (rangeToInput) rangeToInput.value = total;
+      }
+
+      function insertMergeFieldText(fieldName) {
+        paper.focus();
+        const token = `{{${fieldName}}}`;
+        document.execCommand('insertHTML', false, `<span class="drift-merge-field-chip" contenteditable="false" data-field="${fieldName}">${token}</span>&nbsp;`);
+        saveDocument();
+        updateTelemetry();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Inserted merge field: ${token}`);
+      }
+
+      function renderMergedRecordHtml(templateStr, record) {
+        if (!record) return templateStr;
+        let result = templateStr;
+
+        const fullName = `${record.FirstName || ''} ${record.LastName || ''}`.trim();
+        const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+        // Replace chips
+        result = result.replace(/<span[^>]*class=["'][^"']*drift-merge-field-chip[^"']*["'][^>]*data-field=["']([^"']+)["'][^>]*>.*?<\/span>/gi, (match, field) => {
+          if (field === 'FullName') return fullName || match;
+          if (field === 'Date' || field === 'TodayDate') return dateStr;
+          return record[field] !== undefined ? String(record[field]) : match;
+        });
+
+        // Replace raw {{Key}} tokens
+        result = result.replace(/\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g, (match, field) => {
+          if (field === 'FullName') return fullName || match;
+          if (field === 'Date' || field === 'TodayDate') return dateStr;
+          return record[field] !== undefined ? String(record[field]) : match;
+        });
+
+        return result;
+      }
+
+      function applyMergePreview(recordIndex) {
+        if (mergeRecipients.length === 0) return;
+        activeMergeRecordIndex = Math.max(0, Math.min(recordIndex, mergeRecipients.length - 1));
+        const rec = mergeRecipients[activeMergeRecordIndex];
+        const mergedHtml = renderMergedRecordHtml(mergeTemplateHtmlBackup, rec);
+        paper.innerHTML = mergedHtml;
+        updateMergeNavigatorUI();
+      }
+
+      function toggleMergePreviewMode() {
+        if (!isMergePreviewActive) {
+          if (mergeRecipients.length === 0) {
+            alert('No recipients in list. Please select or add recipients first.');
+            return;
+          }
+          mergeTemplateHtmlBackup = paper.innerHTML;
+          isMergePreviewActive = true;
+          if (previewMergeLabel) previewMergeLabel.textContent = 'Exit Preview';
+          if (previewMergeBtn) {
+            previewMergeBtn.style.background = '#059669';
+            previewMergeBtn.style.color = '#ffffff';
+          }
+          applyMergePreview(activeMergeRecordIndex);
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Previewing Record ${activeMergeRecordIndex + 1} of ${mergeRecipients.length}`);
+        } else {
+          isMergePreviewActive = false;
+          if (previewMergeLabel) previewMergeLabel.textContent = 'Preview';
+          if (previewMergeBtn) {
+            previewMergeBtn.style.background = '';
+            previewMergeBtn.style.color = '';
+          }
+          paper.innerHTML = mergeTemplateHtmlBackup;
+          saveDocument();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast('Exited merge preview — editing template');
+        }
+      }
+
+      function openMailMergeRecipientsModal() {
+        renderRecipientsTable();
+        recipientsModal?.classList.add('open');
+      }
+
+      function saveRecipientsToStorage() {
+        try {
+          localStorage.setItem('giri_orbit_drift_merge_recipients', JSON.stringify(mergeRecipients));
+        } catch (e) {}
+      }
+
+      function renderRecipientsTable() {
+        if (!tableContainer) return;
+        if (mergeRecipients.length === 0) {
+          tableContainer.innerHTML = `
+            <div style="padding:40px; text-align:center; color:#94a3b8;">
+              <div style="font-size:32px; margin-bottom:8px;">👥</div>
+              <p style="font-size:13px; font-weight:600; margin:0 0 6px;">No recipients loaded yet</p>
+              <p style="font-size:11px; margin:0 0 16px;">Upload a CSV or Excel file, import from Giri Axis, or load sample demo contacts.</p>
+              <button class="btn-giri-primary" id="btn-empty-load-sample" style="padding:6px 14px; font-size:12px;">Load Sample Contacts</button>
+            </div>
+          `;
+          tableContainer.querySelector('#btn-empty-load-sample')?.addEventListener('click', () => {
+            mergeRecipients = DEFAULT_MERGE_RECIPIENTS.map(r => ({ ...r, _selected: true }));
+            saveRecipientsToStorage();
+            renderRecipientsTable();
+            updateMergeNavigatorUI();
+          });
+          if (tableStatsText) tableStatsText.textContent = '0 recipients loaded';
+          return;
+        }
+
+        const fields = getMergeFieldsList().filter(f => f !== 'FullName' && f !== 'Date');
+        let html = `
+          <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left; color:#e2e8f0; min-width:680px;">
+            <thead>
+              <tr style="background:#1e293b; position:sticky; top:0; z-index:2; border-bottom:1px solid #334155;">
+                <th style="padding:8px 10px; width:36px; text-align:center;"><input type="checkbox" id="chk-merge-select-all" checked title="Select All"></th>
+                <th style="padding:8px 10px; width:36px; color:#94a3b8; font-weight:600;">#</th>
+                ${fields.map(f => `<th style="padding:8px 10px; font-weight:600; color:#38bdf8; border-left:1px solid #334155;">{{${f}}}</th>`).join('')}
+                <th style="padding:8px 10px; width:44px; text-align:center; border-left:1px solid #334155;">Del</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        const filterVal = (container.querySelector('#input-merge-table-search')?.value || '').toLowerCase().trim();
+
+        mergeRecipients.forEach((rec, idx) => {
+          if (filterVal) {
+            const matches = fields.some(f => String(rec[f] || '').toLowerCase().includes(filterVal));
+            if (!matches) return;
+          }
+
+          html += `
+            <tr style="border-bottom:1px solid #1e293b; background:${idx % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent'};" data-row-idx="${idx}">
+              <td style="padding:6px 10px; text-align:center;">
+                <input type="checkbox" class="chk-merge-row-select" data-row-idx="${idx}" ${rec._selected ? 'checked' : ''}>
+              </td>
+              <td style="padding:6px 10px; color:#64748b; font-size:11px;">${idx + 1}</td>
+              ${fields.map(f => `
+                <td style="padding:4px 8px; border-left:1px solid #1e293b;">
+                  <input type="text" class="input-merge-cell" data-row-idx="${idx}" data-field="${f}" value="${(rec[f] !== undefined ? rec[f] : '').toString().replace(/"/g, '&quot;')}" style="width:100%; background:transparent; border:none; color:#f1f5f9; font-size:12px; outline:none; padding:3px 4px; border-radius:3px;">
+                </td>
+              `).join('')}
+              <td style="padding:6px 10px; text-align:center; border-left:1px solid #1e293b;">
+                <button class="btn-merge-row-delete" data-row-idx="${idx}" style="background:transparent; border:none; color:#ef4444; cursor:pointer; font-size:12px;" title="Delete this contact">✕</button>
+              </td>
+            </tr>
+          `;
+        });
+
+        html += `</tbody></table>`;
+        tableContainer.innerHTML = html;
+
+        const selectedCount = mergeRecipients.filter(r => r._selected).length;
+        if (tableStatsText) {
+          tableStatsText.textContent = `${mergeRecipients.length} recipients loaded (${selectedCount} selected) • Click any cell to edit • {{Fields}} map to document`;
+        }
+
+        tableContainer.querySelector('#chk-merge-select-all')?.addEventListener('change', (e) => {
+          const checked = e.target.checked;
+          mergeRecipients.forEach(r => r._selected = checked);
+          tableContainer.querySelectorAll('.chk-merge-row-select').forEach(c => c.checked = checked);
+          if (tableStatsText) tableStatsText.textContent = `${mergeRecipients.length} recipients loaded (${checked ? mergeRecipients.length : 0} selected)`;
+        });
+
+        tableContainer.querySelectorAll('.chk-merge-row-select').forEach(chk => {
+          chk.addEventListener('change', (e) => {
+            const rIdx = parseInt(e.target.dataset.rowIdx, 10);
+            if (mergeRecipients[rIdx]) mergeRecipients[rIdx]._selected = e.target.checked;
+            const selCount = mergeRecipients.filter(r => r._selected).length;
+            if (tableStatsText) tableStatsText.textContent = `${mergeRecipients.length} recipients loaded (${selCount} selected)`;
+          });
+        });
+
+        tableContainer.querySelectorAll('.input-merge-cell').forEach(inp => {
+          inp.addEventListener('input', (e) => {
+            const rIdx = parseInt(e.target.dataset.rowIdx, 10);
+            const f = e.target.dataset.field;
+            if (mergeRecipients[rIdx]) mergeRecipients[rIdx][f] = e.target.value;
+          });
+          inp.addEventListener('focus', (e) => e.target.style.background = '#1e293b');
+          inp.addEventListener('blur', (e) => e.target.style.background = 'transparent');
+        });
+
+        tableContainer.querySelectorAll('.btn-merge-row-delete').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const rIdx = parseInt(e.target.dataset.rowIdx, 10);
+            mergeRecipients.splice(rIdx, 1);
+            renderRecipientsTable();
+            updateMergeNavigatorUI();
+          });
+        });
+      }
+
+      function handleMergeFileImport(file) {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target.result;
+          try {
+            if (file.name.endsWith('.json')) {
+              const parsed = JSON.parse(content);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                mergeRecipients = parsed.map(r => ({ ...r, _selected: true }));
+                saveRecipientsToStorage();
+                renderRecipientsTable();
+                updateMergeNavigatorUI();
+                if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported ${mergeRecipients.length} recipients from JSON`);
+                return;
+              }
+            }
+            const isTsv = file.name.endsWith('.tsv') || content.includes('\t');
+            const delimiter = isTsv ? '\t' : ',';
+            const lines = content.split(/\r?\n/).filter(l => l.trim().length > 0);
+            if (lines.length < 2) {
+              alert('File must contain at least a header row and one data row.');
+              return;
+            }
+            const headers = lines[0].split(delimiter).map(h => h.trim().replace(/^["']|["']$/g, ''));
+            const newRecipients = [];
+            for (let i = 1; i < lines.length; i++) {
+              const rowVals = lines[i].split(delimiter).map(v => v.trim().replace(/^["']|["']$/g, ''));
+              const obj = { _selected: true };
+              headers.forEach((h, colIdx) => {
+                obj[h || `Col_${colIdx + 1}`] = rowVals[colIdx] || '';
+              });
+              newRecipients.push(obj);
+            }
+            if (newRecipients.length > 0) {
+              mergeRecipients = newRecipients;
+              saveRecipientsToStorage();
+              renderRecipientsTable();
+              updateMergeNavigatorUI();
+              if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Successfully loaded ${mergeRecipients.length} recipients from file!`);
+            }
+          } catch (err) {
+            alert('Failed to parse recipient file: ' + err.message);
+          }
+        };
+        reader.readAsText(file);
+      }
+
+      function importFromAxisSpreadsheet() {
+        try {
+          const axisSheetsRaw = localStorage.getItem('giri_orbit_axis_sheets');
+          let records = [];
+          if (axisSheetsRaw) {
+            const sheets = JSON.parse(axisSheetsRaw);
+            const sheetNames = Object.keys(sheets);
+            if (sheetNames.length > 0) {
+              const cells = sheets[sheetNames[0]] || [];
+              const rowMap = {};
+              cells.forEach(c => {
+                const m = c.cell.match(/^([A-Z]+)([0-9]+)$/);
+                if (m) {
+                  const col = m[1];
+                  const r = parseInt(m[2], 10);
+                  if (!rowMap[r]) rowMap[r] = {};
+                  rowMap[r][col] = c.val || '';
+                }
+              });
+              const rowNums = Object.keys(rowMap).map(Number).sort((a,b) => a - b);
+              if (rowNums.length >= 2) {
+                const headerRow = rowMap[rowNums[0]];
+                const colKeys = Object.keys(headerRow).sort();
+                for (let i = 1; i < rowNums.length; i++) {
+                  const rData = rowMap[rowNums[i]] || {};
+                  const obj = { _selected: true };
+                  colKeys.forEach(col => {
+                    const header = headerRow[col] || col;
+                    obj[header] = rData[col] || '';
+                  });
+                  records.push(obj);
+                }
+              }
+            }
+          }
+          if (records.length > 0) {
+            mergeRecipients = records;
+            saveRecipientsToStorage();
+            renderRecipientsTable();
+            updateMergeNavigatorUI();
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported ${records.length} records directly from Giri Axis!`);
+          } else {
+            alert('No structured data table found in Giri Axis sheets. Please create rows in Axis with headers in Row 1.');
+          }
+        } catch (err) {
+          alert('Could not import from Axis: ' + err.message);
+        }
+      }
+
+      function exportRecipientsCsv() {
+        if (mergeRecipients.length === 0) return;
+        const fields = getMergeFieldsList().filter(f => f !== 'FullName' && f !== 'Date');
+        let csv = fields.map(f => `"${f}"`).join(',') + '\n';
+        mergeRecipients.forEach(r => {
+          csv += fields.map(f => `"${(r[f] !== undefined ? r[f] : '').toString().replace(/"/g, '""')}"`).join(',') + '\n';
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Drift-Mail-Merge-Recipients-${new Date().toISOString().slice(0,10)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function getSelectedRecipientsByScope() {
+        const scope = container.querySelector('input[name="merge-scope"]:checked')?.value || 'all';
+        if (scope === 'current') {
+          const rec = mergeRecipients[activeMergeRecordIndex];
+          return rec ? [rec] : [];
+        } else if (scope === 'range') {
+          const from = Math.max(1, parseInt(container.querySelector('#input-merge-range-from')?.value || '1', 10)) - 1;
+          const to = Math.min(mergeRecipients.length, parseInt(container.querySelector('#input-merge-range-to')?.value || String(mergeRecipients.length), 10));
+          return mergeRecipients.slice(from, to).filter(r => r._selected);
+        } else {
+          return mergeRecipients.filter(r => r._selected);
+        }
+      }
+
+      function executeMergeToDocument(recipientsToMerge) {
+        if (!recipientsToMerge || recipientsToMerge.length === 0) {
+          alert('No recipients selected to merge.');
+          return;
+        }
+        const baseHtml = isMergePreviewActive ? mergeTemplateHtmlBackup : paper.innerHTML;
+        const mergedPages = recipientsToMerge.map((rec, i) => {
+          const mergedText = renderMergedRecordHtml(baseHtml, rec);
+          return `<div class="drift-merged-letter-page" data-recipient="${i + 1}">${mergedText}</div>`;
+        });
+        const divider = '<div class="drift-page-break" style="page-break-after:always; margin:28px 0; border-top:2px dashed #94a3b8; padding-top:16px; text-align:center; color:#64748b; font-size:11px; user-select:none;">--- Page Break (Recipient Document) ---</div>';
+        const combinedHtml = mergedPages.join(divider);
+
+        if (isMergePreviewActive) {
+          isMergePreviewActive = false;
+          if (previewMergeLabel) previewMergeLabel.textContent = 'Preview';
+          if (previewMergeBtn) { previewMergeBtn.style.background = ''; previewMergeBtn.style.color = ''; }
+        }
+
+        paper.innerHTML = combinedHtml;
+        finishMergeModal?.classList.remove('open');
+        saveDocument();
+        updateTelemetry();
+        updateOutline();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Merged ${recipientsToMerge.length} recipient documents into master document!`);
+      }
+
+      function executeMergePrint(recipientsToMerge) {
+        if (!recipientsToMerge || recipientsToMerge.length === 0) {
+          alert('No recipients selected to merge.');
+          return;
+        }
+        const baseHtml = isMergePreviewActive ? mergeTemplateHtmlBackup : paper.innerHTML;
+        const printWrap = document.createElement('div');
+        recipientsToMerge.forEach((rec) => {
+          const page = document.createElement('div');
+          page.style.cssText = 'page-break-after:always; padding:40px;';
+          page.innerHTML = renderMergedRecordHtml(baseHtml, rec);
+          printWrap.appendChild(page);
+        });
+        finishMergeModal?.classList.remove('open');
+        if (window.giriPrintManager) {
+          window.giriPrintManager.open({
+            toolType: 'document',
+            documentTitle: `Mail-Merge-${recipientsToMerge.length}-Letters`,
+            contentElement: printWrap
+          });
+        } else {
+          window.print();
+        }
+      }
+
+      function executeMergeDownload(recipientsToMerge) {
+        if (!recipientsToMerge || recipientsToMerge.length === 0) {
+          alert('No recipients selected to merge.');
+          return;
+        }
+        const baseHtml = isMergePreviewActive ? mergeTemplateHtmlBackup : paper.innerHTML;
+        recipientsToMerge.forEach((rec, i) => {
+          setTimeout(() => {
+            const mergedHtml = renderMergedRecordHtml(baseHtml, rec);
+            const fullName = `${rec.FirstName || ''}_${rec.LastName || ''}`.trim() || `Recipient_${i + 1}`;
+            const fullDoc = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${fullName} - Letter</title><style>body{font-family:system-ui,sans-serif;max-width:820px;margin:40px auto;line-height:1.6;color:#0f172a;padding:20px;}</style></head><body>${mergedHtml}</body></html>`;
+            const blob = new Blob([fullDoc], { type: 'text/html;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Letter-${fullName}.html`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }, i * 200);
+        });
+        finishMergeModal?.classList.remove('open');
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Downloading ${recipientsToMerge.length} individual customized files...`);
+      }
+
+      function executeMergeEmailDrafts(recipientsToMerge) {
+        if (!recipientsToMerge || recipientsToMerge.length === 0) {
+          alert('No recipients selected.');
+          return;
+        }
+        const baseHtml = isMergePreviewActive ? mergeTemplateHtmlBackup : paper.innerHTML;
+        let emailHtml = `
+          <div style="background:#0f172a; border:1px solid #334155; border-radius:6px; padding:12px; margin-top:12px; max-height:220px; overflow-y:auto;" id="drift-email-drafts-box">
+            <div style="font-size:11px; font-weight:700; color:#38bdf8; margin-bottom:8px;">Generated Email Drafts (${recipientsToMerge.length}):</div>
+        `;
+        recipientsToMerge.forEach((rec) => {
+          const email = rec.Email || 'No email provided';
+          const name = `${rec.FirstName || ''} ${rec.LastName || ''}`.trim();
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = renderMergedRecordHtml(baseHtml, rec);
+          const plainText = tempDiv.innerText.slice(0, 160) + '...';
+          emailHtml += `
+            <div style="background:#1e293b; border-radius:4px; padding:8px 10px; margin-bottom:6px; font-size:11px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <strong style="color:#ffffff;">To: ${name} &lt;${email}&gt;</strong>
+                <button class="btn-copy-email-body" data-body="${encodeURIComponent(tempDiv.innerText)}" style="background:#2563eb; color:#fff; border:none; padding:2px 8px; border-radius:3px; font-size:10px; cursor:pointer;">Copy Text</button>
+              </div>
+              <div style="color:#94a3b8; margin-top:4px; font-size:11px;">${plainText}</div>
+            </div>
+          `;
+        });
+        emailHtml += `</div>`;
+
+        const existing = finishMergeModal?.querySelector('#drift-email-drafts-box');
+        if (existing) existing.remove();
+        const boxWrap = document.createElement('div');
+        boxWrap.innerHTML = emailHtml;
+        finishMergeModal?.querySelector('.office-dialog-body')?.appendChild(boxWrap.firstElementChild);
+        finishMergeModal?.querySelectorAll('.btn-copy-email-body').forEach(b => {
+          b.addEventListener('click', (e) => {
+            const txt = decodeURIComponent(e.target.dataset.body);
+            navigator.clipboard?.writeText(txt);
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast('Copied email text to clipboard!');
+          });
+        });
+      }
+
+      // ── Event Listeners for Mailings Ribbon Pane ───────────────────
+
+      // 1. Start Merge Popover
+      container.querySelector('#btn-start-mail-merge')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!startMergePopover) return;
+        const isShown = startMergePopover.style.display !== 'none';
+        closeAllPopovers();
+        if (!isShown) {
+          const rect = e.currentTarget.getBoundingClientRect();
+          startMergePopover.style.top = (rect.bottom + 4) + 'px';
+          startMergePopover.style.left = rect.left + 'px';
+          startMergePopover.style.display = 'block';
+        }
+      });
+
+      startMergePopover?.querySelectorAll('.drift-popover-item').forEach(item => {
+        item.addEventListener('click', () => {
+          startMergePopover.style.display = 'none';
+          const type = item.dataset.type;
+          const template = item.dataset.template;
+          if (type) {
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Mail Merge mode: ${type.toUpperCase()}`);
+          } else if (template === 'letter') {
+            const letterTpl = `
+              <p style="text-align:right;">{{Date}}</p>
+              <br>
+              <p>
+                <span class="drift-merge-field-chip" data-field="FirstName">{{FirstName}}</span> <span class="drift-merge-field-chip" data-field="LastName">{{LastName}}</span><br>
+                <span class="drift-merge-field-chip" data-field="Company">{{Company}}</span><br>
+                <span class="drift-merge-field-chip" data-field="Address">{{Address}}</span><br>
+                <span class="drift-merge-field-chip" data-field="City">{{City}}</span>, <span class="drift-merge-field-chip" data-field="State">{{State}}</span> <span class="drift-merge-field-chip" data-field="Zip">{{Zip}}</span>
+              </p>
+              <br>
+              <p>Dear <span class="drift-merge-field-chip" data-field="FirstName">{{FirstName}}</span>,</p>
+              <br>
+              <p>We are delighted to confirm that your sovereign account with <strong><span class="drift-merge-field-chip" data-field="Company">{{Company}}</span></strong> is active and in good standing. Your recorded balance due is <strong><span class="drift-merge-field-chip" data-field="Amount">{{Amount}}</span></strong>, scheduled for settlement on <strong><span class="drift-merge-field-chip" data-field="DueDate">{{DueDate}}</span></strong>.</p>
+              <p>Should you have any inquiries regarding your statement or wish to verify your contact information registered as <em><span class="drift-merge-field-chip" data-field="Email">{{Email}}</span></em>, please contact our office at your earliest convenience.</p>
+              <br>
+              <p>Thank you for your valued partnership with our organization.</p>
+              <br>
+              <p>Sincerely,</p>
+              <p><strong>Executive Office</strong><br><em>Giri Orbit Enterprise Suite</em></p>
+            `;
+            paper.innerHTML = letterTpl;
+            saveDocument();
+            updateTelemetry();
+            updateOutline();
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast('Loaded formal Mail Merge Letter template!');
+          } else if (template === 'invoice') {
+            const invoiceTpl = `
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #2563eb; padding-bottom:12px; margin-bottom:20px;">
+                <div>
+                  <h1 style="margin:0; font-size:24px; color:#1e3a8a;">STATEMENT OF ACCOUNT</h1>
+                  <p style="margin:4px 0 0; color:#64748b; font-size:12px;">Notice Date: {{Date}}</p>
+                </div>
+                <div style="text-align:right;">
+                  <strong style="color:#2563eb; font-size:14px;">Giri Orbit Financials</strong>
+                </div>
+              </div>
+              <p>
+                <strong>Billed To:</strong><br>
+                <span class="drift-merge-field-chip" data-field="FirstName">{{FirstName}}</span> <span class="drift-merge-field-chip" data-field="LastName">{{LastName}}</span><br>
+                <span class="drift-merge-field-chip" data-field="Company">{{Company}}</span><br>
+                <span class="drift-merge-field-chip" data-field="Address">{{Address}}</span>, <span class="drift-merge-field-chip" data-field="City">{{City}}</span>
+              </p>
+              <br>
+              <table style="width:100%; border-collapse:collapse; margin:16px 0;">
+                <thead>
+                  <tr style="background:#f1f5f9; border-bottom:1px solid #cbd5e1;">
+                    <th style="padding:8px; text-align:left; font-size:12px;">Description</th>
+                    <th style="padding:8px; text-align:right; font-size:12px;">Due Date</th>
+                    <th style="padding:8px; text-align:right; font-size:12px;">Amount Due</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:8px; font-size:12px;">Enterprise Sovereign License &amp; Support</td>
+                    <td style="padding:8px; text-align:right; font-size:12px;"><span class="drift-merge-field-chip" data-field="DueDate">{{DueDate}}</span></td>
+                    <td style="padding:8px; text-align:right; font-size:12px; font-weight:700;"><span class="drift-merge-field-chip" data-field="Amount">{{Amount}}</span></td>
+                  </tr>
+                </tbody>
+              </table>
+              <p style="font-size:12px; color:#475569;">Please remit payment prior to the due date. For inquiries, contact accounts@giricorporation.com.</p>
+            `;
+            paper.innerHTML = invoiceTpl;
+            saveDocument();
+            updateTelemetry();
+            updateOutline();
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast('Loaded Mail Merge Billing Notice template!');
+          }
+        });
+      });
+
+      // 2. Select Recipients Popover & Edit Button
+      container.querySelector('#btn-select-recipients')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!selectRecipientsPopover) return;
+        const isShown = selectRecipientsPopover.style.display !== 'none';
+        closeAllPopovers();
+        if (!isShown) {
+          const rect = e.currentTarget.getBoundingClientRect();
+          selectRecipientsPopover.style.top = (rect.bottom + 4) + 'px';
+          selectRecipientsPopover.style.left = rect.left + 'px';
+          selectRecipientsPopover.style.display = 'block';
+        }
+      });
+
+      container.querySelector('#btn-popover-upload-csv')?.addEventListener('click', () => {
+        closeAllPopovers();
+        mailMergeFileInput?.click();
+      });
+
+      container.querySelector('#btn-popover-import-axis')?.addEventListener('click', () => {
+        closeAllPopovers();
+        importFromAxisSpreadsheet();
+      });
+
+      container.querySelector('#btn-popover-edit-list')?.addEventListener('click', () => {
+        closeAllPopovers();
+        openMailMergeRecipientsModal();
+      });
+
+      container.querySelector('#btn-popover-sample-data')?.addEventListener('click', () => {
+        closeAllPopovers();
+        mergeRecipients = DEFAULT_MERGE_RECIPIENTS.map(r => ({ ...r, _selected: true }));
+        saveRecipientsToStorage();
+        updateMergeNavigatorUI();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Reset to 5 built-in demo contacts');
+      });
+
+      container.querySelector('#btn-edit-recipients-list')?.addEventListener('click', openMailMergeRecipientsModal);
+
+      // File input listener for CSV/JSON upload
+      mailMergeFileInput?.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) handleMergeFileImport(file);
+        e.target.value = '';
+      });
+
+      // 3. Recipients Modal Controls
+      container.querySelector('#btn-close-merge-recipients')?.addEventListener('click', () => recipientsModal?.classList.remove('open'));
+      container.querySelector('#btn-cancel-merge-recipients')?.addEventListener('click', () => recipientsModal?.classList.remove('open'));
+      container.querySelector('#btn-apply-merge-recipients')?.addEventListener('click', () => {
+        saveRecipientsToStorage();
+        updateMergeNavigatorUI();
+        recipientsModal?.classList.remove('open');
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Saved ${mergeRecipients.length} recipients to sovereign storage!`);
+      });
+
+      container.querySelector('#btn-merge-modal-add-row')?.addEventListener('click', () => {
+        const fields = getMergeFieldsList().filter(f => f !== 'FullName' && f !== 'Date');
+        const newObj = { _selected: true };
+        fields.forEach(f => {
+          newObj[f] = f.includes('Name') ? 'New Contact' : (f.includes('Email') ? 'contact@company.com' : '');
+        });
+        mergeRecipients.push(newObj);
+        renderRecipientsTable();
+      });
+
+      container.querySelector('#btn-merge-modal-upload')?.addEventListener('click', () => mailMergeFileInput?.click());
+      container.querySelector('#btn-merge-modal-axis')?.addEventListener('click', importFromAxisSpreadsheet);
+      container.querySelector('#btn-merge-modal-sample')?.addEventListener('click', () => {
+        mergeRecipients = DEFAULT_MERGE_RECIPIENTS.map(r => ({ ...r, _selected: true }));
+        renderRecipientsTable();
+      });
+      container.querySelector('#btn-merge-modal-export')?.addEventListener('click', exportRecipientsCsv);
+      container.querySelector('#input-merge-table-search')?.addEventListener('input', renderRecipientsTable);
+
+      // 4. Write & Insert Fields
+      highlightFieldsBtn?.addEventListener('click', () => {
+        isMergeFieldsHighlighted = !isMergeFieldsHighlighted;
+        paper.classList.toggle('highlight-merge-fields', isMergeFieldsHighlighted);
+        highlightFieldsBtn.style.background = isMergeFieldsHighlighted ? 'rgba(56, 189, 248, 0.25)' : '';
+        highlightFieldsBtn.style.color = isMergeFieldsHighlighted ? '#38bdf8' : '';
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(isMergeFieldsHighlighted ? 'Merge fields highlighted' : 'Field highlights hidden');
+      });
+
+      container.querySelector('#btn-insert-address-block')?.addEventListener('click', () => {
+        paper.focus();
+        const blockHtml = `<p><span class="drift-merge-field-chip" data-field="FirstName">{{FirstName}}</span> <span class="drift-merge-field-chip" data-field="LastName">{{LastName}}</span><br><span class="drift-merge-field-chip" data-field="Company">{{Company}}</span><br><span class="drift-merge-field-chip" data-field="Address">{{Address}}</span><br><span class="drift-merge-field-chip" data-field="City">{{City}}</span>, <span class="drift-merge-field-chip" data-field="State">{{State}}</span> <span class="drift-merge-field-chip" data-field="Zip">{{Zip}}</span></p>`;
+        document.execCommand('insertHTML', false, blockHtml);
+        saveDocument();
+        updateTelemetry();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Inserted Address Block');
+      });
+
+      container.querySelector('#btn-insert-greeting-line')?.addEventListener('click', () => {
+        paper.focus();
+        const greetingHtml = `<p>Dear <span class="drift-merge-field-chip" data-field="FirstName">{{FirstName}}</span>,</p><p></p>`;
+        document.execCommand('insertHTML', false, greetingHtml);
+        saveDocument();
+        updateTelemetry();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Inserted Greeting Line');
+      });
+
+      // Insert Specific Merge Field Popover
+      container.querySelector('#btn-insert-merge-field-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!insertFieldPopover) return;
+        const isShown = insertFieldPopover.style.display !== 'none';
+        closeAllPopovers();
+        if (!isShown) {
+          const fields = getMergeFieldsList();
+          let fHtml = `<div style="font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase; padding:4px 8px;">Insert Field</div>`;
+          fields.forEach(f => {
+            fHtml += `<button class="drift-field-pick-item" data-field="${f}" style="width:100%; text-align:left; background:transparent; border:none; color:#ffffff; padding:5px 8px; border-radius:4px; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:6px;">{a} {{${f}}}</button>`;
+          });
+          insertFieldPopover.innerHTML = fHtml;
+          insertFieldPopover.querySelectorAll('.drift-field-pick-item').forEach(btn => {
+            btn.addEventListener('click', () => {
+              insertMergeFieldText(btn.dataset.field);
+              insertFieldPopover.style.display = 'none';
+            });
+            btn.addEventListener('mouseenter', () => btn.style.background = 'rgba(56, 189, 248, 0.15)');
+            btn.addEventListener('mouseleave', () => btn.style.background = 'transparent');
+          });
+
+          const rect = e.currentTarget.getBoundingClientRect();
+          insertFieldPopover.style.top = (rect.bottom + 4) + 'px';
+          insertFieldPopover.style.left = rect.left + 'px';
+          insertFieldPopover.style.display = 'block';
+        }
+      });
+
+      // 5. Preview Results & Record Navigator
+      previewMergeBtn?.addEventListener('click', toggleMergePreviewMode);
+
+      container.querySelector('#btn-merge-first')?.addEventListener('click', () => {
+        if (!isMergePreviewActive) toggleMergePreviewMode();
+        applyMergePreview(0);
+      });
+
+      container.querySelector('#btn-merge-prev')?.addEventListener('click', () => {
+        if (!isMergePreviewActive) toggleMergePreviewMode();
+        applyMergePreview(activeMergeRecordIndex - 1);
+      });
+
+      container.querySelector('#btn-merge-next')?.addEventListener('click', () => {
+        if (!isMergePreviewActive) toggleMergePreviewMode();
+        applyMergePreview(activeMergeRecordIndex + 1);
+      });
+
+      container.querySelector('#btn-merge-last')?.addEventListener('click', () => {
+        if (!isMergePreviewActive) toggleMergePreviewMode();
+        applyMergePreview(mergeRecipients.length - 1);
+      });
+
+      recordIdxInput?.addEventListener('change', (e) => {
+        const num = parseInt(e.target.value, 10);
+        if (!isNaN(num)) {
+          if (!isMergePreviewActive) toggleMergePreviewMode();
+          applyMergePreview(num - 1);
+        }
+      });
+
+      container.querySelector('#btn-find-merge-recipient')?.addEventListener('click', () => {
+        const q = prompt('Search recipient by Name, Company, or Email:');
+        if (!q || !q.trim()) return;
+        const lower = q.toLowerCase().trim();
+        const foundIdx = mergeRecipients.findIndex(r => {
+          return Object.values(r).some(val => String(val).toLowerCase().includes(lower));
+        });
+        if (foundIdx !== -1) {
+          if (!isMergePreviewActive) toggleMergePreviewMode();
+          applyMergePreview(foundIdx);
+          const found = mergeRecipients[foundIdx];
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Found: ${found.FirstName || ''} ${found.LastName || ''} (#${foundIdx + 1})`);
+        } else {
+          alert(`No contact found matching "${q}".`);
+        }
+      });
+
+      // 6. Finish & Merge Modal & Actions
+      container.querySelector('#btn-finish-mail-merge')?.addEventListener('click', () => {
+        updateMergeNavigatorUI();
+        finishMergeModal?.classList.add('open');
+      });
+
+      container.querySelector('#btn-close-finish-merge')?.addEventListener('click', () => finishMergeModal?.classList.remove('open'));
+      container.querySelector('#btn-cancel-finish-merge')?.addEventListener('click', () => finishMergeModal?.classList.remove('open'));
+
+      container.querySelector('#card-action-master-doc')?.addEventListener('click', () => {
+        const recs = getSelectedRecipientsByScope();
+        executeMergeToDocument(recs);
+      });
+
+      container.querySelector('#card-action-print-all')?.addEventListener('click', () => {
+        const recs = getSelectedRecipientsByScope();
+        executeMergePrint(recs);
+      });
+
+      container.querySelector('#card-action-download-files')?.addEventListener('click', () => {
+        const recs = getSelectedRecipientsByScope();
+        executeMergeDownload(recs);
+      });
+
+      container.querySelector('#card-action-copy-emails')?.addEventListener('click', () => {
+        const recs = getSelectedRecipientsByScope();
+        executeMergeEmailDrafts(recs);
+      });
+
+      function closeAllPopovers() {
+        if (startMergePopover) startMergePopover.style.display = 'none';
+        if (selectRecipientsPopover) selectRecipientsPopover.style.display = 'none';
+        if (insertFieldPopover) insertFieldPopover.style.display = 'none';
+      }
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#drift-start-merge-popover') && !e.target.closest('#btn-start-mail-merge') &&
+            !e.target.closest('#drift-select-recipients-popover') && !e.target.closest('#btn-select-recipients') &&
+            !e.target.closest('#drift-insert-field-popover') && !e.target.closest('#btn-insert-merge-field-btn')) {
+          closeAllPopovers();
+        }
+      });
+
+      updateMergeNavigatorUI();
 
       updateTelemetry();
       updateOutline();
