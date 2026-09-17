@@ -2632,7 +2632,7 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
                     </label>
 
                     <label class="fluent-btn-small ribbon-color-picker-wrap" title="Text Color">
-                      <span style="font-weight:900; font-size:12px; color:#ef4444; border-bottom:2px solid #ef4444;">A</span>
+                      <span id="indicator-kinetic-text" style="font-weight:900; font-size:12px; color:#ef4444; border-bottom:2px solid #ef4444;">A</span>
                       <input type="color" class="ribbon-color-input" id="input-kinetic-text" value="#ef4444">
                     </label>
                   </div>
@@ -3970,7 +3970,11 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
 
   container.querySelector('#input-kinetic-text')?.addEventListener('input', (e) => {
     document.execCommand('foreColor', false, e.target.value);
-    container.querySelector('#indicator-kinetic-text').style.background = e.target.value;
+    const ind = container.querySelector('#indicator-kinetic-text');
+    if (ind) {
+      ind.style.color = e.target.value;
+      ind.style.borderBottomColor = e.target.value;
+    }
   });
 
   container.querySelector('#kinetic-font-family')?.addEventListener('change', (e) => {

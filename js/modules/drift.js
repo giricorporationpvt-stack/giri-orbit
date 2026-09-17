@@ -2790,15 +2790,15 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       const charCountEl = container.querySelector('#drift-char-count');
       const readTimeEl = container.querySelector('#drift-read-time');
       const outlineList = container.querySelector('#doc-outline-list');
-      const voiceBtn = container.querySelector('#btn-drift-voice');
+      const voiceBtn = container.querySelector('#btn-voice-dictate-group') || container.querySelector('#btn-drift-voice');
       const voiceGroupBtn = container.querySelector('#btn-voice-dictate-group');
       const voiceStatusText = container.querySelector('#voice-status-text');
-      const returnToHubBtn = container.querySelector('#btn-return-to-hub');
+      const returnToHubBtn = container.querySelector('#btn-drift-return-hub') || container.querySelector('#btn-return-to-hub');
       container.querySelector('#btn-drift-return-hub')?.addEventListener('click', () => {
         saveDocument();
         if (window.orbitPlatform) window.orbitPlatform.navigateTo('launcher');
       });
-      const saveDocAsTemplateBtn = container.querySelector('#btn-save-doc-as-template');
+      const saveDocAsTemplateBtn = container.querySelector('#file-menu-save-template') || container.querySelector('#btn-save-doc-as-template');
       const fileMenuBtn = container.querySelector('#btn-drift-file-menu');
       const fileMenuDropdown = container.querySelector('#drift-file-menu-dropdown');
       const commentsSidebar = container.querySelector('#drift-comments-sidebar');
@@ -2878,10 +2878,14 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
             performDirectSave(false);
           } else if (key === 'p') {
             e.preventDefault();
-            container.querySelector('#btn-print-doc')?.click();
+            if (window.giriPrintManager) {
+              window.giriPrintManager.open({ toolType: 'document', documentTitle: currentDocTitle, contentElement: paper });
+            } else {
+              window.print();
+            }
           } else if (key === 'f') {
             e.preventDefault();
-            container.querySelector('#btn-open-find')?.click();
+            container.querySelector('#btn-find-replace')?.click();
           } else if (key === 'k') {
             e.preventDefault();
             container.querySelector('#btn-insert-link-dialog')?.click();
@@ -2901,7 +2905,10 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
               break;
             }
             case 'save-template': {
-              saveDocAsTemplateBtn?.click();
+              const saveTemplateModal = container.querySelector('#drift-save-template-modal');
+              const templateNameInput = container.querySelector('#custom-template-name-input');
+              saveTemplateModal?.classList.add('open');
+              templateNameInput?.focus();
               break;
             }
             case 'import-template': {
@@ -3276,7 +3283,8 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       });
 
       container.querySelector('#btn-post-comment')?.addEventListener('click', () => {
-        const txt = container.querySelector('#new-comment-textarea').value.trim();
+        const commentInput = container.querySelector('#new-comment-textarea');
+        const txt = (commentInput?.value || '').trim();
         if (!txt) return;
         comments.push({
           id: 'c_' + Date.now(),
@@ -3285,7 +3293,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           text: txt,
           resolved: false
         });
-        container.querySelector('#new-comment-textarea').value = '';
+        if (commentInput) commentInput.value = '';
         renderComments();
         if (window.orbitPlatform) window.orbitPlatform.triggerToast('Comment added!');
       });
@@ -4398,13 +4406,13 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       // Orientation & Margins & Columns
       container.querySelector('#btn-orient-portrait')?.addEventListener('click', (e) => {
         paper.classList.remove('landscape-page');
-        container.querySelector('#btn-orient-landscape').classList.remove('active');
+        container.querySelector('#btn-orient-landscape')?.classList.remove('active');
         e.currentTarget.classList.add('active');
       });
 
       container.querySelector('#btn-orient-landscape')?.addEventListener('click', (e) => {
         paper.classList.add('landscape-page');
-        container.querySelector('#btn-orient-portrait').classList.remove('active');
+        container.querySelector('#btn-orient-portrait')?.classList.remove('active');
         e.currentTarget.classList.add('active');
       });
 
@@ -4460,8 +4468,10 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           recognition?.stop();
           isListening = false;
           if (voiceStatusText) voiceStatusText.textContent = 'Dictate';
-          voiceBtn.style.background = '';
-          voiceBtn.style.color = '';
+          if (voiceBtn) {
+            voiceBtn.style.background = '';
+            voiceBtn.style.color = '';
+          }
         } else {
           recognition = new SpeechRec();
           recognition.continuous = true;
@@ -4471,8 +4481,10 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           recognition.onstart = () => {
             isListening = true;
             if (voiceStatusText) voiceStatusText.textContent = 'Listening...';
-            voiceBtn.style.background = '#dc2626';
-            voiceBtn.style.color = '#ffffff';
+            if (voiceBtn) {
+              voiceBtn.style.background = '#dc2626';
+              voiceBtn.style.color = '#ffffff';
+            }
             if (window.orbitPlatform) window.orbitPlatform.triggerToast('Microphone active — speak to dictate');
           };
 
@@ -4485,15 +4497,19 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           recognition.onerror = () => {
             isListening = false;
             if (voiceStatusText) voiceStatusText.textContent = 'Dictate';
-            voiceBtn.style.background = '';
-            voiceBtn.style.color = '';
+            if (voiceBtn) {
+              voiceBtn.style.background = '';
+              voiceBtn.style.color = '';
+            }
           };
 
           recognition.onend = () => {
             isListening = false;
             if (voiceStatusText) voiceStatusText.textContent = 'Dictate';
-            voiceBtn.style.background = '';
-            voiceBtn.style.color = '';
+            if (voiceBtn) {
+              voiceBtn.style.background = '';
+              voiceBtn.style.color = '';
+            }
           };
 
           recognition.start();
@@ -4974,14 +4990,14 @@ function calculateMetrics(records) {
       container.querySelector('#btn-view-web')?.addEventListener('click', (e) => {
         paper.style.maxWidth = '100%';
         paper.style.borderRadius = '0';
-        container.querySelector('#btn-view-paper').classList.remove('active');
+        container.querySelector('#btn-view-paper')?.classList.remove('active');
         e.currentTarget.classList.add('active');
       });
 
       container.querySelector('#btn-view-paper')?.addEventListener('click', (e) => {
         paper.style.maxWidth = '820px';
         paper.style.borderRadius = '0 0 4px 4px';
-        container.querySelector('#btn-view-web').classList.remove('active');
+        container.querySelector('#btn-view-web')?.classList.remove('active');
         e.currentTarget.classList.add('active');
       });
 

@@ -2836,7 +2836,7 @@ ${(s.features || []).map(f => `- **${f.num}** ${f.title}: ${f.desc}`).join('\n')
     }, { capture: true }); // capture phase so this runs before old handler
 
     // Close handlers
-    backdrop.querySelector('#fc-close').addEventListener('click', () => backdrop.remove());
+    backdrop.querySelector('#fc-close')?.addEventListener('click', () => backdrop.remove());
     backdrop.addEventListener('click', e => { if (e.target === backdrop) backdrop.remove(); });
     document.addEventListener('keydown', function escHandler(e) {
       if (e.key === 'Escape') { backdrop.remove(); document.removeEventListener('keydown', escHandler); }

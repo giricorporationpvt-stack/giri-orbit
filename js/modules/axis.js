@@ -2116,10 +2116,10 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
 
   // ── Axis Mobile Toolbar Listeners ─────────────────────────────
   container.querySelector('#btn-mobile-axis-undo')?.addEventListener('click', () => {
-    container.querySelector('#btn-axis-quick-undo')?.click();
+    container.querySelector('#btn-axis-undo')?.click();
   });
   container.querySelector('#btn-mobile-axis-redo')?.addEventListener('click', () => {
-    container.querySelector('#btn-axis-quick-redo')?.click();
+    container.querySelector('#btn-axis-redo')?.click();
   });
   container.querySelector('#btn-mobile-axis-sum')?.addEventListener('click', () => {
     container.querySelector('#btn-axis-home-autosum')?.click();
@@ -3547,19 +3547,19 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
           break;
         }
         case 'ins-row':
-          container.querySelector('#btn-axis-ins-row')?.click();
+          insertRowBelow();
           break;
         case 'ins-col':
-          container.querySelector('#btn-axis-ins-col')?.click();
+          insertColRight();
           break;
         case 'del-row':
-          container.querySelector('#btn-axis-del-row')?.click();
+          deleteCurrentRow();
           break;
         case 'clear':
-          container.querySelector('#btn-axis-clear')?.click();
+          container.querySelector('#btn-axis-clear-formatting')?.click();
           break;
         case 'cell-styles': {
-          const btn = container.querySelector('#btn-axis-cell-styles');
+          const btn = container.querySelector('#btn-axis-more-styles') || activeCell;
           if (btn) openCellStylesPopover(btn);
           break;
         }
@@ -3567,7 +3567,7 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
           container.querySelector('#btn-axis-cell-comment')?.click();
           break;
         case 'chart':
-          container.querySelector('#btn-axis-toggle-chart')?.click();
+          container.querySelector('#btn-axis-chart-col')?.click();
           break;
       }
     });
@@ -4296,7 +4296,7 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     if (!activeCell) return;
     const coord = parseCellCoordinates(activeCell.dataset.cellId);
     if (!coord) return;
-    appendCols(1);
+    appendColumns(1);
     if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Inserted column right of ${coord.colLetter}`);
   }
 
@@ -4551,8 +4551,8 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       </div>
     `;
     document.body.appendChild(modal);
-    modal.querySelector('#btn-close-editor-modal').addEventListener('click', () => modal.remove());
-    modal.querySelector('#btn-editor-ok').addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-close-editor-modal')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-editor-ok')?.addEventListener('click', () => modal.remove());
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
   }
 
@@ -4591,9 +4591,9 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       </div>
     `;
     document.body.appendChild(modal);
-    modal.querySelector('#btn-close-addin-modal').addEventListener('click', () => modal.remove());
-    modal.querySelector('#btn-addin-close-bottom').addEventListener('click', () => modal.remove());
-    modal.querySelector('#btn-addin-loan').addEventListener('click', () => {
+    modal.querySelector('#btn-close-addin-modal')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-addin-close-bottom')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-addin-loan')?.addEventListener('click', () => {
       modal.remove();
       const loanName = 'Loan_Calculator';
       sheetsData[loanName] = [
@@ -4609,7 +4609,7 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       loadSheet(loanName);
       if (window.orbitPlatform) window.orbitPlatform.triggerToast('Inserted Loan & Mortgage Calculator');
     });
-    modal.querySelector('#btn-addin-qr').addEventListener('click', () => {
+    modal.querySelector('#btn-addin-qr')?.addEventListener('click', () => {
       modal.remove();
       if (activeCell) {
         alert(`QR Code generated for cell ${activeCell.dataset.cellId}:\nValue: "${activeCell.textContent}"`);

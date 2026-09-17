@@ -2885,7 +2885,7 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
   // ANNOTATE TAB: HIGHLIGHTER, NOTES, SHAPES, PINS
   // =========================================================================
   container.querySelector('#btn-pdf-highlighter')?.addEventListener('click', () => {
-    const color = container.querySelector('#pdf-highlight-color').value || '#fef08a';
+    const color = container.querySelector('#pdf-highlight-color')?.value || '#fef08a';
     document.execCommand('hiliteColor', false, color);
   });
 
@@ -3668,8 +3668,8 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
   container.querySelector('#btn-close-pdf-password')?.addEventListener('click', () => passModal.classList.remove('open'));
   container.querySelector('#btn-cancel-pdf-password')?.addEventListener('click', () => passModal.classList.remove('open'));
   container.querySelector('#btn-apply-pdf-password')?.addEventListener('click', () => {
-    const p1 = container.querySelector('#input-pdf-passcode').value;
-    const p2 = container.querySelector('#input-pdf-passcode-confirm').value;
+    const p1 = container.querySelector('#input-pdf-passcode')?.value;
+    const p2 = container.querySelector('#input-pdf-passcode-confirm')?.value;
     if (!p1 || p1 !== p2) {
       alert('Passcodes do not match or are empty.');
       return;
@@ -3795,9 +3795,9 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
   container.querySelector('#btn-close-pdf-font-dialog')?.addEventListener('click', () => fontDialogModal.classList.remove('open'));
   container.querySelector('#btn-cancel-pdf-font-dialog')?.addEventListener('click', () => fontDialogModal.classList.remove('open'));
   container.querySelector('#btn-apply-pdf-font-dialog')?.addEventListener('click', () => {
-    const fam = container.querySelector('#pdf-dialog-font-family').value;
-    const sz = container.querySelector('#pdf-dialog-font-size').value;
-    document.execCommand('fontName', false, fam);
+    const fam = container.querySelector('#pdf-dialog-font-family')?.value;
+    const sz = container.querySelector('#pdf-dialog-font-size')?.value;
+    if (fam) document.execCommand('fontName', false, fam);
     if (sz) {
       document.execCommand('fontSize', false, '3');
       const sel = window.getSelection();
