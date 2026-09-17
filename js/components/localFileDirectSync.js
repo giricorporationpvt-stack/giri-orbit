@@ -143,7 +143,48 @@ class LocalFileDirectSyncEngine {
    */
   async openFromDevice({ tool, acceptTypes = {} }) {
     if (!this.isSupported()) {
-      return null;
+      return new Promise((resolve) => {
+        let input = document.getElementById(`giri-file-picker-fallback-${tool}`);
+        if (!input) {
+          input = document.createElement('input');
+          input.type = 'file';
+          input.id = `giri-file-picker-fallback-${tool}`;
+          input.style.display = 'none';
+          document.body.appendChild(input);
+        }
+        const extList = [];
+        Object.values(acceptTypes).forEach(extensions => {
+          if (Array.isArray(extensions)) extList.push(...extensions);
+        });
+        input.accept = extList.join(',') || '*/*';
+        input.onchange = (e) => {
+          const file = e.target.files?.[0];
+          if (!file) {
+            resolve(null);
+            return;
+          }
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const content = ev.target?.result;
+            this.activeHandles[tool] = null;
+            this.activeFileNames[tool] = file.name;
+            this._notifyChange(tool);
+            if (window.orbitPlatform) {
+              window.orbitPlatform.triggerToast(`✓ Opened "${file.name}"`);
+            }
+            resolve({
+              handle: null,
+              name: file.name,
+              content,
+              file
+            });
+          };
+          reader.onerror = () => resolve(null);
+          reader.readAsText(file);
+          input.value = '';
+        };
+        input.click();
+      });
     }
 
     try {

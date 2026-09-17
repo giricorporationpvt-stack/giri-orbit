@@ -800,6 +800,10 @@ class GiriOrbitPlatform {
       document.getElementById('btn-open-cmd')?.click();
     });
 
+    document.getElementById('btn-suite-shortcuts')?.addEventListener('click', () => {
+      this.openKeyboardShortcutsModal();
+    });
+
     // Keyboard navigation (Ctrl 1-5, Ctrl+/, ?, Ctrl+S on launcher)
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && ['1', '2', '3', '4', '5'].includes(e.key)) {
