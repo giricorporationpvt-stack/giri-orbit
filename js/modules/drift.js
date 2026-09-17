@@ -2874,12 +2874,8 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
             saveDocument();
           } else if (key === 's') {
             e.preventDefault();
-            if (localSync.getActiveHandle('drift')) {
-              performDirectSave(false);
-            } else {
-              saveDocument();
-              if (window.orbitPlatform) window.orbitPlatform.triggerToast('Document saved in memory. Click "Save to Device" to sync directly with a file on your PC.');
-            }
+            saveDocument();
+            performDirectSave(false);
           } else if (key === 'p') {
             e.preventDefault();
             container.querySelector('#btn-print-doc')?.click();

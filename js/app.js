@@ -19,6 +19,7 @@ import { renderPdfStudioApp } from './modules/pdfStudio.js?v=9.0';
 import { LauncherPhysicsEngine } from './physics.js?v=9.0';
 import { PrintStudioManager } from './components/printManager.js?v=9.0';
 import { syncManager } from './modules/syncManager.js?v=9.0';
+import { localSync } from './components/localFileDirectSync.js?v=9.0';
 
 class GiriOrbitPlatform {
   constructor() {
@@ -456,6 +457,14 @@ class GiriOrbitPlatform {
               <button class="tool-category-pill" data-filter="kinetic">Show</button>
               <button class="tool-category-pill" data-filter="pdf">PDF</button>
             </div>
+            <div style="display:flex; gap:6px; margin-left:4px;">
+              <button id="btn-landing-backup-device" class="btn-giri-action-pill" title="Save entire office workspace snapshot directly to your computer (Zero-DB disk sync)" style="background:#059669; color:#fff; border:1px solid #047857; font-size:11.5px; padding:5px 11px; border-radius:6px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; transition:opacity 0.15s;">
+                <span>💾</span> Backup to Device
+              </button>
+              <button id="btn-landing-restore-device" class="btn-giri-action-pill" title="Restore entire workspace from a previously saved .giriworkspace or .json file" style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; font-size:11.5px; padding:5px 11px; border-radius:6px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; transition:background 0.15s;">
+                <span>📥</span> Restore Workspace
+              </button>
+            </div>
           </div>
         </div>
 
@@ -487,6 +496,14 @@ class GiriOrbitPlatform {
     // Bind File Converter Card
     landingContainer.querySelector('#btn-open-file-converter')?.addEventListener('click', () => {
       this.mountFileConverterTool();
+    });
+
+    // Bind Direct-to-Device Workspace Backup & Restore
+    landingContainer.querySelector('#btn-landing-backup-device')?.addEventListener('click', () => {
+      this.saveWorkspaceToDevice();
+    });
+    landingContainer.querySelector('#btn-landing-restore-device')?.addEventListener('click', () => {
+      this.restoreWorkspaceFromDevice();
     });
 
     // Recent Documents Search & Filter
@@ -783,13 +800,22 @@ class GiriOrbitPlatform {
       document.getElementById('btn-open-cmd')?.click();
     });
 
-    // Keyboard navigation (Ctrl 1-5)
+    // Keyboard navigation (Ctrl 1-5, Ctrl+/, ?, Ctrl+S on launcher)
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && ['1', '2', '3', '4', '5'].includes(e.key)) {
         e.preventDefault();
         const views = ['launcher', 'drift', 'axis', 'kinetic', 'pdf'];
         const target = views[parseInt(e.key, 10) - 1];
         if (target) this.navigateTo(target);
+      } else if ((e.metaKey || e.ctrlKey) && e.key === '/') {
+        e.preventDefault();
+        this.openKeyboardShortcutsModal();
+      } else if (e.key === '?' && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName) && !document.activeElement?.isContentEditable) {
+        e.preventDefault();
+        this.openKeyboardShortcutsModal();
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 's' && this.currentView === 'launcher') {
+        e.preventDefault();
+        this.saveWorkspaceToDevice();
       }
     });
   }
@@ -810,6 +836,9 @@ class GiriOrbitPlatform {
       { name: 'Open Giri PDF Studio', category: 'Tool', action: () => this.navigateTo('pdf') },
       { name: 'Return to Suite Hub', category: 'Navigation', action: () => this.navigateTo('launcher') },
       { name: 'Toggle Fullscreen Desktop App', category: 'View', action: () => document.getElementById('nav-desktop-app')?.click() },
+      { name: '💾 Save Entire Workspace to Device (.giriworkspace)', category: 'Backup', action: () => this.saveWorkspaceToDevice() },
+      { name: '📥 Restore Entire Workspace from Device', category: 'Backup', action: () => this.restoreWorkspaceFromDevice() },
+      { name: '⌨ Keyboard Shortcuts Cheat-Sheet (Ctrl+/)', category: 'Help', action: () => this.openKeyboardShortcutsModal() },
       { name: 'Inspect Sovereign Architecture', category: 'Security', action: () => this.openSovereignModal('cloud') },
       { name: 'Inspect Security & Telemetry Specs', category: 'Security', action: () => this.openSovereignModal('security') },
       { name: 'Export Active File', category: 'Action', action: () => this.exportActiveTool() },
@@ -1346,16 +1375,221 @@ class GiriOrbitPlatform {
     this.openExportModal();
   }
 
-  exportWorkspaceBackup() {
+  async saveWorkspaceToDevice() {
     const backup = {
-      suite: 'Giri Office Suite',
+      suite: 'Giri Orbit Sovereign Office Suite',
+      version: '10.0',
       exportedAt: new Date().toISOString(),
-      drift: localStorage.getItem('giri_orbit_drift_doc'),
-      axis: localStorage.getItem('giri_orbit_axis_data'),
-      kinetic: localStorage.getItem('giri_orbit_kinetic_deck')
+      storage: {
+        drift: localStorage.getItem('giri_orbit_drift_doc') || '',
+        axis_data: localStorage.getItem('giri_orbit_axis_data') || '',
+        axis_sheets: localStorage.getItem('giri_orbit_axis_sheets') || '',
+        kinetic: localStorage.getItem('giri_orbit_kinetic_deck') || '',
+        pdf: localStorage.getItem('giri_orbit_pdf_pages') || '',
+        templates: localStorage.getItem('giri_orbit_custom_templates') || '',
+        sync_history: localStorage.getItem('giri_orbit_sync_history') || ''
+      }
     };
-    this.downloadBlob(JSON.stringify(backup, null, 2), 'application/json', 'Giri-Office-Suite-Backup.json');
-    this.showToast('Exported Full Office Suite Backup (.json)', 'violet');
+
+    const suggestedName = `Giri_Orbit_Workspace_${new Date().toISOString().slice(0, 10)}`;
+    const res = await localSync.saveToDevice({
+      tool: 'launcher',
+      content: JSON.stringify(backup, null, 2),
+      suggestedName,
+      extension: 'giriworkspace',
+      mimeType: 'application/json',
+      forcePicker: true
+    });
+
+    if (res.success) {
+      this.showToast(`✓ Workspace saved to device: ${res.name}`, 'emerald');
+    }
+  }
+
+  async restoreWorkspaceFromDevice() {
+    const res = await localSync.openFromDevice({
+      tool: 'launcher',
+      acceptTypes: {
+        'application/json': ['.giriworkspace', '.json']
+      }
+    });
+
+    if (res && res.content) {
+      this._applyWorkspaceRestore(res.content, res.name);
+    } else if (!localSync.isSupported()) {
+      let restoreInput = document.getElementById('giri-restore-workspace-input');
+      if (!restoreInput) {
+        restoreInput = document.createElement('input');
+        restoreInput.type = 'file';
+        restoreInput.id = 'giri-restore-workspace-input';
+        restoreInput.accept = '.giriworkspace,.json';
+        restoreInput.style.display = 'none';
+        document.body.appendChild(restoreInput);
+        restoreInput.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            this._applyWorkspaceRestore(ev.target.result, file.name);
+          };
+          reader.readAsText(file);
+          restoreInput.value = '';
+        });
+      }
+      restoreInput.click();
+    }
+  }
+
+  _applyWorkspaceRestore(rawJson, sourceName) {
+    try {
+      const backup = JSON.parse(rawJson);
+      const storage = backup.storage || backup;
+      let count = 0;
+
+      const keyMap = {
+        drift: 'giri_orbit_drift_doc',
+        axis_data: 'giri_orbit_axis_data',
+        axis_sheets: 'giri_orbit_axis_sheets',
+        kinetic: 'giri_orbit_kinetic_deck',
+        pdf: 'giri_orbit_pdf_pages',
+        templates: 'giri_orbit_custom_templates',
+        sync_history: 'giri_orbit_sync_history'
+      };
+
+      Object.entries(keyMap).forEach(([k, lsKey]) => {
+        if (storage[k] !== undefined && storage[k] !== null && storage[k] !== '') {
+          const val = storage[k];
+          localStorage.setItem(lsKey, typeof val === 'string' ? val : JSON.stringify(val));
+          count++;
+        }
+      });
+
+      // Legacy fallback
+      ['drift', 'axis', 'kinetic'].forEach(tool => {
+        if (backup[tool] && !storage[tool]) {
+          const map = { drift: 'giri_orbit_drift_doc', axis: 'giri_orbit_axis_data', kinetic: 'giri_orbit_kinetic_deck' };
+          localStorage.setItem(map[tool], typeof backup[tool] === 'string' ? backup[tool] : JSON.stringify(backup[tool]));
+          count++;
+        }
+      });
+
+      this.showToast(`✓ Restored ${count} module(s) from "${sourceName}"`, 'emerald');
+      const landing = document.querySelector('.zoho-suite-landing');
+      if (landing) this.renderRecentDocsGrid(landing);
+    } catch (err) {
+      alert('Invalid workspace backup format: ' + err.message);
+    }
+  }
+
+  exportWorkspaceBackup() {
+    this.saveWorkspaceToDevice();
+  }
+
+  openKeyboardShortcutsModal() {
+    let modal = document.getElementById('giri-shortcuts-modal-backdrop');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'giri-shortcuts-modal-backdrop';
+      modal.style.cssText = `
+        position:fixed; inset:0; z-index:99999;
+        background:rgba(15,23,42,0.65); backdrop-filter:blur(8px);
+        display:flex; align-items:center; justify-content:center;
+        animation:scFadeIn 0.18s ease;
+      `;
+      modal.innerHTML = `
+        <style>
+          @keyframes scFadeIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+          .sc-card { background:#0f172a; color:#f8fafc; border:1px solid #334155; border-radius:14px; box-shadow:0 24px 60px rgba(0,0,0,0.5); padding:28px 32px; width:720px; max-width:94vw; max-height:88vh; overflow-y:auto; font-family:'Plus Jakarta Sans',system-ui,sans-serif; }
+          .sc-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #1e293b; padding-bottom:14px; }
+          .sc-title { font-size:18px; font-weight:800; color:#38bdf8; display:flex; align-items:center; gap:8px; }
+          .sc-close { background:none; border:none; color:#94a3b8; font-size:22px; cursor:pointer; padding:2px 8px; border-radius:6px; }
+          .sc-close:hover { color:#fff; background:#1e293b; }
+          .sc-grid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:18px; }
+          .sc-section { background:#1e293b; border:1px solid #334155; border-radius:10px; padding:16px; }
+          .sc-section-title { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+          .sc-row { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid #0f172a; font-size:12.5px; }
+          .sc-row:last-child { border-bottom:none; }
+          .sc-key { background:#0f172a; border:1px solid #475569; border-radius:5px; padding:2px 7px; font-family:monospace; font-size:11px; font-weight:700; color:#38bdf8; box-shadow:0 2px 0 #1e293b; }
+          .sc-key-highlight { background:#047857; border-color:#10b981; color:#fff; }
+        </style>
+        <div class="sc-card">
+          <div class="sc-header">
+            <div class="sc-title">
+              <span>⌨</span> Giri Orbit — Sovereign Keyboard Shortcuts
+            </div>
+            <button class="sc-close" id="btn-close-sc">&times;</button>
+          </div>
+          <div class="sc-grid">
+            <!-- Global / Platform -->
+            <div class="sc-section">
+              <div class="sc-section-title" style="color:#38bdf8;">🌐 Universal / Platform</div>
+              <div class="sc-row"><span>Direct Save to Device (Disk)</span> <span class="sc-key sc-key-highlight">Ctrl + S</span></div>
+              <div class="sc-row"><span>Command Palette</span> <span class="sc-key">Ctrl + K</span></div>
+              <div class="sc-row"><span>AI Executive Copilot</span> <span class="sc-key">Ctrl + J</span></div>
+              <div class="sc-row"><span>Switch to Writer (Drift)</span> <span class="sc-key">Ctrl + 2</span></div>
+              <div class="sc-row"><span>Switch to Sheet (Axis)</span> <span class="sc-key">Ctrl + 3</span></div>
+              <div class="sc-row"><span>Switch to Show (Kinetic)</span> <span class="sc-key">Ctrl + 4</span></div>
+              <div class="sc-row"><span>Switch to PDF Studio</span> <span class="sc-key">Ctrl + 5</span></div>
+              <div class="sc-row"><span>Show Shortcuts Guide</span> <span class="sc-key">Ctrl + / or ?</span></div>
+            </div>
+
+            <!-- Drift (Docs) -->
+            <div class="sc-section">
+              <div class="sc-section-title" style="color:#60a5fa;">📄 Giri Drift (Word Processor)</div>
+              <div class="sc-row"><span>Direct Disk Sync (.gdrift)</span> <span class="sc-key sc-key-highlight">Ctrl + S</span></div>
+              <div class="sc-row"><span>Undo / Redo</span> <span class="sc-key">Ctrl + Z / Y</span></div>
+              <div class="sc-row"><span>Bold / Italic / Underline</span> <span class="sc-key">Ctrl + B / I / U</span></div>
+              <div class="sc-row"><span>Find & Replace in Doc</span> <span class="sc-key">Ctrl + F</span></div>
+              <div class="sc-row"><span>Insert Hyperlink</span> <span class="sc-key">Ctrl + K</span></div>
+              <div class="sc-row"><span>Print Document</span> <span class="sc-key">Ctrl + P</span></div>
+            </div>
+
+            <!-- Axis (Sheets) -->
+            <div class="sc-section">
+              <div class="sc-section-title" style="color:#34d399;">📊 Giri Axis (Spreadsheets)</div>
+              <div class="sc-row"><span>Direct Disk Sync (.gaxis)</span> <span class="sc-key sc-key-highlight">Ctrl + S</span></div>
+              <div class="sc-row"><span>Copy Range / Matrix</span> <span class="sc-key">Ctrl + C</span></div>
+              <div class="sc-row"><span>Paste Range Data</span> <span class="sc-key">Ctrl + V</span></div>
+              <div class="sc-row"><span>Expand Formula Bar</span> <span class="sc-key">Shift + Ctrl + U</span></div>
+              <div class="sc-row"><span>Navigate Active Cell</span> <span class="sc-key">Arrow Keys / Enter</span></div>
+              <div class="sc-row"><span>Format as Currency</span> <span class="sc-key">Ctrl + Shift + $</span></div>
+            </div>
+
+            <!-- Kinetic (Presentations) -->
+            <div class="sc-section">
+              <div class="sc-section-title" style="color:#f87171;">🎞 Giri Kinetic (Show Deck)</div>
+              <div class="sc-row"><span>Direct Disk Sync (.gkinetic)</span> <span class="sc-key sc-key-highlight">Ctrl + S</span></div>
+              <div class="sc-row"><span>Launch Fullscreen Show</span> <span class="sc-key">F5</span></div>
+              <div class="sc-row"><span>Next Slide</span> <span class="sc-key">PageDown / ↓</span></div>
+              <div class="sc-row"><span>Previous Slide</span> <span class="sc-key">PageUp / ↑</span></div>
+              <div class="sc-row"><span>Exit Presentation</span> <span class="sc-key">Escape</span></div>
+            </div>
+
+            <!-- Aegis PDF Studio -->
+            <div class="sc-section" style="grid-column: 1 / -1;">
+              <div class="sc-section-title" style="color:#fb923c;">📑 Aegis PDF Studio</div>
+              <div class="sc-row"><span>Direct Disk Sync (.gpdf)</span> <span class="sc-key sc-key-highlight">Ctrl + S</span></div>
+              <div class="sc-row"><span>High-Res Vector Print</span> <span class="sc-key">Ctrl + P</span></div>
+              <div class="sc-row"><span>Dismiss Toolbars & Drawers</span> <span class="sc-key">Escape</span></div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#btn-close-sc')?.addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.remove();
+      });
+      document.addEventListener('keydown', function escShortcuts(e) {
+        if (e.key === 'Escape') {
+          modal.remove();
+          document.removeEventListener('keydown', escShortcuts);
+        }
+      });
+    } else {
+      modal.remove();
+    }
   }
 
   /**

@@ -911,11 +911,11 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
           <div class="fluent-top-actions">
             <button class="fluent-sync-action-pill" id="btn-pdf-browser-sync" title="Browser Sync: Edits and signatures automatically save to browser storage. Click to open sync manager.">
               <span class="sync-dot-live"></span>
-              <span id="txt-pdf-sync-status">Synced to Browser</span>
+              <span id="txt-pdf-browser-sync-status">Synced to Browser</span>
             </button>
             <button class="fluent-top-action-pill" id="btn-pdf-save-device" title="Direct Disk Sync: Save PDF directly to your computer without re-downloads" style="background:#059669; color:#ffffff; font-weight:600; border-color:#047857;">
               <span style="font-size:12px;">💾</span>
-              <span id="txt-pdf-sync-status">Save PDF</span>
+              <span id="txt-pdf-sync-status">Save to Device</span>
             </button>
             <button class="fluent-top-action-pill" id="btn-pdf-comments" title="Comments">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -2097,7 +2097,61 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
     }
   });
 
+  // Direct Local Disk Save & Sync (FSA API)
+  const pdfSaveDeviceBtn = container.querySelector('#btn-pdf-save-device');
+  const pdfSyncStatusText = container.querySelector('#txt-pdf-sync-status');
+
+  const performPdfDirectSave = async (forcePicker = false) => {
+    try { localStorage.setItem('giri_orbit_pdf_pages', JSON.stringify(pages)); } catch {}
+    if (typeof window !== 'undefined' && window.giriSyncManager) {
+      const docTitle = pages[0]?.title || 'PDF Document';
+      window.giriSyncManager.recordSync('pdf', pages, docTitle, {
+        snippet: `Cryptographically sealed PDF with ${pages.length} page(s).`,
+        stats: `${pages.length} Pages • ISO Compliant • Sovereign`
+      });
+    }
+    const docTitle = pages[0]?.title || 'Aegis_Document';
+    const res = await localSync.saveToDevice({
+      tool: 'pdf',
+      content: JSON.stringify(pages, null, 2),
+      suggestedName: docTitle.replace(/[^a-zA-Z0-9_-]/g, '_'),
+      extension: 'gpdf',
+      mimeType: 'application/json',
+      forcePicker
+    });
+    if (res.success && res.mode === 'direct' && pdfSyncStatusText) {
+      pdfSyncStatusText.textContent = `● ${res.name.slice(0, 12)}`;
+      if (pdfSaveDeviceBtn) pdfSaveDeviceBtn.style.background = '#047857';
+    }
+  };
+
+  const performPdfDirectOpen = async () => {
+    const res = await localSync.openFromDevice({
+      tool: 'pdf',
+      acceptTypes: { 'application/json': ['.gpdf', '.json'] }
+    });
+    if (res && res.content) {
+      try {
+        const parsed = JSON.parse(res.content);
+        if (Array.isArray(parsed)) {
+          pages = parsed;
+          activePageIndex = 0;
+          renderPagesSidebar();
+          switchPage(0);
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Loaded "${res.name}" with live direct disk sync`);
+        }
+      } catch (err) {
+        alert('Invalid PDF document data format.');
+      }
+    }
+  };
+
   document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      performPdfDirectSave(false);
+      return;
+    }
     if (e.key === 'Escape') {
       fileMenuDropdown?.classList.remove('open');
       container.querySelectorAll('.office-modal-backdrop').forEach(m => m.classList.remove('open'));
@@ -2113,24 +2167,10 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
       fileMenuDropdown.classList.remove('open');
       switch (action) {
         case 'save-device':
-          localSync.save(syncDoc, 'Aegis_Document.pdf');
+          performPdfDirectSave(true);
           break;
         case 'open-device':
-          localSync.open((data, filename) => {
-            try {
-              const parsed = JSON.parse(data);
-              if (Array.isArray(parsed)) {
-                pages = parsed;
-                activePageIndex = 0;
-                renderPagesSidebar();
-                switchPage(0);
-                if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Opened ${filename} successfully`);
-              }
-            } catch {
-              contentWrapper.innerHTML = data;
-              if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Imported ${filename}`);
-            }
-          });
+          performPdfDirectOpen();
           break;
         case 'new':
           if (confirm('Create new blank PDF document?')) {
@@ -2311,7 +2351,19 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
 
   // Top action pills
   container.querySelector('#btn-pdf-save-device')?.addEventListener('click', () => {
-    localSync.save(syncDoc, 'Aegis_Document.pdf');
+    performPdfDirectSave(false);
+  });
+
+  localSync.subscribe((tool, fileName, handle) => {
+    if (tool === 'pdf' && pdfSyncStatusText) {
+      if (fileName) {
+        pdfSyncStatusText.textContent = `● ${fileName.slice(0, 12)}`;
+        if (pdfSaveDeviceBtn) pdfSaveDeviceBtn.style.background = '#047857';
+      } else {
+        pdfSyncStatusText.textContent = 'Save to Device';
+        if (pdfSaveDeviceBtn) pdfSaveDeviceBtn.style.background = '#059669';
+      }
+    }
   });
 
   container.querySelector('#btn-pdf-share')?.addEventListener('click', () => {

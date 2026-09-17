@@ -2404,7 +2404,7 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
           <div class="fluent-top-actions">
             <button class="fluent-sync-action-pill" id="btn-kinetic-browser-sync" title="Browser Sync: Slides automatically save to browser storage. Click to open sync manager.">
               <span class="sync-dot-live"></span>
-              <span id="txt-kinetic-sync-status">Synced to Browser</span>
+              <span id="txt-kinetic-browser-sync-status">Synced to Browser</span>
             </button>
             <button class="fluent-top-action-pill" id="btn-kinetic-save-device" title="Direct Disk Sync: Save presentation directly to your computer without re-downloads" style="background:#059669; color:#ffffff; font-weight:600; border-color:#047857;">
               <span style="font-size:12px;">💾</span>
@@ -3387,6 +3387,12 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
       const action = item.dataset.action;
       fileMenuDropdown.classList.remove('open');
       switch (action) {
+        case 'save-device':
+          performKineticDirectSave(true);
+          break;
+        case 'open-device':
+          performKineticDirectOpen();
+          break;
         case 'new':
           if (confirm('Create a new blank presentation?')) {
             slidesData = [{ id: 1, layout: 'title', tag: 'TITLE 01', title: 'New Presentation', desc: 'Presentation subtitle', features: [], notes: '' }];
@@ -3451,6 +3457,65 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     const url = window.orbitPlatform ? window.orbitPlatform.getToolUrl('kinetic') : `${window.location.origin}/#kinetic`;
     navigator.clipboard?.writeText(url);
     if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Copied direct link to Giri Kinetic: ${url}`);
+  });
+
+  // Direct Local Disk Save & Sync (FSA API)
+  const kineticSaveDeviceBtn = container.querySelector('#btn-kinetic-save-device');
+  const kineticSyncStatusText = container.querySelector('#txt-kinetic-sync-status');
+
+  const performKineticDirectSave = async (forcePicker = false) => {
+    saveDeck();
+    const currentTitle = slidesData[0]?.title || 'Presentation';
+    const res = await localSync.saveToDevice({
+      tool: 'kinetic',
+      content: JSON.stringify(slidesData, null, 2),
+      suggestedName: currentTitle.replace(/[^a-zA-Z0-9_-]/g, '_'),
+      extension: 'gkinetic',
+      mimeType: 'application/json',
+      forcePicker
+    });
+    if (res.success && res.mode === 'direct' && kineticSyncStatusText) {
+      kineticSyncStatusText.textContent = `● ${res.name.slice(0, 12)}`;
+      if (kineticSaveDeviceBtn) kineticSaveDeviceBtn.style.background = '#047857';
+    }
+  };
+
+  const performKineticDirectOpen = async () => {
+    const res = await localSync.openFromDevice({
+      tool: 'kinetic',
+      acceptTypes: { 'application/json': ['.gkinetic', '.json'] }
+    });
+    if (res && res.content) {
+      try {
+        const parsed = JSON.parse(res.content);
+        if (Array.isArray(parsed)) {
+          slidesData = parsed;
+          currentSlideIndex = 0;
+          renderNavThumbnails();
+          renderActiveSlide();
+          saveDeck();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Loaded "${res.name}" with live direct disk sync`);
+        }
+      } catch (err) {
+        alert('Invalid presentation file format.');
+      }
+    }
+  };
+
+  kineticSaveDeviceBtn?.addEventListener('click', () => performKineticDirectSave(false));
+  container.querySelector('#file-menu-kinetic-save-device')?.addEventListener('click', () => performKineticDirectSave(true));
+  container.querySelector('#file-menu-kinetic-open-device')?.addEventListener('click', () => performKineticDirectOpen());
+
+  localSync.subscribe((tool, fileName, handle) => {
+    if (tool === 'kinetic' && kineticSyncStatusText) {
+      if (fileName) {
+        kineticSyncStatusText.textContent = `● ${fileName.slice(0, 12)}`;
+        if (kineticSaveDeviceBtn) kineticSaveDeviceBtn.style.background = '#047857';
+      } else {
+        kineticSyncStatusText.textContent = 'Save to Device';
+        if (kineticSaveDeviceBtn) kineticSaveDeviceBtn.style.background = '#059669';
+      }
+    }
   });
   
   // Fullscreen HUD elements
@@ -5956,8 +6021,14 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
   function renderNavThumbnails() { renderThumbnails(); }
   function renderActiveSlide() { switchSlide(currentSlideIndex); }
 
-  // Keyboard navigation for slides (PageUp / PageDown / F5)
+  // Keyboard navigation for slides (PageUp / PageDown / F5 / Ctrl+S)
   document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      e.preventDefault();
+      saveDeck();
+      performKineticDirectSave(false);
+      return;
+    }
     const isEditing = ['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName) || document.activeElement?.isContentEditable;
     if (e.key === 'F5') {
       e.preventDefault();

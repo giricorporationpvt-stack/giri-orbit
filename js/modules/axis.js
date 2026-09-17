@@ -889,9 +889,13 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
 
           <!-- Top-Right Actions (Exact Match to Image 2) -->
           <div class="fluent-top-actions">
+            <button class="fluent-top-action-pill" id="btn-axis-save-device" title="Direct Disk Sync: Save spreadsheet directly to your PC without re-downloads" style="background:#059669; color:#ffffff; font-weight:600; border-color:#047857;">
+              <span style="font-size:12px;">💾</span>
+              <span id="txt-axis-sync-status">Save to Device</span>
+            </button>
             <button class="fluent-sync-action-pill" id="btn-axis-browser-sync" title="Browser Sync: Changes automatically save to browser storage. Click to open sync manager.">
               <span class="sync-dot-live"></span>
-              <span id="txt-axis-sync-status">Synced to Browser</span>
+              <span id="txt-axis-browser-sync-status">Synced to Browser</span>
             </button>
             <button class="fluent-top-action-pill" id="btn-axis-comments" title="Comments & Notes">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -3836,10 +3840,9 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
   const performAxisDirectOpen = async () => {
     const res = await localSync.openFromDevice({
       tool: 'axis',
-      extension: 'gaxis',
-      accept: { 'application/json': ['.gaxis', '.json'] }
+      acceptTypes: { 'application/json': ['.gaxis', '.json'] }
     });
-    if (res.success && res.content) {
+    if (res && res.content) {
       try {
         const parsed = JSON.parse(res.content);
         if (parsed && typeof parsed === 'object') {
@@ -3849,7 +3852,7 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
           renderSheetTabs();
           loadSheet(firstSheet);
           saveAllSheets();
-          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Loaded "${res.name}" with live direct sync`);
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Loaded "${res.name}" with live direct disk sync`);
         }
       } catch (err) {
         alert('Invalid workbook file format.');
@@ -5845,12 +5848,8 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       }
       if (k === 's') {
         e.preventDefault();
-        if (localSync.getActiveHandle('axis')) {
-          performAxisDirectSave(false);
-        } else {
-          saveCurrentSheet();
-          if (window.orbitPlatform) window.orbitPlatform.triggerToast('Workbook saved locally');
-        }
+        saveCurrentSheet();
+        performAxisDirectSave(false);
         return;
       }
       if (e.shiftKey && k === 'u') {
