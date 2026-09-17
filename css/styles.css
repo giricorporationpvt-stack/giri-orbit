@@ -4037,3 +4037,483 @@ body.dark .drift-merge-field-chip {
   background: rgba(255, 255, 255, 0.08) !important;
 }
 
+/* ==========================================================================
+   GIRIONIX AI — SOVEREIGN POLYMATH WORKSPACE & FLOATING ASSISTANT
+   ========================================================================== */
+
+/* 1. Floating AI Assistant Trigger Pill */
+.girionix-floating-trigger {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9990;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+.girionix-floating-trigger:hover {
+  transform: translateY(-2px) scale(1.03);
+}
+.girionix-floating-trigger:active {
+  transform: translateY(1px) scale(0.98);
+}
+.girionix-floating-aura {
+  position: absolute;
+  inset: -3px;
+  border-radius: 40px;
+  background: linear-gradient(135deg, #06b6d4, #3b82f6, #8b5cf6);
+  opacity: 0.7;
+  filter: blur(8px);
+  animation: girionixAuraPulse 3s ease-in-out infinite alternate;
+  z-index: 0;
+}
+@keyframes girionixAuraPulse {
+  0% { opacity: 0.4; filter: blur(6px); transform: scale(0.97); }
+  100% { opacity: 0.85; filter: blur(10px); transform: scale(1.04); }
+}
+.girionix-floating-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #090d16;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  border-radius: 40px;
+  padding: 9px 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+.girionix-floating-icon {
+  font-size: 15px;
+  background: linear-gradient(135deg, #38bdf8, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.8));
+}
+.girionix-floating-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 0.2px;
+  font-family: var(--font-display);
+}
+
+/* 2. Girionix AI Assistant Side-Panel Drawer */
+.girionix-ai-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 440px;
+  max-width: 95vw;
+  z-index: 10006;
+  background: #090d16;
+  border-left: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: -12px 0 40px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), width 0.25s ease;
+}
+.girionix-ai-drawer.open {
+  transform: translateX(0);
+}
+.girionix-ai-drawer.expanded {
+  width: 720px;
+  max-width: 98vw;
+}
+
+/* Drawer Header */
+.girionix-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #05070e;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.girionix-drawer-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.girionix-drawer-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.6);
+}
+.girionix-drawer-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+.girionix-status-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 12px;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+.girionix-drawer-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+.girionix-drawer-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.girionix-icon-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 13px;
+  transition: all 0.15s ease;
+}
+.girionix-icon-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+/* Drawer Tabs */
+.girionix-drawer-tabs {
+  display: flex;
+  background: #090d16;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 10px;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.girionix-tab-btn {
+  flex: 1;
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.girionix-tab-btn:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.04);
+}
+.girionix-tab-btn.active {
+  background: rgba(6, 182, 212, 0.15);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+/* Drawer Panes */
+.girionix-drawer-pane {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  overflow: hidden;
+}
+.girionix-drawer-pane.active {
+  display: flex;
+}
+
+/* Frame Controls */
+.girionix-frame-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px;
+  background: #05070e;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  color: #64748b;
+  font-family: var(--font-mono, monospace);
+  flex-shrink: 0;
+}
+.girionix-frame-url {
+  color: #38bdf8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.girionix-mini-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #cbd5e1;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.girionix-mini-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+}
+.girionix-iframe-wrap {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #07080e;
+}
+.girionix-iframe-wrap iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* Quick Assist Header & Custom Prompt */
+.girionix-quick-header {
+  padding: 14px 16px;
+  background: #05070e;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.girionix-active-tool-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+.girionix-active-tool-badge strong {
+  color: #38bdf8;
+}
+.girionix-quick-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+  line-height: 1.45;
+}
+.girionix-custom-prompt-wrap {
+  display: flex;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #070913;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+.girionix-custom-prompt-wrap input {
+  flex: 1;
+  background: #111726;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #f8fafc;
+  font-size: 12px;
+  outline: none;
+  font-family: var(--font-body);
+}
+.girionix-custom-prompt-wrap input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.25);
+}
+.girionix-custom-prompt-wrap button {
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  border: none;
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 0 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.girionix-custom-prompt-wrap button:hover {
+  opacity: 0.9;
+}
+.girionix-quick-cards {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.girionix-prompt-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.girionix-prompt-card:hover {
+  background: rgba(6, 182, 212, 0.08);
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-1px);
+}
+.girionix-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+.girionix-card-tag {
+  font-size: 10px;
+  font-weight: 700;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.girionix-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #f1f5f9;
+  margin: 0 0 4px 0;
+}
+.girionix-card-desc {
+  font-size: 11.5px;
+  color: #94a3b8;
+  line-height: 1.45;
+  margin: 0 0 8px 0;
+}
+.girionix-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+.girionix-card-btn {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  border-radius: 4px;
+  padding: 3px 9px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.girionix-card-btn:hover {
+  background: #38bdf8;
+  color: #0f172a;
+}
+
+/* 3. Full Workspace Mode (#girionix) */
+.girionix-workspace-container {
+  width: 100%;
+  height: calc(100vh - 44px);
+  display: flex;
+  flex-direction: column;
+  background: #07080e;
+  overflow: hidden;
+}
+.girionix-workspace-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 18px;
+  background: #0b0f19;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  color: #f8fafc;
+  z-index: 10;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.girionix-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.girionix-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.girionix-topbar-brand-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+}
+.girionix-topbar-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+.girionix-topbar-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+.girionix-quick-jumps {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.girionix-jump-pill {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  padding: 3px 9px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.girionix-jump-pill:hover {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+.girionix-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.girionix-full-iframe-wrapper {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #07080e;
+}
+.girionix-full-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}

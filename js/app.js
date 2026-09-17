@@ -42,6 +42,7 @@ class GiriOrbitPlatform {
     this.initSyncSystem();
     this.initCommandPalette();
     this.initAiCopilot();
+    this.initGirionixAiDrawer();
     this.initUniversalImportExport();
     this.initExportModal();
     this.initSovereignModal();
@@ -105,6 +106,7 @@ class GiriOrbitPlatform {
     if (['axis', 'sheet', 'sheets', 'excel', 'matrix'].includes(target)) return 'axis';
     if (['kinetic', 'presentation', 'presentations', 'show', 'deck', 'decks', 'ppt', 'powerpoint'].includes(target)) return 'kinetic';
     if (['pdf', 'aegis', 'pdfstudio', 'pdf-studio'].includes(target)) return 'pdf';
+    if (['girionix', 'ai', 'copilot', 'assistant', 'chat', 'polymath'].includes(target)) return 'girionix';
     return 'launcher';
   }
 
@@ -128,7 +130,8 @@ class GiriOrbitPlatform {
       drift: 'Giri Drift (Docs)',
       axis: 'Giri Axis (Sheets)',
       kinetic: 'Giri Kinetic (Presentation)',
-      pdf: 'Giri Aegis (PDF Studio)'
+      pdf: 'Giri Aegis (PDF Studio)',
+      girionix: 'Girionix AI Polymath Studio'
     };
     const name = toolNames[tool] || tool;
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -200,7 +203,81 @@ class GiriOrbitPlatform {
     } else if (view === 'pdf') {
       renderPdfStudioApp(this.workspace, null, false);
       this.showToast('Giri Aegis PDF Studio Ready', 'orange');
+    } else if (view === 'girionix') {
+      this.mountGirionixAiStudio();
+      this.showToast('Girionix AI Polymath Studio Connected', 'blue');
     }
+  }
+
+  /**
+   * Mount the Girionix AI Polymath Studio Workspace
+   */
+  mountGirionixAiStudio() {
+    this.workspace.innerHTML = `
+      <div class="girionix-workspace-container">
+        <!-- Top Companion Control Bar -->
+        <div class="girionix-workspace-topbar">
+          <div class="girionix-topbar-left">
+            <div class="girionix-topbar-brand">
+              <div class="girionix-topbar-brand-mark">⚡</div>
+              <div>
+                <span class="girionix-topbar-title">Girionix AI Polymath Studio</span>
+                <span class="girionix-status-badge" style="margin-left:6px;">🟢 Sovereign Engine</span>
+              </div>
+            </div>
+            <div class="girionix-quick-jumps">
+              <span class="girionix-jump-pill" data-mode="code" title="React 18 Live IDE & Superhuman Coding">💻 Code Studio</span>
+              <span class="girionix-jump-pill" data-mode="screenplay" title="Hollywood Screenplay & Creative Writing">📜 Screenplay</span>
+              <span class="girionix-jump-pill" data-mode="math" title="Olympiad Math Proofs & Derivations">📐 Math Olympiad</span>
+              <span class="girionix-jump-pill" data-mode="vision" title="8K FLUX Vision & Photorealism">🎨 VisionForge 8K</span>
+              <span class="girionix-jump-pill" data-mode="titan" title="100% Offline Titan On-Device Intelligence">⚡ Titan Offline</span>
+            </div>
+          </div>
+          <div class="girionix-topbar-right">
+            <button class="girionix-mini-btn" id="btn-girionix-full-reload" title="Reload Studio Engine">🔄 Reload</button>
+            <a href="https://girionix-ai.pages.dev/" target="_blank" rel="noopener" class="girionix-mini-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Open in External Tab">
+              <span>↗ Popout</span>
+            </a>
+            <button class="girionix-mini-btn" id="btn-girionix-copilot-toggle" title="Toggle Assistant Side-Panel">💬 Assistant</button>
+            <button class="girionix-mini-btn" id="btn-girionix-copy-link" title="Copy Direct Link">🔗 Share</button>
+          </div>
+        </div>
+
+        <!-- Full-Viewport Iframe Wrapper -->
+        <div class="girionix-full-iframe-wrapper">
+          <iframe 
+            id="girionix-main-workspace-frame" 
+            class="girionix-full-iframe" 
+            src="https://girionix-ai.pages.dev/" 
+            title="Girionix AI Sovereign Polymath Workspace"
+            allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen">
+          </iframe>
+        </div>
+      </div>
+    `;
+
+    // Wire action buttons
+    const frame = this.workspace.querySelector('#girionix-main-workspace-frame');
+    this.workspace.querySelector('#btn-girionix-full-reload')?.addEventListener('click', () => {
+      if (frame) {
+        frame.src = 'https://girionix-ai.pages.dev/';
+        this.showToast('Reloaded Girionix AI Workspace', 'blue');
+      }
+    });
+
+    this.workspace.querySelector('#btn-girionix-copilot-toggle')?.addEventListener('click', () => {
+      this.toggleGirionixAiDrawer();
+    });
+
+    this.workspace.querySelector('#btn-girionix-copy-link')?.addEventListener('click', () => {
+      this.copyToolLink('girionix');
+    });
+
+    this.workspace.querySelectorAll('.girionix-jump-pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        this.showToast(`Switched focus to Girionix ${pill.textContent.trim()}`, 'blue');
+      });
+    });
   }
 
   /**
@@ -257,6 +334,18 @@ class GiriOrbitPlatform {
                   <span class="instagram-sub">Connect on Instagram &rarr;</span>
                 </div>
               </a>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <span class="follow-journey-label">GIRIONIX AI</span>
+              <div class="giri-corp-card" id="btn-hero-launch-girionix" style="cursor:pointer;" title="Launch Girionix AI Polymath Studio">
+                <div class="corp-logo-badge" style="width:42px; height:42px; border-radius:11px; background:linear-gradient(135deg, #06b6d4, #2563eb); border:1px solid #38bdf8; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px; color:#fff; box-shadow:0 0 12px rgba(6,182,212,0.5);">
+                  ⚡
+                </div>
+                <div class="instagram-card-text">
+                  <strong class="instagram-handle" style="color:#0f172a;">Girionix AI</strong>
+                  <span class="instagram-sub" style="color:#0284c7;">girionix-ai.pages.dev &rarr;</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -345,6 +434,45 @@ class GiriOrbitPlatform {
                 <span class="app-card-title">File Convert</span>
                 <span class="app-card-url-badge" style="color:#9333ea; background:#fdf4ff;">CONVERT</span>
               </div>
+            </div>
+
+            <!-- 6. Girionix AI Polymath Studio -->
+            <div class="zoho-app-card" data-launch="girionix" role="button" tabindex="0" title="Launch Girionix AI Polymath Studio (https://girionix-ai.pages.dev/)">
+              <div class="app-card-icon">
+                <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
+                  <rect x="4" y="4" width="24" height="24" rx="5" fill="#ecfeff" stroke="#06b6d4" stroke-width="2"/>
+                  <polygon points="17 6 7 18 15 18 13 26 23 14 15 14 17 6" fill="#06b6d4"/>
+                </svg>
+              </div>
+              <div class="app-card-meta">
+                <span class="app-card-prefix">GIRI</span>
+                <span class="app-card-title">Girionix AI</span>
+                <span class="app-card-url-badge" style="color:#0891b2; background:#ecfeff;">#girionix</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Girionix AI Sovereign Showcase Card -->
+          <div class="girionix-hero-banner" style="margin-top:16px; padding:14px 18px; background:linear-gradient(135deg, rgba(6,182,212,0.08), rgba(59,130,246,0.12)); border:1px solid rgba(56,189,248,0.3); border-radius:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <div style="width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg, #06b6d4, #2563eb); display:flex; align-items:center; justify-content:center; font-size:18px; color:#fff; box-shadow:0 0 12px rgba(6,182,212,0.5); flex-shrink:0;">⚡</div>
+              <div>
+                <div style="display:flex; align-items:center; gap:6px;">
+                  <strong style="font-size:13.5px; color:#0f172a;">Girionix AI — Sovereign Polymath Workspace</strong>
+                  <span style="font-size:9.5px; font-weight:700; background:rgba(6,182,212,0.18); color:#0284c7; padding:1px 6px; border-radius:10px; border:1px solid rgba(6,182,212,0.3);">NEW AI SUITE</span>
+                </div>
+                <p style="font-size:11.5px; color:#64748b; margin:2px 0 0 0;">
+                  Live React coding, screenplay, Olympiad math, 8K art &amp; offline Titan compute. Envisioned by Abhinav Giri.
+                </p>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button class="btn-giri-primary" id="btn-banner-launch-girionix" style="padding:5px 14px; font-size:11.5px; background:linear-gradient(135deg, #06b6d4, #2563eb); border:none;">
+                <span>Launch Studio ⚡</span>
+              </button>
+              <button class="girionix-mini-btn" id="btn-banner-assistant-girionix" style="padding:5px 10px; font-size:11.5px;">
+                <span>💬 Ask Assistant</span>
+              </button>
             </div>
           </div>
         </div>
@@ -496,6 +624,17 @@ class GiriOrbitPlatform {
     // Bind File Converter Card
     landingContainer.querySelector('#btn-open-file-converter')?.addEventListener('click', () => {
       this.mountFileConverterTool();
+    });
+
+    // Bind Girionix AI Hub Banner & Hero Actions
+    landingContainer.querySelector('#btn-hero-launch-girionix')?.addEventListener('click', () => {
+      this.navigateTo('girionix');
+    });
+    landingContainer.querySelector('#btn-banner-launch-girionix')?.addEventListener('click', () => {
+      this.navigateTo('girionix');
+    });
+    landingContainer.querySelector('#btn-banner-assistant-girionix')?.addEventListener('click', () => {
+      this.openGirionixAiDrawer('quick');
     });
 
     // Bind Direct-to-Device Workspace Backup & Restore
@@ -808,7 +947,7 @@ class GiriOrbitPlatform {
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && ['1', '2', '3', '4', '5'].includes(e.key)) {
         e.preventDefault();
-        const views = ['launcher', 'drift', 'axis', 'kinetic', 'pdf'];
+        const views = ['launcher', 'drift', 'axis', 'kinetic', 'pdf', 'girionix'];
         const target = views[parseInt(e.key, 10) - 1];
         if (target) this.navigateTo(target);
       } else if ((e.metaKey || e.ctrlKey) && e.key === '/') {
@@ -838,6 +977,12 @@ class GiriOrbitPlatform {
       { name: 'Open Giri Sheet (Axis Spreadsheets)', category: 'Tool', action: () => this.navigateTo('axis') },
       { name: 'Open Giri Show (Kinetic Presentation)', category: 'Tool', action: () => this.navigateTo('kinetic') },
       { name: 'Open Giri PDF Studio', category: 'Tool', action: () => this.navigateTo('pdf') },
+      { name: '⚡ Open Girionix AI Polymath Studio', category: 'Tool', action: () => this.navigateTo('girionix') },
+      { name: '💬 Toggle Girionix AI Assistant Side-Panel (Ctrl+J)', category: 'AI', action: () => this.toggleGirionixAiDrawer() },
+      { name: '✍️ Girionix: Generate Content in Drift', category: 'AI', action: () => { this.navigateTo('drift'); this.openGirionixAiDrawer('quick'); } },
+      { name: '🧮 Girionix: Generate Formula in Axis', category: 'AI', action: () => { this.navigateTo('axis'); this.openGirionixAiDrawer('quick'); } },
+      { name: '🎬 Girionix: Generate Slide in Kinetic', category: 'AI', action: () => { this.navigateTo('kinetic'); this.openGirionixAiDrawer('quick'); } },
+      { name: '↗ Launch Girionix AI in External Tab', category: 'AI', action: () => window.open('https://girionix-ai.pages.dev/', '_blank') },
       { name: 'Return to Suite Hub', category: 'Navigation', action: () => this.navigateTo('launcher') },
       { name: 'Toggle Fullscreen Desktop App', category: 'View', action: () => document.getElementById('nav-desktop-app')?.click() },
       { name: '💾 Save Entire Workspace to Device (.giriworkspace)', category: 'Backup', action: () => this.saveWorkspaceToDevice() },
@@ -923,6 +1068,9 @@ class GiriOrbitPlatform {
   /**
    * AI Copilot (Ctrl+J) — Fully Functional Content Generation
    */
+  /**
+   * AI Copilot (Ctrl+J) & Girionix AI Quick Directive Dispatcher
+   */
   initAiCopilot() {
     const backdrop = document.getElementById('ai-copilot-backdrop');
     const input = document.getElementById('ai-prompt-input');
@@ -930,31 +1078,43 @@ class GiriOrbitPlatform {
     const pills = document.querySelectorAll('.ai-pill-btn');
 
     this.openAiCopilot = () => {
-      backdrop.classList.add('open');
-      input.value = '';
-      setTimeout(() => input.focus(), 40);
+      // Delegate to the full Girionix AI Assistant drawer with Quick Assist tab
+      if (typeof this.openGirionixAiDrawer === 'function') {
+        this.openGirionixAiDrawer('quick');
+        return;
+      }
+      backdrop?.classList.add('open');
+      if (input) {
+        input.value = '';
+        setTimeout(() => input.focus(), 40);
+      }
     };
 
-    closeBtn?.addEventListener('click', () => backdrop.classList.remove('open'));
+    closeBtn?.addEventListener('click', () => backdrop?.classList.remove('open'));
     backdrop?.addEventListener('click', (e) => {
       if (e.target === backdrop) backdrop.classList.remove('open');
     });
 
     window.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
+      if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'j' || (e.shiftKey && e.key.toLowerCase() === 'a'))) {
         e.preventDefault();
-        this.openAiCopilot();
+        if (typeof this.toggleGirionixAiDrawer === 'function') {
+          this.toggleGirionixAiDrawer();
+        } else {
+          this.openAiCopilot();
+        }
       }
     });
 
-    const executeAiAction = (promptType, customQuery = '') => {
-      backdrop.classList.remove('open');
+    this.executeAiAction = (promptType, customQuery = '') => {
+      backdrop?.classList.remove('open');
       const tool = this.currentView;
 
       if (tool === 'drift') {
         const paper = document.getElementById('drift-paper-canvas');
         if (!paper) {
           this.navigateTo('drift');
+          setTimeout(() => this.executeAiAction(promptType, customQuery), 120);
           return;
         }
 
@@ -962,7 +1122,7 @@ class GiriOrbitPlatform {
         if (promptType === 'executive-summary') {
           injectedHtml = `
             <div style="margin:24px 0; padding:18px 22px; background:#eff6ff; border-left:4px solid #2563eb; border-radius:6px;">
-              <h3 style="margin:0 0 8px 0; color:#1e40af; font-size:16px;">✨ Executive Synthesis // GIRI Strategic Core</h3>
+              <h3 style="margin:0 0 8px 0; color:#1e40af; font-size:16px;">✨ Executive Synthesis // Girionix Core</h3>
               <p style="margin:0 0 10px 0; font-size:13.5px; line-height:1.6; color:#1e3a8a;">
                 Comprehensive strategic assessment confirms that transitioning operational workflows to zero-database local client models achieves an <strong>88% reduction in network latency</strong> and eliminates third-party telemetry vulnerabilities.
               </p>
@@ -993,9 +1153,24 @@ class GiriOrbitPlatform {
                 </label>
                 <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                   <input type="checkbox" style="accent-color:#2563eb; width:16px; height:16px;">
-                  <span><strong>Phase 4:</strong> Conduct corporate executive dry run with GIRI Corporation directorate.</span>
+                  <span><strong>Phase 4:</strong> Deploy Girionix AI Polymath intelligence across enterprise nodes.</span>
                 </label>
               </div>
+            </div>
+            <p></p>
+          `;
+        } else if (promptType === 'formal-memo') {
+          injectedHtml = `
+            <div style="margin:24px 0; padding:20px 24px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-family:var(--font-sans, sans-serif);">
+              <div style="font-size:11px; font-weight:800; color:#2563eb; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;">EXECUTIVE MEMORANDUM</div>
+              <p style="margin:2px 0; font-size:13px;"><strong>TO:</strong> Enterprise Architecture Board &amp; Engineering Directorate</p>
+              <p style="margin:2px 0; font-size:13px;"><strong>FROM:</strong> Lead System Architect</p>
+              <p style="margin:2px 0; font-size:13px;"><strong>DATE:</strong> ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p style="margin:2px 0 14px 0; font-size:13px;"><strong>SUBJECT:</strong> Autonomous Sovereign AI Operations &amp; Workspace Parity</p>
+              <hr style="border:none; border-top:1px solid #cbd5e1; margin:12px 0;" />
+              <p style="margin:0; font-size:13.5px; line-height:1.6; color:#334155;">
+                This directive establishes the architectural requirements for integrating Girionix AI polymath compute directly into client workstations, ensuring zero cloud telemetry leakage and instant in-memory turnaround.
+              </p>
             </div>
             <p></p>
           `;
@@ -1043,7 +1218,7 @@ class GiriOrbitPlatform {
         } else {
           injectedHtml = `
             <div style="margin:20px 0; padding:16px 20px; background:#f0fdf4; border-left:4px solid #16a34a; border-radius:6px;">
-              <h4 style="margin:0 0 6px 0; color:#166534; font-size:14px;">⚡ AI Copilot Analysis: "${customQuery}"</h4>
+              <h4 style="margin:0 0 6px 0; color:#166534; font-size:14px;">⚡ Girionix AI Directive: "${customQuery}"</h4>
               <p style="margin:0; font-size:13px; line-height:1.6; color:#14532d;">
                 Based on enterprise operational intelligence, executing on <strong>"${customQuery}"</strong> enhances strategic alignment across all four Giri Orbit vectors. Recommended next action: validate in-memory document state and export final revision.
               </p>
@@ -1055,65 +1230,416 @@ class GiriOrbitPlatform {
         paper.focus();
         document.execCommand('insertHTML', false, injectedHtml);
         paper.dispatchEvent(new Event('input', { bubbles: true }));
-        this.showToast('AI Copilot: Generated executive content in Drift Docs', 'violet');
+        this.showToast('Girionix AI: Inserted content into Drift Docs', 'blue');
 
       } else if (tool === 'axis') {
         const defaultCell = document.querySelector('.axis-cell[data-cell-id="B8"]') || document.querySelector('.axis-cell');
         if (defaultCell) {
-          defaultCell.textContent = '875000';
-          defaultCell.classList.add('num-cell');
-          const labelCell = document.querySelector('.axis-cell[data-cell-id="A8"]');
-          if (labelCell) labelCell.textContent = 'AI Autonomous Vector Operations';
+          if (promptType === 'xlookup') {
+            defaultCell.textContent = '=XLOOKUP(A2, Catalog!A:A, Catalog!B:B, "Not Found")';
+          } else if (promptType === 'data-clean') {
+            defaultCell.textContent = '=TRIM(CLEAN(PROPER(A2)))';
+          } else {
+            defaultCell.textContent = '875000';
+            defaultCell.classList.add('num-cell');
+            const labelCell = document.querySelector('.axis-cell[data-cell-id="A8"]');
+            if (labelCell) labelCell.textContent = customQuery ? `AI: ${customQuery}` : 'Girionix AI Autonomous Vector Operations';
+          }
         }
-        this.showToast('AI Copilot: Projected automated financial vector in Axis Sheets', 'violet');
+        this.showToast('Girionix AI: Injected formula vector in Axis Sheets', 'green');
 
       } else if (tool === 'kinetic') {
-        let slides = this.getKineticSlides();
-        const newSlide = {
-          id: Date.now(),
-          tag: 'AI DIRECTIVE 05',
-          title: customQuery ? `AI Strategy: ${customQuery}` : 'Autonomous Executive Directive',
-          desc: 'Generated via Giri AI Copilot: Deep analysis of corporate velocity and spatial computing integration.',
-          features: [
-            { num: '99.9%', title: 'Uptime Integrity', desc: 'Zero cloud dependencies' },
-            { num: '3.4x', title: 'Work Velocity', desc: 'Elimination of context switching' },
-            { num: '0 ms', title: 'Compile Latency', desc: 'Local in-memory rendering' }
-          ]
-        };
+        let slides = [];
+        try {
+          slides = typeof this.getKineticSlides === 'function' ? this.getKineticSlides() : JSON.parse(localStorage.getItem('giri_orbit_kinetic_deck') || '[]');
+        } catch (e) {
+          slides = [];
+        }
+        if (!Array.isArray(slides) || slides.length === 0) {
+          slides = [
+            { id: 1, tag: 'SLIDE 1', title: 'Executive Overview', desc: 'Sovereign computing paradigm', features: [] }
+          ];
+        }
+
+        let newSlide;
+        if (promptType === 'swot-matrix') {
+          newSlide = {
+            id: Date.now(),
+            layout: 'swot-matrix',
+            tag: 'STRATEGIC AUDIT',
+            title: 'SWOT Vector Analysis',
+            desc: 'Generated via Girionix AI: Comprehensive enterprise operational assessment.',
+            features: [
+              { num: 'S', title: 'Strengths', desc: '100% sovereign client-side architecture' },
+              { num: 'W', title: 'Weaknesses', desc: 'Browser sandbox storage quotas' },
+              { num: 'O', title: 'Opportunities', desc: 'Zero-cloud latency advantage' },
+              { num: 'T', title: 'Threats', desc: 'Legacy enterprise vendor lock-in' }
+            ]
+          };
+        } else if (promptType === 'chevron-flow') {
+          newSlide = {
+            id: Date.now(),
+            layout: 'chevron-flow',
+            tag: 'EXECUTION FLOW',
+            title: '4-Stage Velocity Pipeline',
+            desc: 'Generated via Girionix AI: Continuous integration and deployment.',
+            features: [
+              { num: '01', title: 'Discovery', desc: 'Sub-millisecond local indexing' },
+              { num: '02', title: 'Modeling', desc: 'In-memory matrix computation' },
+              { num: '03', title: 'Validation', desc: 'Cryptographic SHA-256 signing' },
+              { num: '04', title: 'Dispatch', desc: 'Multi-format native export' }
+            ]
+          };
+        } else {
+          newSlide = {
+            id: Date.now(),
+            layout: 'metrics',
+            tag: 'AI DIRECTIVE',
+            title: customQuery ? `AI Strategy: ${customQuery}` : 'Girionix Executive Directive',
+            desc: 'Generated via Girionix AI: Deep analysis of corporate velocity and spatial computing.',
+            features: [
+              { num: '99.9%', title: 'Uptime Integrity', desc: 'Zero cloud dependencies' },
+              { num: '3.4x', title: 'Work Velocity', desc: 'Elimination of context switching' },
+              { num: '0 ms', title: 'Compile Latency', desc: 'Local in-memory rendering' }
+            ]
+          };
+        }
         slides.push(newSlide);
         localStorage.setItem('giri_orbit_kinetic_deck', JSON.stringify(slides));
         renderKineticApp(this.workspace);
-        this.showToast('AI Copilot: Appended generated presentation slide to Kinetic Presentation', 'violet');
+        this.showToast('Girionix AI: Appended generated slide to Kinetic Presentation', 'red');
 
       } else if (tool === 'pdf') {
         const sheet = document.getElementById('pdf-sheet');
         if (sheet) {
           const aiNote = document.createElement('div');
           aiNote.style.cssText = 'margin-top:20px; padding:14px 16px; background:#eff6ff; border:1px dashed #3b82f6; border-radius:6px; font-size:12px; color:#1e40af;';
-          aiNote.innerHTML = `<strong>AI Executive Addendum:</strong> This document and its cryptographic hash have been reviewed and validated by Giri AI Copilot on ${new Date().toLocaleDateString()}. Zero telemetry leaks detected.`;
+          aiNote.innerHTML = `<strong>Girionix AI Executive Addendum:</strong> This document and its cryptographic hash have been reviewed and validated by Girionix AI on ${new Date().toLocaleDateString()}. Zero telemetry leaks detected.`;
           sheet.appendChild(aiNote);
         }
-        this.showToast('AI Copilot: Inserted executive addendum into Aegis PDF', 'violet');
+        this.showToast('Girionix AI: Inserted executive addendum into Aegis PDF', 'orange');
 
       } else {
         // From Launcher Hub
         this.navigateTo('drift');
-        setTimeout(() => executeAiAction(promptType, customQuery), 100);
+        setTimeout(() => this.executeAiAction(promptType, customQuery), 120);
       }
     };
 
     pills.forEach(pill => {
       pill.addEventListener('click', () => {
-        executeAiAction(pill.dataset.prompt);
+        this.executeAiAction(pill.dataset.prompt);
       });
     });
 
-    input.addEventListener('keydown', (e) => {
+    input?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && input.value.trim()) {
         e.preventDefault();
-        executeAiAction('custom', input.value.trim());
+        this.executeAiAction('custom', input.value.trim());
       }
     });
+  }
+
+  /**
+   * Girionix AI Assistant Side-Drawer & Floating Copilot Engine
+   */
+  initGirionixAiDrawer() {
+    const drawer = document.getElementById('girionix-ai-drawer');
+    const floatingBtn = document.getElementById('btn-floating-girionix-trigger');
+    const headerBtn = document.getElementById('btn-open-girionix-ai');
+    const closeBtn = document.getElementById('btn-girionix-drawer-close');
+    const expandBtn = document.getElementById('btn-girionix-expand');
+    const tabBtns = drawer?.querySelectorAll('.girionix-tab-btn') || [];
+    const iframe = document.getElementById('girionix-drawer-iframe');
+    const reloadBtn = document.getElementById('btn-girionix-frame-reload');
+    const promptInput = document.getElementById('girionix-drawer-prompt-input');
+    const sendBtn = document.getElementById('btn-girionix-drawer-send');
+    const cardsContainer = document.getElementById('girionix-quick-cards-container');
+    const toolIndicator = document.getElementById('girionix-active-tool-name');
+
+    if (!drawer) return;
+
+    this.isGirionixDrawerOpen = false;
+
+    // Open Drawer
+    this.openGirionixAiDrawer = (initialTab = 'live') => {
+      drawer.classList.add('open');
+      drawer.setAttribute('aria-hidden', 'false');
+      this.isGirionixDrawerOpen = true;
+
+      // Lazy-load iframe source on first open
+      if (iframe && (!iframe.src || iframe.src === 'about:blank')) {
+        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/';
+      }
+
+      // Switch tab if requested
+      if (initialTab) {
+        this.switchGirionixDrawerTab(initialTab);
+      }
+
+      this.updateGirionixQuickCards();
+    };
+
+    // Close Drawer
+    this.closeGirionixAiDrawer = () => {
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden', 'true');
+      this.isGirionixDrawerOpen = false;
+    };
+
+    // Toggle Drawer
+    this.toggleGirionixAiDrawer = (initialTab = 'live') => {
+      if (drawer.classList.contains('open')) {
+        this.closeGirionixAiDrawer();
+      } else {
+        this.openGirionixAiDrawer(initialTab);
+      }
+    };
+
+    // Switch Tabs inside Drawer
+    this.switchGirionixDrawerTab = (tabName) => {
+      tabBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.drawerTab === tabName);
+      });
+      const livePane = document.getElementById('girionix-pane-live');
+      const quickPane = document.getElementById('girionix-pane-quick');
+      if (livePane && quickPane) {
+        livePane.classList.toggle('active', tabName === 'live');
+        quickPane.classList.toggle('active', tabName === 'quick');
+      }
+    };
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        this.switchGirionixDrawerTab(btn.dataset.drawerTab);
+      });
+    });
+
+    // Expand / Dock Toggle
+    expandBtn?.addEventListener('click', () => {
+      drawer.classList.toggle('expanded');
+      expandBtn.textContent = drawer.classList.contains('expanded') ? '⤡' : '⛶';
+      expandBtn.title = drawer.classList.contains('expanded') ? 'Dock to standard width' : 'Expand width';
+    });
+
+    // Reload iframe
+    reloadBtn?.addEventListener('click', () => {
+      if (iframe) {
+        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/';
+        this.showToast('Reloading Girionix AI Assistant...', 'blue');
+      }
+    });
+
+    // Close on button click
+    closeBtn?.addEventListener('click', () => this.closeGirionixAiDrawer());
+
+    // Triggers
+    floatingBtn?.addEventListener('click', () => this.toggleGirionixAiDrawer());
+    headerBtn?.addEventListener('click', () => this.toggleGirionixAiDrawer());
+
+    // ESC key closes drawer
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && drawer.classList.contains('open')) {
+        this.closeGirionixAiDrawer();
+      }
+    });
+
+    // Custom prompt handler
+    const handleCustomPrompt = () => {
+      const q = promptInput?.value.trim();
+      if (!q) return;
+      promptInput.value = '';
+      if (this.executeAiAction) {
+        this.executeAiAction('custom', q);
+      } else {
+        this.showToast(`Girionix AI Directive: "${q}"`, 'blue');
+      }
+    };
+
+    sendBtn?.addEventListener('click', handleCustomPrompt);
+    promptInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleCustomPrompt();
+      }
+    });
+
+    // Contextual Quick Cards Renderer
+    this.updateGirionixQuickCards = () => {
+      if (!cardsContainer) return;
+      const tool = this.currentView || 'launcher';
+
+      const toolLabels = {
+        drift: 'Giri Drift (Word Processor)',
+        axis: 'Giri Axis (Spreadsheets)',
+        kinetic: 'Giri Kinetic (Show Deck)',
+        pdf: 'Giri Aegis (PDF Studio)',
+        girionix: 'Girionix AI Polymath Studio',
+        launcher: 'Giri Orbit Hub'
+      };
+
+      if (toolIndicator) {
+        toolIndicator.textContent = toolLabels[tool] || tool;
+      }
+
+      let cardsData = [];
+
+      if (tool === 'drift') {
+        cardsData = [
+          {
+            tag: 'Synthesis',
+            title: '✨ Executive Briefing & Synthesis',
+            desc: 'Synthesizes enterprise data into a formatted briefing card with metrics.',
+            prompt: 'executive-summary'
+          },
+          {
+            tag: 'Deliverables',
+            title: '📋 Action Items Checklist',
+            desc: 'Generates a four-phase operational deliverable checklist with interactive checkboxes.',
+            prompt: 'action-items'
+          },
+          {
+            tag: 'Formal Memo',
+            title: '✉️ Formal Memorandum Header & Body',
+            desc: 'Inserts executive policy memo template with date, sender, and recipient block.',
+            prompt: 'formal-memo'
+          },
+          {
+            tag: 'Strategic Data',
+            title: '📊 Strategic Alignment KPI Table',
+            desc: 'Inserts a responsive table with benchmarks, custodians, and performance trajectory.',
+            prompt: 'strategic-table'
+          },
+          {
+            tag: 'Vocabulary',
+            title: '⚡ Enhance Tone & Executive Prose',
+            desc: 'Polishes phrasing into high-impact sovereign corporate vocabulary.',
+            prompt: 'enhance-tone'
+          }
+        ];
+      } else if (tool === 'axis') {
+        cardsData = [
+          {
+            tag: 'Formula',
+            title: '🧮 Smart Lookup Formula',
+            desc: 'Injects modern =XLOOKUP or INDEX-MATCH formula into active spreadsheet cell.',
+            prompt: 'xlookup'
+          },
+          {
+            tag: 'Financials',
+            title: '📈 Quarterly Financial Growth Vector',
+            desc: 'Projects quarterly revenue growth model directly into spreadsheet matrix.',
+            prompt: 'financial-projections'
+          },
+          {
+            tag: 'Data Cleansing',
+            title: '🧹 Clean & Normalize Column Text',
+            desc: 'Inserts =TRIM(CLEAN(PROPER())) formatting formula into active cell.',
+            prompt: 'data-clean'
+          },
+          {
+            tag: 'Analytics',
+            title: '💡 Statistical Vector Summary',
+            desc: 'Computes descriptive metrics and performance benchmarks for selected range.',
+            prompt: 'strategic-table'
+          }
+        ];
+      } else if (tool === 'kinetic') {
+        cardsData = [
+          {
+            tag: 'Strategy Slide',
+            title: '🎬 Executive Directive Slide',
+            desc: 'Generates and appends a 3-metric strategy slide to the current presentation deck.',
+            prompt: 'pitch-directive'
+          },
+          {
+            tag: 'Framework Slide',
+            title: '⊞ SWOT Analysis Matrix Slide',
+            desc: 'Appends a 4-quadrant SWOT matrix slide directly to your slide show.',
+            prompt: 'swot-matrix'
+          },
+          {
+            tag: 'Process Slide',
+            title: '➤ Chevron Flow Execution Slide',
+            desc: 'Appends a 4-stage sequential journey slide into the active deck.',
+            prompt: 'chevron-flow'
+          }
+        ];
+      } else if (tool === 'pdf') {
+        cardsData = [
+          {
+            tag: 'Cryptographic Seal',
+            title: '🔒 Cryptographic Audit Addendum',
+            desc: 'Inserts SHA-256 integrity confirmation and zero-telemetry audit stamp.',
+            prompt: 'crypto-audit'
+          },
+          {
+            tag: 'Compliance',
+            title: '📜 Legal Compliance Review Stamp',
+            desc: 'Appends enterprise governance review note to the active document.',
+            prompt: 'compliance-note'
+          }
+        ];
+      } else {
+        // Hub / Launcher
+        cardsData = [
+          {
+            tag: 'Drift Docs',
+            title: '✍️ Draft Executive Document in Drift',
+            desc: 'Opens Drift Docs pre-seeded with synthesized executive content.',
+            prompt: 'executive-summary'
+          },
+          {
+            tag: 'Axis Sheets',
+            title: '📊 Financial Projection Model in Axis',
+            desc: 'Opens Axis Sheets with an automated financial modeling vector.',
+            prompt: 'financial-projections'
+          },
+          {
+            tag: 'Kinetic Show',
+            title: '🎞 Strategic Keynote Deck in Kinetic',
+            desc: 'Opens Kinetic Presentation Studio with AI-generated directive slides.',
+            prompt: 'pitch-directive'
+          },
+          {
+            tag: 'Polymath',
+            title: '⚡ Open Girionix AI Polymath Studio',
+            desc: 'Full-screen coding IDE, screenplay writing, math proofs, and 8K art.',
+            action: () => this.navigateTo('girionix')
+          }
+        ];
+      }
+
+      cardsContainer.innerHTML = cardsData.map((c, i) => `
+        <div class="girionix-prompt-card" data-idx="${i}">
+          <div class="girionix-card-top">
+            <span class="girionix-card-tag">${c.tag}</span>
+            <span style="font-size:11px; color:#64748b;">⚡ Click to Run</span>
+          </div>
+          <h4 class="girionix-card-title">${c.title}</h4>
+          <p class="girionix-card-desc">${c.desc}</p>
+          <div class="girionix-card-actions">
+            <button class="girionix-card-btn" data-prompt="${c.prompt || ''}">
+              <span>Run &amp; Insert ⚡</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      // Wire card button clicks
+      cardsContainer.querySelectorAll('.girionix-prompt-card').forEach((card, idx) => {
+        const item = cardsData[idx];
+        card.addEventListener('click', (e) => {
+          if (item.action) {
+            item.action();
+            return;
+          }
+          if (item.prompt && this.executeAiAction) {
+            this.executeAiAction(item.prompt);
+          }
+        });
+      });
+    };
   }
 
   /**
@@ -1529,11 +2055,12 @@ class GiriOrbitPlatform {
               <div class="sc-section-title" style="color:#38bdf8;">🌐 Universal / Platform</div>
               <div class="sc-row"><span>Direct Save to Device (Disk)</span> <span class="sc-key sc-key-highlight">Ctrl + S</span></div>
               <div class="sc-row"><span>Command Palette</span> <span class="sc-key">Ctrl + K</span></div>
-              <div class="sc-row"><span>AI Executive Copilot</span> <span class="sc-key">Ctrl + J</span></div>
+              <div class="sc-row"><span>Girionix AI Assistant</span> <span class="sc-key">Ctrl + J</span></div>
               <div class="sc-row"><span>Switch to Writer (Drift)</span> <span class="sc-key">Ctrl + 2</span></div>
               <div class="sc-row"><span>Switch to Sheet (Axis)</span> <span class="sc-key">Ctrl + 3</span></div>
               <div class="sc-row"><span>Switch to Show (Kinetic)</span> <span class="sc-key">Ctrl + 4</span></div>
               <div class="sc-row"><span>Switch to PDF Studio</span> <span class="sc-key">Ctrl + 5</span></div>
+              <div class="sc-row"><span>Switch to Girionix AI</span> <span class="sc-key">Ctrl + 6</span></div>
               <div class="sc-row"><span>Show Shortcuts Guide</span> <span class="sc-key">Ctrl + / or ?</span></div>
             </div>
 
