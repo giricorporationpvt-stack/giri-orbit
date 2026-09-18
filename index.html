@@ -304,8 +304,8 @@
     </div>
   </div>
 
-  <!-- Girionix AI Assistant Side-Panel Drawer -->
-  <aside class="girionix-ai-drawer" id="girionix-ai-drawer" aria-hidden="true" role="complementary" aria-label="Girionix AI Polymath Assistant">
+  <!-- Girionix AI Office Suite Copilot Side-Panel Drawer -->
+  <aside class="girionix-ai-drawer" id="girionix-ai-drawer" aria-hidden="true" role="complementary" aria-label="Girionix AI Office Copilot">
     <div class="girionix-drawer-header">
       <div class="girionix-drawer-title-wrap">
         <div class="girionix-drawer-logo" style="display:flex; align-items:center; justify-content:center;">
@@ -313,33 +313,34 @@
         </div>
         <div>
           <div class="girionix-drawer-title">
-            <span>Girionix AI Assistant</span>
-            <span class="girionix-status-badge">🟢 Connected</span>
+            <span>Girionix AI Copilot</span>
+            <span class="girionix-status-badge">🟢 Office Connected</span>
           </div>
-          <div class="girionix-drawer-sub">Sovereign Polymath AI • by Abhinav Giri</div>
+          <div class="girionix-drawer-sub">Sovereign Office Suite Copilot • for Abhinav Giri</div>
         </div>
       </div>
       <div class="girionix-drawer-actions">
+        <button class="girionix-import-badge-btn" id="btn-girionix-drawer-import" title="Import latest AI content directly into active workplace (Drift, Axis, Kinetic, Aegis)">📥 Import to Workplace</button>
         <button class="girionix-icon-btn" id="btn-girionix-expand" title="Expand / Dock Toggle">⛶</button>
-        <a href="https://girionix-ai.pages.dev/chat" target="_blank" rel="noopener" class="girionix-icon-btn" title="Open in External Tab">↗</a>
+        <a href="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Abhinav" target="_blank" rel="noopener" class="girionix-icon-btn" title="Open in External Tab">↗</a>
         <button class="girionix-icon-btn" id="btn-girionix-drawer-close" title="Close Assistant (ESC)">✕</button>
       </div>
     </div>
 
-    <!-- Mode Tabs: Live Studio vs Contextual Office Quick-Assist -->
+    <!-- Mode Tabs: Live Office AI Chat vs Contextual Direct Copilot -->
     <div class="girionix-drawer-tabs">
-      <button class="girionix-tab-btn active" data-drawer-tab="live">⚡ Live AI Studio</button>
-      <button class="girionix-tab-btn" data-drawer-tab="quick">🛠 Office Quick Assist</button>
+      <button class="girionix-tab-btn active" data-drawer-tab="live">💬 Office AI Chat</button>
+      <button class="girionix-tab-btn" data-drawer-tab="quick">⚡ Direct Tool Copilot</button>
     </div>
 
-    <!-- Tab 1: Live Studio Iframe -->
+    <!-- Tab 1: Live Office AI Chat Iframe -->
     <div class="girionix-drawer-pane active" id="girionix-pane-live">
       <div class="girionix-frame-controls">
-        <span class="girionix-frame-url">https://girionix-ai.pages.dev/chat</span>
+        <span class="girionix-frame-url">https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Abhinav</span>
         <button class="girionix-mini-btn" id="btn-girionix-frame-reload" title="Reload AI Engine">🔄 Reload</button>
       </div>
       <div class="girionix-iframe-wrap">
-        <iframe id="girionix-drawer-iframe" src="about:blank" data-src="https://girionix-ai.pages.dev/chat" title="Girionix AI Assistant" allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen"></iframe>
+        <iframe id="girionix-drawer-iframe" src="about:blank" data-src="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Abhinav" title="Girionix AI Office Copilot" allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen"></iframe>
       </div>
     </div>
 

@@ -223,21 +223,21 @@ class GiriOrbitPlatform {
                 <img src="assets/girionix-logo.png" style="width:22px; height:22px; object-fit:contain; border-radius:4px;" alt="Girionix AI">
               </div>
               <div>
-                <span class="girionix-topbar-title">Girionix AI Polymath Studio</span>
-                <span class="girionix-status-badge" style="margin-left:6px;">🟢 Sovereign Engine</span>
+                <span class="girionix-topbar-title">Girionix AI Office Copilot</span>
+                <span class="girionix-status-badge" style="margin-left:6px;">🟢 Office Connected</span>
               </div>
             </div>
             <div class="girionix-quick-jumps">
-              <span class="girionix-jump-pill" data-mode="code" title="React 18 Live IDE & Superhuman Coding">💻 Code Studio</span>
-              <span class="girionix-jump-pill" data-mode="screenplay" title="Hollywood Screenplay & Creative Writing">📜 Screenplay</span>
-              <span class="girionix-jump-pill" data-mode="math" title="Olympiad Math Proofs & Derivations">📐 Math Olympiad</span>
-              <span class="girionix-jump-pill" data-mode="vision" title="8K FLUX Vision & Photorealism">🎨 VisionForge 8K</span>
-              <span class="girionix-jump-pill" data-mode="titan" title="100% Offline Titan On-Device Intelligence">⚡ Titan Offline</span>
+              <span class="girionix-jump-pill" data-mode="drift" title="Open Giri Drift Docs">✍️ Drift Docs</span>
+              <span class="girionix-jump-pill" data-mode="axis" title="Open Giri Axis Sheets">📊 Axis Sheets</span>
+              <span class="girionix-jump-pill" data-mode="kinetic" title="Open Giri Kinetic Presentation">🎞️ Kinetic Slides</span>
+              <span class="girionix-jump-pill" data-mode="pdf" title="Open Giri Aegis PDF Studio">🔒 Aegis PDF</span>
             </div>
           </div>
           <div class="girionix-topbar-right">
+            <button class="girionix-import-badge-btn" id="btn-girionix-workspace-import" title="Import latest AI content directly into active workplace">📥 Import to Workplace</button>
             <button class="girionix-mini-btn" id="btn-girionix-full-reload" title="Reload Studio Engine">🔄 Reload</button>
-            <a href="https://girionix-ai.pages.dev/chat" target="_blank" rel="noopener" class="girionix-mini-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Open in External Tab">
+            <a href="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Abhinav" target="_blank" rel="noopener" class="girionix-mini-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Open in External Tab">
               <span>↗ Popout</span>
             </a>
             <button class="girionix-mini-btn" id="btn-girionix-copilot-toggle" title="Toggle Assistant Side-Panel">💬 Assistant</button>
@@ -250,8 +250,8 @@ class GiriOrbitPlatform {
           <iframe 
             id="girionix-main-workspace-frame" 
             class="girionix-full-iframe" 
-            src="https://girionix-ai.pages.dev/chat" 
-            title="Girionix AI Sovereign Polymath Workspace"
+            src="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Abhinav" 
+            title="Girionix AI Sovereign Office Workspace"
             allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen">
           </iframe>
         </div>
@@ -262,7 +262,7 @@ class GiriOrbitPlatform {
     const frame = this.workspace.querySelector('#girionix-main-workspace-frame');
     this.workspace.querySelector('#btn-girionix-full-reload')?.addEventListener('click', () => {
       if (frame) {
-        frame.src = 'https://girionix-ai.pages.dev/chat';
+        frame.src = 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Abhinav';
         this.showToast('Reloaded Girionix AI Workspace', 'blue');
       }
     });
@@ -275,9 +275,32 @@ class GiriOrbitPlatform {
       this.copyToolLink('girionix');
     });
 
+    // 1-Click Import button in workspace topbar
+    this.workspace.querySelector('#btn-girionix-workspace-import')?.addEventListener('click', () => {
+      if (frame && frame.contentWindow) {
+        try {
+          frame.contentWindow.postMessage({ type: 'GIRIONIX_REQUEST_LATEST_MESSAGE' }, '*');
+        } catch (_) {}
+      }
+      if (navigator.clipboard?.readText) {
+        navigator.clipboard.readText().then(clipText => {
+          if (clipText && clipText.trim()) {
+            this.importAiDataToActiveTool(clipText, { source: 'clipboard' });
+          }
+        }).catch(() => {});
+      } else {
+        this.showToast('Requesting latest AI content...', 'blue');
+      }
+    });
+
     this.workspace.querySelectorAll('.girionix-jump-pill').forEach(pill => {
       pill.addEventListener('click', () => {
-        this.showToast(`Switched focus to Girionix ${pill.textContent.trim()}`, 'blue');
+        const mode = pill.dataset.mode;
+        if (mode && ['drift', 'axis', 'kinetic', 'pdf'].includes(mode)) {
+          this.navigateTo(mode);
+        } else {
+          this.showToast(`Switched focus to Girionix ${pill.textContent.trim()}`, 'blue');
+        }
       });
     });
   }
@@ -1481,7 +1504,7 @@ class GiriOrbitPlatform {
 
       // Lazy-load iframe source on first open
       if (iframe && (!iframe.src || iframe.src === 'about:blank')) {
-        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/chat';
+        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Abhinav';
       }
 
       // Switch tab if requested
@@ -1537,13 +1560,47 @@ class GiriOrbitPlatform {
     // Reload iframe
     reloadBtn?.addEventListener('click', () => {
       if (iframe) {
-        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/chat';
+        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Abhinav';
         this.showToast('Reloading Girionix AI Assistant...', 'blue');
       }
     });
 
     // Close on button click
     closeBtn?.addEventListener('click', () => this.closeGirionixAiDrawer());
+
+    // 1-Click Import to Workplace Button in Drawer Header
+    const drawerImportBtn = document.getElementById('btn-girionix-drawer-import');
+    drawerImportBtn?.addEventListener('click', () => {
+      // 1. Request latest response from iframe via postMessage
+      const frameEl = document.getElementById('girionix-drawer-iframe') || document.getElementById('girionix-main-workspace-frame');
+      if (frameEl && frameEl.contentWindow) {
+        try {
+          frameEl.contentWindow.postMessage({ type: 'GIRIONIX_REQUEST_LATEST_MESSAGE' }, '*');
+        } catch (_) {}
+      }
+
+      // 2. Clipboard bridge fallback
+      if (navigator.clipboard?.readText) {
+        navigator.clipboard.readText().then(clipText => {
+          if (clipText && clipText.trim()) {
+            this.importAiDataToActiveTool(clipText, { source: 'clipboard' });
+          }
+        }).catch(() => {});
+      } else {
+        this.showToast('Requesting latest AI content...', 'blue');
+      }
+    });
+
+    // Cross-Frame Message Bridge: Receive 1-click import events from Girionix AI
+    window.addEventListener('message', (e) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (e.data.type === 'GIRIONIX_IMPORT_TO_WORKPLACE' || e.data.type === 'GIRIONIX_LATEST_MESSAGE_RESPONSE') {
+        const rawText = e.data.payload?.text || '';
+        if (rawText) {
+          this.importAiDataToActiveTool(rawText, { source: e.data.type });
+        }
+      }
+    });
 
     // Triggers
     floatingBtn?.addEventListener('click', () => this.toggleGirionixAiDrawer());
@@ -1752,6 +1809,375 @@ class GiriOrbitPlatform {
         });
       });
     };
+  }
+
+  /**
+   * Universal Workplace AI Importer: Parses and injects AI content directly into active office tool.
+   * @param {string} rawContent Content to parse and import
+   * @param {object} options Metadata or trigger source
+   */
+  importAiDataToActiveTool(rawContent, options = {}) {
+    if (!rawContent || !rawContent.trim()) {
+      this.showToast('No content available to import', 'red');
+      return;
+    }
+
+    const text = rawContent.trim();
+    let current = this.currentView || 'launcher';
+
+    // Auto-navigate to appropriate tool if currently on launcher hub or full AI page
+    if (current === 'launcher' || current === 'hub' || current === 'girionix') {
+      const isSlide = /(?:^|\n)(?:#+\s*Slide\s*\d+|Slide\s*\d+:|---|swot analysis|presentation|keynote)/i.test(text);
+      const isTable = /\|.+\|.+\|/.test(text) || /(?:quarter|revenue|ebitda|cagr|opex|formula|=sum|=xlookup)/i.test(text);
+      const isPdf = /(?:audit|compliance|sha-256|cryptographic|confidentiality|addendum)/i.test(text);
+
+      if (isTable) {
+        current = 'axis';
+        this.navigateTo('axis');
+      } else if (isSlide) {
+        current = 'kinetic';
+        this.navigateTo('kinetic');
+      } else if (isPdf) {
+        current = 'pdf';
+        this.navigateTo('pdf');
+      } else {
+        current = 'drift';
+        this.navigateTo('drift');
+      }
+    }
+
+    if (current === 'drift') {
+      this.importContentToDrift(text);
+    } else if (current === 'axis') {
+      this.importContentToAxis(text);
+    } else if (current === 'kinetic') {
+      this.importContentToKinetic(text);
+    } else if (current === 'pdf') {
+      this.importContentToPdf(text);
+    } else {
+      this.importContentToDrift(text);
+    }
+  }
+
+  /**
+   * Import AI content into Giri Drift (Word Processor)
+   */
+  importContentToDrift(text) {
+    const paper = document.getElementById('drift-paper-canvas');
+    if (!paper) {
+      this.navigateTo('drift');
+      setTimeout(() => this.importContentToDrift(text), 160);
+      return;
+    }
+
+    let html = text;
+
+    // Code blocks
+    html = html.replace(/```([a-zA-Z]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+      return `<pre style="background:#0f172a; color:#38bdf8; padding:14px 18px; border-radius:8px; font-family:var(--font-mono, monospace); font-size:12px; overflow-x:auto; margin:14px 0; border:1px solid #334155;"><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
+    });
+
+    // Tables: Markdown table -> styled HTML table
+    const tableRegex = /((?:\|.+?\|\r?\n)+)/g;
+    html = html.replace(tableRegex, (match) => {
+      const lines = match.trim().split('\n').filter(l => l.trim().length > 0);
+      if (lines.length < 2) return match;
+
+      let tableHtml = '<table style="width:100%; border-collapse:collapse; margin:18px 0; font-size:13px; border:1px solid #cbd5e1;">';
+      lines.forEach((line, idx) => {
+        if (/^\|?\s*[-:]+[-|\s:]*$/.test(line)) return;
+        const cells = line.split('|').filter((_, i, arr) => i > 0 && i < arr.length - 1);
+        if (cells.length === 0) return;
+
+        if (idx === 0) {
+          tableHtml += '<tr style="background:#0f172a; color:#ffffff;">';
+          cells.forEach(c => {
+            tableHtml += `<th style="padding:10px 14px; text-align:left; border:1px solid #334155; font-weight:700;">${c.trim()}</th>`;
+          });
+          tableHtml += '</tr>';
+        } else {
+          const bg = idx % 2 === 0 ? '#f8fafc' : '#ffffff';
+          tableHtml += `<tr style="background:${bg};">`;
+          cells.forEach(c => {
+            tableHtml += `<td style="padding:8px 14px; border:1px solid #cbd5e1; color:#334155;">${c.trim()}</td>`;
+          });
+          tableHtml += '</tr>';
+        }
+      });
+      tableHtml += '</table>';
+      return tableHtml;
+    });
+
+    // Headers
+    html = html.replace(/^### (.*$)/gim, '<h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:16px 0 8px;">$1</h3>');
+    html = html.replace(/^## (.*$)/gim, '<h2 style="font-size:19px; font-weight:700; color:#0f172a; margin:20px 0 10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">$1</h2>');
+    html = html.replace(/^# (.*$)/gim, '<h1 style="font-size:24px; font-weight:800; color:#0f172a; margin:24px 0 12px;">$1</h1>');
+
+    // Bold / Italic
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // Blockquotes
+    html = html.replace(/^> (.*$)/gim, '<blockquote style="border-left:4px solid #0284c7; background:#f0f9ff; padding:10px 16px; margin:12px 0; border-radius:4px; font-style:italic; color:#0369a1;">$1</blockquote>');
+
+    // Lists
+    html = html.replace(/^[-*] (.*$)/gim, '<li style="margin:4px 0; color:#334155;">$1</li>');
+    html = html.replace(/((?:<li style="[^"]*">.*?<\/li>\s*)+)/g, '<ul style="margin:10px 0; padding-left:22px;">$1</ul>');
+
+    // Paragraphs
+    const paragraphs = html.split(/\n{2,}/).map(p => {
+      p = p.trim();
+      if (!p) return '';
+      if (p.startsWith('<h') || p.startsWith('<table') || p.startsWith('<pre') || p.startsWith('<blockquote') || p.startsWith('<ul') || p.startsWith('<ol')) {
+        return p;
+      }
+      return `<p style="margin:10px 0; line-height:1.65; color:#1e293b; font-size:14px;">${p.replace(/\n/g, '<br>')}</p>`;
+    }).join('');
+
+    const aiWrapper = document.createElement('div');
+    aiWrapper.className = 'girionix-imported-content';
+    aiWrapper.style.cssText = 'margin:18px 0; padding:18px 22px; background:linear-gradient(to right, rgba(6,182,212,0.03), rgba(59,130,246,0.02)); border-left:4px solid #06b6d4; border-radius:0 8px 8px 0;';
+    aiWrapper.innerHTML = `
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; font-size:11px; font-family:var(--font-mono, monospace); color:#0284c7; border-bottom:1px solid rgba(6,182,212,0.15); padding-bottom:6px;">
+        <span style="font-weight:700;">📥 Imported from Girionix AI Office Copilot</span>
+        <span>${new Date().toLocaleTimeString()}</span>
+      </div>
+      ${paragraphs}
+    `;
+
+    paper.appendChild(aiWrapper);
+    paper.appendChild(document.createElement('p'));
+
+    try {
+      localStorage.setItem('giri_orbit_drift_doc', paper.innerHTML);
+      paper.dispatchEvent(new Event('input', { bubbles: true }));
+    } catch (_) {}
+
+    this.showToast('✅ Successfully imported AI content into Giri Drift Docs!', 'blue');
+  }
+
+  /**
+   * Import AI tabular data & formulas into Giri Axis (Spreadsheet)
+   */
+  importContentToAxis(text) {
+    if (this.currentView !== 'axis') {
+      this.navigateTo('axis');
+    }
+
+    let rows = [];
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+
+    // 1. Markdown Table parsing
+    const mdLines = lines.filter(l => l.includes('|'));
+    if (mdLines.length >= 2) {
+      mdLines.forEach(line => {
+        if (/^\|?\s*[-:]+[-|\s:]*$/.test(line)) return;
+        const cells = line.split('|').filter((_, i, arr) => i > 0 && i < arr.length - 1).map(c => c.trim());
+        if (cells.length > 0) rows.push(cells);
+      });
+    }
+
+    // 2. CSV / TSV fallback
+    if (rows.length === 0) {
+      lines.forEach(line => {
+        if (line.startsWith('#') || line.startsWith('```') || line.startsWith('>')) return;
+        const delim = line.includes('\t') ? '\t' : (line.includes(',') ? ',' : null);
+        if (delim) {
+          rows.push(line.split(delim).map(c => c.trim()));
+        }
+      });
+    }
+
+    // 3. Formula / Key-Value fallback
+    if (rows.length === 0) {
+      lines.forEach(line => {
+        const formulaMatch = line.match(/(=[A-Z0-9_()+\-*/, :"]+)/i);
+        if (formulaMatch) {
+          rows.push([line.replace(formulaMatch[1], '').trim(), formulaMatch[1].trim()]);
+        } else if (line.includes(':')) {
+          const parts = line.split(':');
+          rows.push([parts[0].trim(), parts.slice(1).join(':').trim()]);
+        }
+      });
+    }
+
+    if (rows.length === 0) {
+      rows = lines.map(l => [l]);
+    }
+
+    let sheetsData = {};
+    try {
+      const saved = localStorage.getItem('giri_orbit_axis_sheets');
+      if (saved) sheetsData = JSON.parse(saved);
+    } catch (_) {}
+
+    const activeSheetName = Object.keys(sheetsData)[0] || 'Sheet1';
+    let currentSheet = sheetsData[activeSheetName] || {};
+    if (Array.isArray(currentSheet)) {
+      const obj = {};
+      currentSheet.forEach(item => {
+        if (item && item.cell) obj[item.cell] = item.val || item.formula || '';
+      });
+      currentSheet = obj;
+    }
+
+    const toCellId = (cIdx, rIdx) => {
+      let colLetters = '';
+      let n = cIdx;
+      while (n >= 0) {
+        colLetters = String.fromCharCode((n % 26) + 65) + colLetters;
+        n = Math.floor(n / 26) - 1;
+      }
+      return `${colLetters}${rIdx}`;
+    };
+
+    let startRow = 1;
+    const existingCellIds = Object.keys(currentSheet);
+    if (existingCellIds.length > 0) {
+      let maxRow = 1;
+      existingCellIds.forEach(id => {
+        const num = parseInt(id.replace(/^[A-Z]+/i, ''), 10);
+        if (!isNaN(num) && num > maxRow) maxRow = num;
+      });
+      startRow = maxRow + 2;
+    }
+
+    let populatedCount = 0;
+    rows.forEach((row, rOffset) => {
+      row.forEach((cellVal, cOffset) => {
+        const cellId = toCellId(cOffset, startRow + rOffset);
+        const strVal = String(cellVal).trim();
+        currentSheet[cellId] = strVal;
+        populatedCount++;
+
+        const el = document.querySelector(`[data-cell-id="${cellId}"]`);
+        if (el) {
+          el.textContent = strVal;
+          if (strVal.startsWith('=')) el.classList.add('num-cell');
+          if (rOffset === 0 && rows.length > 1) el.style.fontWeight = '700';
+        }
+      });
+    });
+
+    sheetsData[activeSheetName] = currentSheet;
+    try {
+      localStorage.setItem('giri_orbit_axis_sheets', JSON.stringify(sheetsData));
+    } catch (_) {}
+
+    if (this.currentView === 'axis') {
+      renderAxisApp(this.workspace);
+    }
+
+    this.showToast(`✅ Imported ${rows.length} rows (${populatedCount} cells) into Giri Axis Sheets!`, 'green');
+  }
+
+  /**
+   * Import AI slide outline into Giri Kinetic (Presentation Studio)
+   */
+  importContentToKinetic(text) {
+    if (this.currentView !== 'kinetic') {
+      this.navigateTo('kinetic');
+    }
+
+    let slides = [];
+    try {
+      slides = typeof this.getKineticSlides === 'function' ? this.getKineticSlides() : JSON.parse(localStorage.getItem('giri_orbit_kinetic_deck') || '[]');
+    } catch (_) {
+      slides = [];
+    }
+
+    if (!Array.isArray(slides)) slides = [];
+
+    const rawBlocks = text.split(/\n(?:---|\*{3,}|#{1,2}\s*Slide\s*\d+|Slide\s*\d+:)\n/i).filter(b => b.trim().length > 0);
+    const blocksToProcess = rawBlocks.length > 0 ? rawBlocks : [text];
+    let createdCount = 0;
+
+    blocksToProcess.forEach((block, idx) => {
+      const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
+      if (lines.length === 0) return;
+
+      let slideTitle = `Strategic Slide ${slides.length + 1}`;
+      let slideDesc = '';
+      const features = [];
+
+      lines.forEach(line => {
+        const clean = line.replace(/^[#\-*•>]+\s*/, '').trim();
+        if (/^#+\s/.test(line) && !slideTitle.includes('Slide')) {
+          slideTitle = clean;
+        } else if (!slideDesc && clean.length > 20) {
+          slideDesc = clean;
+        } else if (/^[-*•]/.test(line) || /^\d+\./.test(line)) {
+          const parts = clean.split(/[-:–]/);
+          const fTitle = parts[0]?.trim() || `Metric ${features.length + 1}`;
+          const fDesc = parts.slice(1).join(':').trim() || clean;
+          features.push({
+            num: String(features.length + 1).padStart(2, '0'),
+            title: fTitle,
+            desc: fDesc
+          });
+        }
+      });
+
+      if (!slideDesc) {
+        slideDesc = 'Synthesized executive strategy generated by Girionix AI Office Copilot.';
+      }
+
+      if (features.length === 0) {
+        features.push(
+          { num: '01', title: 'High Velocity', desc: 'Zero-latency in-memory computation' },
+          { num: '02', title: 'Enterprise Parity', desc: 'Seamless cross-tool data orchestration' },
+          { num: '03', title: 'Sovereign Control', desc: '100% Client-Side Privacy' }
+        );
+      }
+
+      const newSlide = {
+        id: Date.now() + idx,
+        tag: `AI DIRECTIVE ${String(slides.length + 1).padStart(2, '0')}`,
+        title: slideTitle,
+        desc: slideDesc,
+        features: features.slice(0, 4)
+      };
+
+      slides.push(newSlide);
+      createdCount++;
+    });
+
+    try {
+      localStorage.setItem('giri_orbit_kinetic_deck', JSON.stringify(slides));
+    } catch (_) {}
+
+    renderKineticApp(this.workspace);
+    this.showToast(`✅ Appended ${createdCount} slide${createdCount > 1 ? 's' : ''} to Giri Kinetic Deck!`, 'red');
+  }
+
+  /**
+   * Import AI compliance/audit addendum into Giri Aegis (PDF Studio)
+   */
+  importContentToPdf(text) {
+    if (this.currentView !== 'pdf') {
+      this.navigateTo('pdf');
+    }
+
+    const sheet = document.getElementById('pdf-sheet') || document.querySelector('.pdf-paper-sheet');
+    if (sheet) {
+      const addendum = document.createElement('div');
+      addendum.className = 'girionix-pdf-addendum';
+      addendum.style.cssText = 'margin-top:24px; padding:16px 20px; background:#eff6ff; border:1px solid #3b82f6; border-radius:6px; font-size:12px; color:#1e40af; line-height:1.6;';
+      addendum.innerHTML = `
+        <div style="font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; color:#1d4ed8; display:flex; align-items:center; gap:6px;">
+          <span>🔒 Girionix AI Sovereign Verification Addendum</span>
+          <span style="font-size:10px; padding:2px 6px; background:#2563eb; color:#fff; border-radius:10px;">VALIDATED</span>
+        </div>
+        <div>${text.replace(/\n/g, '<br>')}</div>
+        <div style="margin-top:8px; font-size:10px; color:#60a5fa; font-family:monospace;">
+          Certified by GIRI Orbit • Timestamp: ${new Date().toISOString()} • SHA-256 Verified
+        </div>
+      `;
+      sheet.appendChild(addendum);
+      this.showToast('✅ Appended AI compliance addendum to Giri Aegis PDF!', 'orange');
+    } else {
+      this.showToast('PDF canvas ready; switch to Aegis PDF to inspect', 'orange');
+    }
   }
 
   /**

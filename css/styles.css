@@ -4201,6 +4201,32 @@ body.dark .drift-merge-field-chip {
   color: #38bdf8;
   border-color: rgba(56, 189, 248, 0.4);
 }
+.girionix-import-badge-btn {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 182, 212, 0.25));
+  border: 1px solid rgba(52, 211, 153, 0.6);
+  color: #a7f3d0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+}
+.girionix-import-badge-btn:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.4), rgba(6, 182, 212, 0.45));
+  color: #ffffff;
+  border-color: rgba(52, 211, 153, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+}
+.girionix-import-badge-btn:active {
+  transform: translateY(0);
+}
 
 /* Drawer Tabs */
 .girionix-drawer-tabs {
