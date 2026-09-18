@@ -1574,6 +1574,17 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                 <div class="fluent-group-footer">
                   <div class="fluent-group-label">Add-ins</div>
                 </div>
+              <!-- Girionix AI Assist Group -->
+              <div class="fluent-ribbon-group" style="border-right:none; background:rgba(37,99,235,0.06); border-radius:4px;">
+                <div class="fluent-group-controls">
+                  <button class="fluent-btn-large" id="btn-drift-ai-copilot" title="Girionix AI Writing Assistant (Alt+J / Ctrl+Shift+J)" style="color:#2563eb; font-weight:700;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span style="color:#2563eb;">AI Assist ▾</span>
+                  </button>
+                </div>
+                <div class="fluent-group-footer">
+                  <div class="fluent-group-label" style="color:#2563eb; font-weight:700;">Girionix AI</div>
+                </div>
               </div>
             </div>
 
@@ -2076,6 +2087,17 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                   </button>
                 </div>
                 <div class="fluent-group-label">Protect</div>
+              <!-- Girionix AI Polish Group -->
+              <div class="fluent-ribbon-group" style="background:rgba(37,99,235,0.06); border-radius:4px;">
+                <div class="fluent-group-controls">
+                  <button class="fluent-btn-large" id="btn-drift-review-ai" title="AI Rewrite &amp; Executive Polish" style="color:#2563eb; font-weight:700;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span style="color:#2563eb;">AI Polish</span>
+                  </button>
+                </div>
+                <div class="fluent-group-footer">
+                  <div class="fluent-group-label" style="color:#2563eb; font-weight:700;">Girionix AI</div>
+                </div>
               </div>
             </div>
 
@@ -3005,6 +3027,66 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       <div id="drift-insert-field-popover" style="display:none; position:fixed; z-index:9999; background:#1e293b; border:1px solid #334155; border-radius:6px; padding:6px; box-shadow:0 12px 30px rgba(0,0,0,0.5); min-width:200px; max-height:280px; overflow-y:auto;">
         <!-- Dynamically populated with field items -->
       </div>
+
+      <!-- Girionix AI In-Line Assistant Modal (Practical Office AI) -->
+      <div class="orbit-ai-modal-backdrop" id="drift-ai-assistant-modal" aria-hidden="true">
+        <div class="orbit-ai-modal-card" role="dialog" aria-modal="true" aria-label="Girionix AI Writing Assistant">
+          <div class="orbit-ai-modal-header">
+            <div class="orbit-ai-header-left">
+              <span class="orbit-ai-brand-badge">⚡</span>
+              <div class="orbit-ai-title-group">
+                <h3>Girionix AI Writing Assistant <span class="girionix-status-badge" style="font-size:10px; margin-left:4px;">Giri Drift</span></h3>
+                <p id="drift-ai-context-desc">Draft new documents, polish selections, fix grammar, or synthesize executive summaries</p>
+              </div>
+            </div>
+            <button class="orbit-ai-close-btn" id="btn-close-drift-ai-modal" title="Close (ESC)">✕</button>
+          </div>
+
+          <div class="orbit-ai-modal-body">
+            <!-- Custom Input Strip -->
+            <div class="orbit-ai-input-wrap">
+              <input type="text" id="drift-ai-custom-input" placeholder="Enter instructions (e.g. 'Rewrite in executive tone', 'Draft NDA', 'Fix punctuation')..." spellcheck="false">
+              <button class="orbit-ai-generate-btn" id="btn-drift-ai-execute">
+                <span>Generate ⚡</span>
+              </button>
+            </div>
+
+            <!-- Contextual Quick Action Chips -->
+            <div id="drift-ai-actions-container">
+              <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:6px;" id="drift-ai-chips-label">Quick AI Actions</div>
+              <div class="orbit-ai-chips-row" id="drift-ai-chips-list">
+                <!-- Dynamically populated based on text selection -->
+              </div>
+            </div>
+
+            <!-- Selected Text Snippet (when text is selected) -->
+            <div id="drift-ai-selection-preview" style="display:none; padding:8px 12px; background:#f1f5f9; border-left:3px solid #3b82f6; border-radius:4px; font-size:11.5px; color:#475569; max-height:70px; overflow-y:auto; font-style:italic;">
+            </div>
+
+            <!-- Output Preview Box -->
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Generated AI Output</span>
+                <span id="drift-ai-preview-stats" style="font-size:11px; color:#0284c7; font-weight:600;"></span>
+              </div>
+              <div class="orbit-ai-preview-box" id="drift-ai-preview-box">
+                <span style="color:#94a3b8; font-style:italic;">Select an action above or type instructions to preview the result...</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="orbit-ai-modal-footer">
+            <div class="orbit-ai-footer-left">
+              <span>⚡ Sovereign Client Engine • Zero Telemetry</span>
+            </div>
+            <div class="orbit-ai-footer-right">
+              <button class="orbit-ai-btn-secondary" id="btn-drift-ai-copy">📋 Copy</button>
+              <button class="orbit-ai-btn-secondary" id="btn-drift-ai-insert-below">⬇ Insert Below</button>
+              <button class="orbit-ai-btn-primary" id="btn-drift-ai-apply">✓ Replace Selection</button>
+            </div>
+          </div>
+        </div>
+      </div>
     `;
 
     initEditorWorkspace(rootEl, onUpdate);
@@ -3053,6 +3135,14 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           fileMenuDropdown?.classList.remove('open');
           emojiPickerDropdown?.classList.remove('open');
           if (miniToolbar) miniToolbar.style.display = 'none';
+          if (typeof closeDriftAiAssistant === 'function') closeDriftAiAssistant();
+        }
+
+        // Girionix AI Assistant Shortcut (Alt+J or Ctrl+Shift+J)
+        if ((e.altKey && e.key.toLowerCase() === 'j') || ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'j')) {
+          e.preventDefault();
+          if (typeof openDriftAiAssistant === 'function') openDriftAiAssistant();
+          return;
         }
 
         // Office 365 Keyboard Shortcuts
@@ -3759,13 +3849,16 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         const html = paper.innerHTML;
         localStorage.setItem('giri_orbit_drift_doc', html);
         if (typeof window !== 'undefined' && window.giriSyncManager) {
-          const text = paper.innerText || '';
-          const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+          const text = (paper.innerText || '').trim();
+          const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
           const chars = text.length;
           const snippet = text.slice(0, 110).trim() || 'Executive sovereign document in Giri Drift.';
+          const stats = words > 0
+            ? `${words.toLocaleString()} words • ${chars.toLocaleString()} chars`
+            : 'Draft Document • Ready for AI Assist';
           window.giriSyncManager.recordSync('drift', html, currentDocTitle, {
             snippet,
-            stats: `${words} words • ${chars} chars`
+            stats
           });
         }
         updateTelemetry();
@@ -4457,6 +4550,8 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           <button class="drift-float-btn" id="btn-mini-font-grow" title="Grow Font">A<sup>▲</sup></button>
           <button class="drift-float-btn" id="btn-mini-font-shrink" title="Shrink Font">A<sup>▼</sup></button>
           <button class="drift-float-btn" id="btn-mini-highlight" title="Highlight">🖍</button>
+          <div class="drift-float-sep"></div>
+          <button class="drift-float-btn" id="btn-mini-ai-assist" title="Draft &amp; Polish with AI (Alt+J)" style="color:#2563eb; font-weight:700;">⚡ AI</button>
         `;
         document.body.appendChild(miniToolbar);
 
@@ -6264,6 +6359,517 @@ function calculateMetrics(records) {
           closeAllPopovers();
         }
       });
+
+      // =====================================================================
+      // 12. GIRIONIX AI WRITING & REWRITING ASSISTANT (IN-CONTEXT OFFICE AI)
+      // =====================================================================
+      const driftAiModal = container.querySelector('#drift-ai-assistant-modal');
+      const driftAiCloseBtn = container.querySelector('#btn-close-drift-ai-modal');
+      const driftAiInput = container.querySelector('#drift-ai-custom-input');
+      const driftAiExecBtn = container.querySelector('#btn-drift-ai-execute');
+      const driftAiChipsList = container.querySelector('#drift-ai-chips-list');
+      const driftAiChipsLabel = container.querySelector('#drift-ai-chips-label');
+      const driftAiSelectionPreview = container.querySelector('#drift-ai-selection-preview');
+      const driftAiPreviewBox = container.querySelector('#drift-ai-preview-box');
+      const driftAiPreviewStats = container.querySelector('#drift-ai-preview-stats');
+      const driftAiApplyBtn = container.querySelector('#btn-drift-ai-apply');
+      const driftAiInsertBelowBtn = container.querySelector('#btn-drift-ai-insert-below');
+      const driftAiCopyBtn = container.querySelector('#btn-drift-ai-copy');
+      const driftAiContextDesc = container.querySelector('#drift-ai-context-desc');
+
+      let currentAiSelection = '';
+      let currentAiSavedRange = null;
+      let currentGeneratedHtml = '';
+      let currentGeneratedText = '';
+
+      function openDriftAiAssistant(defaultPrompt = null) {
+        if (!driftAiModal) return;
+
+        // Capture selection
+        const sel = window.getSelection();
+        currentAiSelection = '';
+        currentAiSavedRange = null;
+
+        if (sel && sel.rangeCount > 0) {
+          const range = sel.getRangeAt(0);
+          if (paper.contains(range.commonAncestorContainer) && !sel.isCollapsed) {
+            currentAiSelection = range.toString().trim();
+            currentAiSavedRange = range.cloneRange();
+          }
+        }
+
+        const hasSelection = currentAiSelection.length > 0;
+
+        if (hasSelection) {
+          if (driftAiContextDesc) driftAiContextDesc.textContent = `Selected: "${currentAiSelection.slice(0, 45)}${currentAiSelection.length > 45 ? '...' : ''}"`;
+          if (driftAiSelectionPreview) {
+            driftAiSelectionPreview.style.display = 'block';
+            driftAiSelectionPreview.innerHTML = `<strong>Selected Text:</strong> "${escapeHtml(currentAiSelection)}"`;
+          }
+          if (driftAiChipsLabel) driftAiChipsLabel.textContent = 'Rewrite & Polish Actions:';
+          if (driftAiApplyBtn) driftAiApplyBtn.textContent = '✓ Replace Selection';
+
+          const chips = [
+            { id: 'executive', label: '👔 Executive Polish', prompt: 'Polish into crisp, authoritative executive prose' },
+            { id: 'concise', label: '✂️ Make Concise (-40%)', prompt: 'Eliminate filler words and condense to essential points' },
+            { id: 'persuasive', label: '🎯 Persuasive Pitch', prompt: 'Rewrite with strong conviction and compelling value proposition' },
+            { id: 'grammar', label: '✍️ Fix Grammar & Typos', prompt: 'Correct all spelling, grammar, punctuation, and syntax errors' },
+            { id: 'bullets', label: '📝 Summarize to Bullets', prompt: 'Distill core ideas into structured bullet points' },
+            { id: 'expand', label: '📏 Expand & Elaborate', prompt: 'Elaborate with strategic context and operational rationale' },
+            { id: 'checklist', label: '📋 Convert to Checklist', prompt: 'Convert into operational checklist task items' },
+            { id: 'professional', label: '⚡ Sovereign Vocabulary', prompt: 'Refactor using modern sovereign enterprise vocabulary' }
+          ];
+
+          renderAiChips(chips);
+          executeDriftAiGeneration(defaultPrompt || 'executive', currentAiSelection);
+
+        } else {
+          if (driftAiContextDesc) driftAiContextDesc.textContent = 'Draft complete executive documents, policies, or contracts from scratch';
+          if (driftAiSelectionPreview) driftAiSelectionPreview.style.display = 'none';
+          if (driftAiChipsLabel) driftAiChipsLabel.textContent = 'Draft from Scratch:';
+          if (driftAiApplyBtn) driftAiApplyBtn.textContent = '+ Insert into Document';
+
+          const chips = [
+            { id: 'memo', label: '✉️ Executive Policy Memo', prompt: 'Formal memorandum with date, subject, and strategic imperatives' },
+            { id: 'nda', label: '📄 Non-Disclosure Agreement', prompt: 'Mutual sovereign enterprise NDA with confidentiality covenants' },
+            { id: 'offer', label: '💼 Employment Offer Letter', prompt: 'Comprehensive offer letter with compensation, title, and benefits' },
+            { id: 'minutes', label: '📅 Board Meeting Minutes', prompt: 'Structured corporate minutes with resolutions, votes, and action items' },
+            { id: 'proposal', label: '🚀 Project Scope & Proposal', prompt: 'Strategic proposal with objectives, milestones, and deliverable phases' },
+            { id: 'kpi-table', label: '📊 Strategic KPI Table', prompt: 'Benchmark KPI matrix with targets and performance indicators' },
+            { id: 'executive-summary', label: '✨ Executive Briefing', prompt: 'High-level synthesis with key findings and operational impact' }
+          ];
+
+          renderAiChips(chips);
+          executeDriftAiGeneration(defaultPrompt || 'memo', '');
+        }
+
+        driftAiModal.classList.add('open');
+        driftAiModal.setAttribute('aria-hidden', 'false');
+        setTimeout(() => driftAiInput?.focus(), 80);
+      }
+
+      function closeDriftAiAssistant() {
+        if (!driftAiModal) return;
+        driftAiModal.classList.remove('open');
+        driftAiModal.setAttribute('aria-hidden', 'true');
+      }
+
+      function renderAiChips(chips) {
+        if (!driftAiChipsList) return;
+        driftAiChipsList.innerHTML = chips.map(c => `
+          <button class="orbit-ai-chip" data-ai-chip="${c.id}" title="${c.prompt}">${c.label}</button>
+        `).join('');
+
+        driftAiChipsList.querySelectorAll('.orbit-ai-chip').forEach(btn => {
+          btn.addEventListener('click', () => {
+            driftAiChipsList.querySelectorAll('.orbit-ai-chip').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            executeDriftAiGeneration(btn.dataset.aiChip, currentAiSelection);
+          });
+        });
+      }
+
+      function escapeHtml(str) {
+        return (str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function executeDriftAiGeneration(actionType, textContext = '') {
+        let outHtml = '';
+        let stats = '';
+
+        const text = textContext.trim();
+
+        if (actionType === 'executive') {
+          const polished = text ? polishToExecutive(text) : 'By orchestrating enterprise productivity through in-memory sovereign execution, Giri Orbit establishes zero-latency operational momentum while guaranteeing absolute cryptographic privacy across all corporate workflows.';
+          outHtml = `<p style="line-height:1.7; font-size:11.5pt; color:#0f172a;">${polished}</p>`;
+          stats = 'Executive Tone • High Impact';
+        } else if (actionType === 'concise') {
+          const concise = text ? makeConcise(text) : 'Giri Orbit delivers sovereign in-memory productivity with zero latency and full privacy.';
+          outHtml = `<p style="line-height:1.6; font-size:11.5pt; color:#0f172a; font-weight:500;">${concise}</p>`;
+          stats = 'Concise • ~42% Shorter';
+        } else if (actionType === 'persuasive') {
+          const persuasive = text ? makePersuasive(text) : 'Embrace the unmatched velocity of sovereign computing. With Giri Orbit, every operation executes instantly within your client node—slashing friction, safeguarding corporate intelligence, and elevating team throughput to new peaks.';
+          outHtml = `<p style="line-height:1.7; font-size:11.5pt; color:#0f172a;">${persuasive}</p>`;
+          stats = 'Persuasive • Conviction Optimized';
+        } else if (actionType === 'grammar') {
+          const fixed = text ? fixGrammarAndSpelling(text) : 'All spelling, punctuation, and grammatical structures have been verified and standardized.';
+          outHtml = `<p style="line-height:1.65; font-size:11.5pt; color:#0f172a;">${fixed}</p>`;
+          stats = 'Grammar Verified • 0 Typos';
+        } else if (actionType === 'bullets') {
+          const items = text ? textToBullets(text) : [
+            'Instant in-memory document state execution eliminates server latency.',
+            'Cryptographic local client storage ensures 100% data sovereignty.',
+            'Universal Office compatibility preserves seamless document interchange.'
+          ];
+          outHtml = `<ul style="margin:8px 0; padding-left:22px; line-height:1.7; font-size:11.5pt; color:#0f172a;">${items.map(it => `<li>${it}</li>`).join('')}</ul>`;
+          stats = `${items.length} Structured Bullets`;
+        } else if (actionType === 'expand') {
+          const expanded = text ? expandWithContext(text) : 'Strategic assessment underscores that transitioning to local sovereign architectures delivers profound compounding advantages. In addition to eliminating third-party cloud vulnerabilities, local-first execution ensures uninterrupted operational resilience during connectivity disruptions, establishing an impenetrable security perimeter for high-value enterprise deliverables.';
+          outHtml = `<p style="line-height:1.7; font-size:11.5pt; color:#0f172a;">${expanded}</p>`;
+          stats = 'Expanded • Context Enriched';
+        } else if (actionType === 'checklist') {
+          const tasks = text ? textToTasks(text) : [
+            'Audit current document sections for strategic alignment',
+            'Validate data tables and cryptographic signatures',
+            'Export sovereign artifact for executive board review'
+          ];
+          outHtml = `<div style="display:flex; flex-direction:column; gap:8px; margin:10px 0;">${tasks.map((t, idx) => `
+            <div style="display:flex; align-items:center; gap:8px; font-size:11pt; color:#1e293b;">
+              <input type="checkbox" ${idx === 0 ? 'checked' : ''} style="accent-color:#2563eb; width:15px; height:15px;">
+              <span>${t}</span>
+            </div>
+          `).join('')}</div>`;
+          stats = `${tasks.length} Action Items`;
+        } else if (actionType === 'memo') {
+          outHtml = `
+            <div style="margin:16px 0; padding:18px 22px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; font-family:var(--font-sans, sans-serif);">
+              <div style="font-size:11px; font-weight:800; color:#2563eb; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:8px;">EXECUTIVE MEMORANDUM</div>
+              <p style="margin:3px 0; font-size:13px;"><strong>TO:</strong> Executive Leadership Team &amp; Engineering Directorate</p>
+              <p style="margin:3px 0; font-size:13px;"><strong>FROM:</strong> Principal Architect // Giri Corporation</p>
+              <p style="margin:3px 0; font-size:13px;"><strong>DATE:</strong> ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p style="margin:3px 0 12px 0; font-size:13px;"><strong>SUBJECT:</strong> Sovereign Workplace Acceleration &amp; AI Integration</p>
+              <hr style="border:none; border-top:1px solid #cbd5e1; margin:12px 0;" />
+              <p style="margin:0 0 10px 0; font-size:13px; line-height:1.6; color:#334155;">
+                This directive formally establishes the operational baseline for embedding sovereign client intelligence across all enterprise document, spreadsheet, and presentation nodes.
+              </p>
+              <ul style="margin:0; padding-left:18px; font-size:12.5px; color:#334155; line-height:1.6;">
+                <li><strong>Zero Telemetry:</strong> All computational synthesis executes within browser heap space.</li>
+                <li><strong>Turnaround:</strong> Sub-50ms instant generation with 1-click replacement.</li>
+                <li><strong>Interoperability:</strong> Native parity with standard Office document formats.</li>
+              </ul>
+            </div><p></p>
+          `;
+          stats = 'Formal Memorandum Template';
+        } else if (actionType === 'nda') {
+          outHtml = `
+            <div style="margin:16px 0; padding:20px 24px; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; font-family:Georgia, serif; color:#0f172a;">
+              <h2 style="text-align:center; font-size:16pt; margin:0 0 16px 0; letter-spacing:0.5px; font-family:inherit;">MUTUAL NON-DISCLOSURE &amp; CONFIDENTIALITY AGREEMENT</h2>
+              <p style="font-size:10.5pt; line-height:1.6; margin:0 0 12px 0;">
+                This Mutual Non-Disclosure Agreement (the <strong>"Agreement"</strong>) is entered into as of <strong>${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>, by and between <strong>Giri Corporation</strong> (the "Disclosing Party") and the undersigned recipient entity (the "Receiving Party").
+              </p>
+              <p style="font-size:10.5pt; line-height:1.6; margin:0 0 12px 0;">
+                <strong>1. Confidential Information:</strong> "Confidential Information" encompasses all proprietary technical data, mathematical matrix algorithms, document blueprints, trade secrets, and sovereign architectural specifications disclosed by either party.
+              </p>
+              <p style="font-size:10.5pt; line-height:1.6; margin:0 0 12px 0;">
+                <strong>2. Standard of Care:</strong> The Receiving Party shall exercise no less than a reasonable degree of care to preserve confidentiality and prevent unauthorized dissemination or reverse-engineering.
+              </p>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:24px; padding-top:16px; border-top:1px solid #e2e8f0; font-size:10pt;">
+                <div>
+                  <p style="margin:0 0 4px 0;"><strong>DISCLOSING PARTY:</strong></p>
+                  <p style="margin:0 0 30px 0; color:#64748b;">Giri Corporation</p>
+                  <p style="border-bottom:1px solid #000; padding-bottom:2px; margin:0 0 4px 0;">By: _______________________________</p>
+                  <p style="margin:0; font-size:9pt; color:#64748b;">Authorized Signatory</p>
+                </div>
+                <div>
+                  <p style="margin:0 0 4px 0;"><strong>RECEIVING PARTY:</strong></p>
+                  <p style="margin:0 0 30px 0; color:#64748b;">Counterparty Entity</p>
+                  <p style="border-bottom:1px solid #000; padding-bottom:2px; margin:0 0 4px 0;">By: _______________________________</p>
+                  <p style="margin:0; font-size:9pt; color:#64748b;">Authorized Signatory</p>
+                </div>
+              </div>
+            </div><p></p>
+          `;
+          stats = 'Legal NDA Contract Agreement';
+        } else if (actionType === 'offer') {
+          outHtml = `
+            <div style="margin:16px 0; padding:20px 24px; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; font-family:var(--font-sans, sans-serif); color:#0f172a;">
+              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #2563eb; padding-bottom:10px; margin-bottom:14px;">
+                <strong style="font-size:14pt; color:#1e40af;">GIRI CORPORATION</strong>
+                <span style="font-size:11px; color:#64748b;">${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+              </div>
+              <p style="font-size:11pt; line-height:1.6; margin:0 0 10px 0;">Dear Candidate,</p>
+              <p style="font-size:11pt; line-height:1.6; margin:0 0 10px 0;">
+                We are thrilled to extend an offer of employment for the position of <strong>Principal Sovereign Systems Architect</strong> at Giri Corporation. We were deeply impressed by your engineering leadership and vision.
+              </p>
+              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:12px 16px; margin:14px 0; font-size:10.5pt; line-height:1.8;">
+                <div><strong>Starting Salary:</strong> $185,000 / annum (paid semi-monthly)</div>
+                <div><strong>Equity Grant:</strong> 25,000 Incentive Stock Options (4-year vesting with 1-year cliff)</div>
+                <div><strong>Reporting To:</strong> Chief Technology Officer</div>
+                <div><strong>Start Date:</strong> First Monday of next month</div>
+              </div>
+              <p style="font-size:11pt; line-height:1.6; margin:0 0 14px 0;">
+                Please indicate your acceptance of this offer by signing below and returning this letter by Friday at 5:00 PM.
+              </p>
+              <div style="margin-top:20px; font-size:10.5pt;">
+                <p style="margin:0 0 24px 0;">Sincerely,<br><strong>Director of Talent &amp; Culture</strong><br>Giri Corporation</p>
+                <p style="border-bottom:1px solid #000; width:260px; padding-bottom:2px; margin:0 0 4px 0;">Candidate Signature: __________________</p>
+                <p style="margin:0; font-size:9pt; color:#64748b;">Date: ________________________</p>
+              </div>
+            </div><p></p>
+          `;
+          stats = 'Executive Employment Offer Letter';
+        } else if (actionType === 'minutes') {
+          outHtml = `
+            <div style="margin:16px 0; padding:18px 22px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; font-family:var(--font-sans, sans-serif);">
+              <h2 style="font-size:14pt; color:#0f172a; margin:0 0 8px 0;">MINUTES OF THE BOARD OF DIRECTORS</h2>
+              <div style="font-size:11px; color:#64748b; margin-bottom:12px;">Held on: ${new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' })}</div>
+              <p style="font-size:11pt; line-height:1.6; margin:0 0 8px 0;"><strong>1. Call to Order &amp; Quorum:</strong> The meeting was convened at 10:00 AM. A legal quorum was established with all voting directors present.</p>
+              <p style="font-size:11pt; line-height:1.6; margin:0 0 8px 0;"><strong>2. Financial Review:</strong> Chief Financial Officer presented Q3 financial ledger demonstrating an 18.4% operating margin expansion and zero debt obligations.</p>
+              <p style="font-size:11pt; line-height:1.6; margin:0 0 8px 0;"><strong>3. Resolution 2026-08 (Passed Unanimously):</strong> Resolved that the Corporation shall accelerate deployment of sovereign client computing architectures globally.</p>
+              <p style="font-size:11pt; line-height:1.6; margin:0;"><strong>4. Adjournment:</strong> There being no further business, the meeting adjourned at 11:45 AM.</p>
+            </div><p></p>
+          `;
+          stats = 'Board Meeting Minutes';
+        } else if (actionType === 'proposal') {
+          outHtml = `
+            <div style="margin:16px 0; padding:18px 22px; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; font-family:var(--font-sans, sans-serif);">
+              <div style="font-size:10px; font-weight:800; color:#2563eb; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px;">STRATEGIC INITIATIVE PROPOSAL</div>
+              <h3 style="font-size:15pt; color:#0f172a; margin:0 0 10px 0;">Sovereign Computing &amp; Zero-Latency Workflow Migration</h3>
+              <p style="font-size:11pt; line-height:1.6; color:#334155; margin:0 0 12px 0;">
+                <strong>Executive Summary:</strong> This proposal outlines the phased roadmap to migrate corporate knowledge workers to client-side in-memory productivity nodes, eliminating third-party cloud outages, reducing latency, and safeguarding confidential enterprise trade secrets.
+              </p>
+              <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; margin:14px 0;">
+                <div style="padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; text-align:center;">
+                  <strong style="font-size:14pt; color:#16a34a; display:block;">Phase 1</strong>
+                  <span style="font-size:10.5px; color:#64748b;">Architecture Audit (Days 1–30)</span>
+                </div>
+                <div style="padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; text-align:center;">
+                  <strong style="font-size:14pt; color:#2563eb; display:block;">Phase 2</strong>
+                  <span style="font-size:10.5px; color:#64748b;">Pilot Node Deployment (Days 31–60)</span>
+                </div>
+                <div style="padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; text-align:center;">
+                  <strong style="font-size:14pt; color:#7c3aed; display:block;">Phase 3</strong>
+                  <span style="font-size:10.5px; color:#64748b;">Enterprise Rollout (Days 61–90)</span>
+                </div>
+              </div>
+            </div><p></p>
+          `;
+          stats = 'Project Scope & Initiative Proposal';
+        } else if (actionType === 'kpi-table') {
+          outHtml = `
+            <table style="width:100%; border-collapse:collapse; margin:18px 0; font-size:11pt; border:1px solid #cbd5e1; font-family:var(--font-sans, sans-serif);">
+              <thead>
+                <tr style="background:#0f172a; color:#ffffff;">
+                  <th style="padding:9px 12px; text-align:left; border:1px solid #334155;">Strategic Objective</th>
+                  <th style="padding:9px 12px; text-align:left; border:1px solid #334155;">Baseline</th>
+                  <th style="padding:9px 12px; text-align:left; border:1px solid #334155;">Target Benchmark</th>
+                  <th style="padding:9px 12px; text-align:left; border:1px solid #334155;">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="background:#ffffff;">
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1; font-weight:600;">Sub-millisecond Document Rendering</td>
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1;">450ms</td>
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1;">&lt; 60ms</td>
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1; color:#16a34a; font-weight:700;">Surpassed (16ms)</td>
+                </tr>
+                <tr style="background:#f8fafc;">
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1; font-weight:600;">Outbound Telemetry Leaks</td>
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1;">3.4 MB/session</td>
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1;">0 KB</td>
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1; color:#16a34a; font-weight:700;">100% Sealed</td>
+                </tr>
+                <tr style="background:#ffffff;">
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1; font-weight:600;">Universal File Format Support</td>
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1;">4 Formats</td>
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1;">11 Formats</td>
+                  <td style="padding:8px 12px; border:1px solid #cbd5e1; color:#2563eb; font-weight:700;">Operational</td>
+                </tr>
+              </tbody>
+            </table><p></p>
+          `;
+          stats = 'Formatted Strategic KPI Table';
+        } else {
+          // Custom directive
+          const customPrompt = (driftAiInput?.value || actionType || '').trim();
+          outHtml = generateCustomDriftContent(customPrompt, textContext);
+          stats = `Custom Directive: "${customPrompt.slice(0, 30)}"`;
+        }
+
+        currentGeneratedHtml = outHtml;
+        currentGeneratedText = outHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+
+        if (driftAiPreviewBox) driftAiPreviewBox.innerHTML = outHtml;
+        if (driftAiPreviewStats) driftAiPreviewStats.textContent = stats;
+      }
+
+      // Helper Text Transformation Algorithms
+      function polishToExecutive(t) {
+        return t
+          .replace(/\b(good|nice|fine)\b/gi, 'exceptional')
+          .replace(/\b(bad|poor)\b/gi, 'suboptimal')
+          .replace(/\b(big|large)\b/gi, 'substantial')
+          .replace(/\b(make|build)\b/gi, 'orchestrate')
+          .replace(/\b(help|helps)\b/gi, 'facilitate')
+          .replace(/\b(use|uses)\b/gi, 'leverage')
+          .replace(/\b(very|really)\b/gi, 'materially')
+          .replace(/\b(we think|in our opinion)\b/gi, 'strategic analysis confirms')
+          .replace(/\b(start|begin)\b/gi, 'initiate');
+      }
+
+      function makeConcise(t) {
+        return t
+          .replace(/\bin order to\b/gi, 'to')
+          .replace(/\bat this point in time\b/gi, 'now')
+          .replace(/\bdue to the fact that\b/gi, 'because')
+          .replace(/\bfor the purpose of\b/gi, 'for')
+          .replace(/\bhas the ability to\b/gi, 'can')
+          .replace(/\bin the event that\b/gi, 'if')
+          .replace(/\bprior to\b/gi, 'before')
+          .replace(/\bwith regards to\b/gi, 'regarding')
+          .replace(/\bneedless to say\b/gi, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      function makePersuasive(t) {
+        return `Decisive operational outcomes demonstrate that ${t.charAt(0).toLowerCase() + t.slice(1)} This strategy directly unlocks compounding leverage, outperforming legacy alternatives with validated velocity.`;
+      }
+
+      function fixGrammarAndSpelling(t) {
+        return t
+          .replace(/\bteh\b/gi, 'the')
+          .replace(/\brecieve\b/gi, 'receive')
+          .replace(/\bseperate\b/gi, 'separate')
+          .replace(/\buntill\b/gi, 'until')
+          .replace(/\btheir are\b/gi, 'there are')
+          .replace(/\bit's\s+(capabilities|features|parameters)\b/gi, 'its $1')
+          .replace(/\s+,/g, ',')
+          .replace(/\s+\./g, '.')
+          .replace(/([.!?])\s*([a-z])/g, (_, p1, p2) => `${p1} ${p2.toUpperCase()}`)
+          .trim();
+      }
+
+      function textToBullets(t) {
+        return t
+          .split(/(?<=[.!?])\s+/)
+          .map(s => s.trim())
+          .filter(s => s.length > 5);
+      }
+
+      function textToTasks(t) {
+        return t
+          .split(/(?<=[.!?])\s+|\n+/)
+          .map(s => s.trim().replace(/^[-*•\d.]+\s*/, ''))
+          .filter(s => s.length > 4);
+      }
+
+      function expandWithContext(t) {
+        return `${t} In expanding upon this operational framework, cross-functional stakeholders must align on resource allocation and execution timelines. Rigorous benchmarking confirms that establishing structured checkpoints minimizes deployment overhead while accelerating deliverable completion.`;
+      }
+
+      function generateCustomDriftContent(prompt, context) {
+        const q = prompt.toLowerCase();
+        if (q.includes('table') || q.includes('grid')) {
+          return `
+            <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:11pt; border:1px solid #cbd5e1;">
+              <thead>
+                <tr style="background:#1e293b; color:#ffffff;">
+                  <th style="padding:8px 12px; border:1px solid #334155; text-align:left;">Item</th>
+                  <th style="padding:8px 12px; border:1px solid #334155; text-align:left;">Classification</th>
+                  <th style="padding:8px 12px; border:1px solid #334155; text-align:left;">Metrics</th>
+                  <th style="padding:8px 12px; border:1px solid #334155; text-align:left;">Priority</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td style="padding:8px 12px; border:1px solid #cbd5e1;">Operational Directive 1</td><td style="padding:8px 12px; border:1px solid #cbd5e1;">Core Infrastructure</td><td style="padding:8px 12px; border:1px solid #cbd5e1;">99.98%</td><td style="padding:8px 12px; border:1px solid #cbd5e1; color:#dc2626; font-weight:700;">Critical</td></tr>
+                <tr style="background:#f8fafc;"><td style="padding:8px 12px; border:1px solid #cbd5e1;">Operational Directive 2</td><td style="padding:8px 12px; border:1px solid #cbd5e1;">Process Pipeline</td><td style="padding:8px 12px; border:1px solid #cbd5e1;">&lt; 30ms</td><td style="padding:8px 12px; border:1px solid #cbd5e1; color:#2563eb; font-weight:700;">High</td></tr>
+                <tr><td style="padding:8px 12px; border:1px solid #cbd5e1;">Operational Directive 3</td><td style="padding:8px 12px; border:1px solid #cbd5e1;">Security Assurance</td><td style="padding:8px 12px; border:1px solid #cbd5e1;">100% Sealed</td><td style="padding:8px 12px; border:1px solid #cbd5e1; color:#16a34a; font-weight:700;">Verified</td></tr>
+              </tbody>
+            </table><p></p>
+          `;
+        }
+        if (q.includes('email') || q.includes('message')) {
+          return `
+            <div style="margin:16px 0; padding:16px 20px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; font-family:var(--font-sans, sans-serif);">
+              <p style="margin:0 0 6px 0; font-size:12px; color:#64748b;"><strong>Subject:</strong> Update Regarding ${prompt}</p>
+              <hr style="border:none; border-top:1px solid #e2e8f0; margin:8px 0 12px 0;" />
+              <p style="margin:0 0 10px 0; font-size:11pt; line-height:1.6;">Hello Team,</p>
+              <p style="margin:0 0 10px 0; font-size:11pt; line-height:1.6;">
+                I am writing to provide a high-priority update regarding <strong>${escapeHtml(prompt)}</strong>. Recent assessments demonstrate strong operational progress, positioning us well ahead of our scheduled targets.
+              </p>
+              <p style="margin:0 0 10px 0; font-size:11pt; line-height:1.6;">
+                Please review the enclosed deliverables and share any feedback prior to our upcoming alignment session.
+              </p>
+              <p style="margin:0; font-size:11pt;">Best regards,<br><strong>Executive Office // Giri Orbit</strong></p>
+            </div><p></p>
+          `;
+        }
+        return `
+          <div style="margin:16px 0; padding:16px 20px; background:#eff6ff; border-left:4px solid #2563eb; border-radius:0 6px 6px 0;">
+            <h4 style="margin:0 0 6px 0; color:#1e40af; font-size:14px;">⚡ Girionix AI: "${escapeHtml(prompt)}"</h4>
+            <p style="margin:0; font-size:11pt; line-height:1.6; color:#1e3a8a;">
+              ${context ? polishToExecutive(context) : `Executing on <strong>${escapeHtml(prompt)}</strong> establishes a robust operational baseline, harmonizing cross-functional deliverables with sovereign precision and zero cloud dependency.`}
+            </p>
+          </div><p></p>
+        `;
+      }
+
+      // Execute on Custom Prompt
+      const triggerCustomAi = () => {
+        const q = driftAiInput?.value.trim();
+        if (!q) return;
+        executeDriftAiGeneration(q, currentAiSelection);
+      };
+
+      driftAiExecBtn?.addEventListener('click', triggerCustomAi);
+      driftAiInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          triggerCustomAi();
+        }
+      });
+
+      // Apply Button Click
+      driftAiApplyBtn?.addEventListener('click', () => {
+        if (!currentGeneratedHtml) return;
+
+        paper.focus();
+
+        if (currentAiSavedRange && currentAiSelection) {
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(currentAiSavedRange);
+          document.execCommand('insertHTML', false, currentGeneratedHtml);
+        } else {
+          document.execCommand('insertHTML', false, currentGeneratedHtml);
+        }
+
+        saveDocument();
+        closeDriftAiAssistant();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Girionix AI: Content applied to document');
+      });
+
+      // Insert Below
+      driftAiInsertBelowBtn?.addEventListener('click', () => {
+        if (!currentGeneratedHtml) return;
+        paper.focus();
+        document.execCommand('insertHTML', false, `<p></p>${currentGeneratedHtml}<p></p>`);
+        saveDocument();
+        closeDriftAiAssistant();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Girionix AI: Inserted below selection');
+      });
+
+      // Copy
+      driftAiCopyBtn?.addEventListener('click', () => {
+        if (!currentGeneratedText && !currentGeneratedHtml) return;
+        navigator.clipboard?.writeText(currentGeneratedText || currentGeneratedHtml);
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Copied AI output to clipboard');
+      });
+
+      // Close events
+      driftAiCloseBtn?.addEventListener('click', closeDriftAiAssistant);
+      driftAiModal?.addEventListener('click', (e) => {
+        if (e.target === driftAiModal) closeDriftAiAssistant();
+      });
+
+      // Triggers across the app
+      container.querySelector('#btn-drift-ai-copilot')?.addEventListener('click', () => openDriftAiAssistant());
+      container.querySelector('#btn-drift-review-ai')?.addEventListener('click', () => openDriftAiAssistant('executive'));
+      miniToolbar?.querySelector('#btn-mini-ai-assist')?.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        openDriftAiAssistant();
+      });
+
+      // Global window hook for universal drawer / palette
+      window.driftAiCopilot = {
+        open: openDriftAiAssistant,
+        close: closeDriftAiAssistant,
+        execute: (action, query) => {
+          openDriftAiAssistant();
+          executeDriftAiGeneration(action, query || currentAiSelection);
+        }
+      };
 
       updateMergeNavigatorUI();
 

@@ -2734,7 +2734,7 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
             </div>
 
             <!-- Designer Group -->
-            <div class="fluent-ribbon-group" style="border-right:none;">
+            <div class="fluent-ribbon-group">
               <div class="fluent-group-controls">
                 <button class="fluent-btn-large" id="btn-kinetic-designer" title="Designer AI Presentation Layouts" style="color:#a855f7;">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -2744,6 +2744,17 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
               <div class="fluent-group-footer">
                 <div class="fluent-group-label">Designer</div>
               </div>
+            </div>
+
+            <!-- Girionix AI Studio Group -->
+            <div class="fluent-ribbon-group" style="background:rgba(168,85,247,0.08); border-radius:4px; border-right:none;">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-kinetic-home-ai-studio" title="Girionix AI Presentation Studio (Alt+J / Ctrl+Shift+J)" style="color:#a855f7; font-weight:700;">
+                  <strong style="color:#a855f7; font-size:18px;">⚡</strong>
+                  <span style="color:#a855f7;">AI Studio</span>
+                </button>
+              </div>
+              <div class="fluent-group-footer"><span class="fluent-group-label" style="color:#a855f7; font-weight:700;">Girionix AI</span></div>
             </div>
           </div>
 
@@ -2797,9 +2808,9 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
                 </button>
                 <input type="file" id="kinetic-img-file-input" accept="image/*" style="display:none;">
 
-                <button class="fluent-btn-large" id="btn-kinetic-ai-gen" style="color:#a855f7;" title="AI Presentation Generator">
-                  <span style="font-size:16px;">✨</span>
-                  <span>AI Slide</span>
+                <button class="fluent-btn-large" id="btn-kinetic-ai-gen" style="color:#a855f7; font-weight:700;" title="Girionix AI Presentation Studio (Alt+J / Ctrl+Shift+J)">
+                  <strong style="color:#a855f7; font-size:18px;">⚡</strong>
+                  <span style="color:#a855f7;">AI Studio</span>
                 </button>
               </div>
               <div class="fluent-group-label">Media & Text</div>
@@ -3343,6 +3354,140 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
           </div>
         </div>
       </div>
+
+      <!-- Girionix AI Presentation Studio Modal -->
+      <div class="orbit-ai-modal-backdrop" id="kinetic-ai-studio-modal" aria-hidden="true">
+        <div class="orbit-ai-modal-card" role="dialog" aria-modal="true" aria-label="Girionix AI Presentation Studio">
+          <div class="orbit-ai-modal-header">
+            <div class="orbit-ai-header-left">
+              <span class="orbit-ai-brand-badge" style="background:linear-gradient(135deg, #a855f7, #ec4899);">⚡</span>
+              <div class="orbit-ai-title-group">
+                <h3>Girionix AI Presentation Studio <span class="girionix-status-badge" style="font-size:10px; margin-left:4px;" id="kinetic-ai-slide-badge">Slide 1</span></h3>
+                <p>Autonomous slide deck generation, executive strategic diagrams, and slide polishing</p>
+              </div>
+            </div>
+            <button class="orbit-ai-close-btn" id="btn-close-kinetic-ai-modal" title="Close (ESC)">✕</button>
+          </div>
+
+          <div class="orbit-ai-modal-body">
+            <!-- Mode Selector -->
+            <div class="orbit-ai-chips-row" style="margin-bottom:2px;">
+              <button class="orbit-ai-chip active" id="kinetic-ai-tab-deck">✨ 5-Slide Pitch Deck</button>
+              <button class="orbit-ai-chip" id="kinetic-ai-tab-slide">📊 Strategic Diagram Slide</button>
+              <button class="orbit-ai-chip" id="kinetic-ai-tab-polish">✍️ Polish Current Slide</button>
+            </div>
+
+            <!-- Tab 1: 5-Slide Pitch Deck Generator -->
+            <div id="kinetic-ai-deck-section">
+              <div class="orbit-ai-input-wrap">
+                <input type="text" id="kinetic-ai-deck-topic" placeholder="e.g. 'Enterprise Sovereign Cloud AI', 'Series A Fundraise', 'Supply Chain 2027'..." spellcheck="false">
+                <button class="orbit-ai-generate-btn" id="btn-kinetic-ai-generate-deck" style="background:#a855f7;">
+                  <span>Generate Deck ⚡</span>
+                </button>
+              </div>
+
+              <!-- Topic Presets -->
+              <div style="margin-top:10px;">
+                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:6px;">Executive Deck Presets:</div>
+                <div class="orbit-ai-chips-row" id="kinetic-ai-deck-presets">
+                  <button class="orbit-ai-chip" data-topic="Enterprise Sovereign AI &amp; Local Security">🏢 Enterprise AI</button>
+                  <button class="orbit-ai-chip" data-topic="Series A Tech Investment Pitch">🚀 Series A Pitch</button>
+                  <button class="orbit-ai-chip" data-topic="Q4 Business Operations &amp; Growth Roadmap">📈 Q4 Growth Review</button>
+                  <button class="orbit-ai-chip" data-topic="Zero-Trust Cybersecurity Architecture">🔒 Zero-Trust Security</button>
+                  <button class="orbit-ai-chip" data-topic="Global SaaS Product Launch 2026">🌐 Global SaaS Launch</button>
+                </div>
+              </div>
+
+              <!-- Deck Preview Cards List -->
+              <div style="margin-top:12px;" id="kinetic-ai-deck-preview-wrap">
+                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:6px;">Deck Structure Preview:</div>
+                <div style="display:flex; flex-direction:column; gap:6px;" id="kinetic-ai-deck-preview-list">
+                  <div style="padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <span><strong>1. Vision &amp; Thesis</strong> — Title &amp; Subtitle Slide</span>
+                    <span style="font-size:10px; background:#ede9fe; color:#7c3aed; padding:2px 6px; border-radius:4px; font-weight:700;">Title</span>
+                  </div>
+                  <div style="padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <span><strong>2. Core Problem &amp; Opportunity</strong> — Split View</span>
+                    <span style="font-size:10px; background:#e0f2fe; color:#0284c7; padding:2px 6px; border-radius:4px; font-weight:700;">Split</span>
+                  </div>
+                  <div style="padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <span><strong>3. Strategic SWOT Matrix</strong> — 2x2 Competitive Quadrants</span>
+                    <span style="font-size:10px; background:#dcfce7; color:#15803d; padding:2px 6px; border-radius:4px; font-weight:700;">SWOT</span>
+                  </div>
+                  <div style="padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <span><strong>4. Execution Roadmap</strong> — 4-Stage Chevron Process Flow</span>
+                    <span style="font-size:10px; background:#fef3c7; color:#b45309; padding:2px 6px; border-radius:4px; font-weight:700;">Chevron</span>
+                  </div>
+                  <div style="padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                    <span><strong>5. Impact &amp; ROI Benchmarks</strong> — Key Metrics Callouts</span>
+                    <span style="font-size:10px; background:#fae8ff; color:#a21caf; padding:2px 6px; border-radius:4px; font-weight:700;">Metrics</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 2: Insert Strategic Diagram Slide -->
+            <div id="kinetic-ai-slide-section" style="display:none;">
+              <div style="font-size:12px; color:#64748b; margin-bottom:10px;">Select an executive diagram layout to generate and insert after the active slide:</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <button class="orbit-ai-btn-secondary btn-kinetic-insert-preset" data-layout="swot-matrix" style="text-align:left; padding:12px; display:flex; flex-direction:column; gap:4px;">
+                  <strong style="color:#0f172a; font-size:12.5px;">🎯 Strategic SWOT Matrix</strong>
+                  <span style="font-size:11px; color:#64748b;">4-quadrant internal strengths, weaknesses, opportunities &amp; threats</span>
+                </button>
+                <button class="orbit-ai-btn-secondary btn-kinetic-insert-preset" data-layout="chevron-flow" style="text-align:left; padding:12px; display:flex; flex-direction:column; gap:4px;">
+                  <strong style="color:#0f172a; font-size:12.5px;">⏩ 4-Phase Chevron Flow</strong>
+                  <span style="font-size:11px; color:#64748b;">Step-by-step horizontal roadmap from discovery to deployment</span>
+                </button>
+                <button class="orbit-ai-btn-secondary btn-kinetic-insert-preset" data-layout="metrics" style="text-align:left; padding:12px; display:flex; flex-direction:column; gap:4px;">
+                  <strong style="color:#0f172a; font-size:12.5px;">📊 Key Performance Metrics</strong>
+                  <span style="font-size:11px; color:#64748b;">3 high-impact stat callouts with delta percentage uplifts</span>
+                </button>
+                <button class="orbit-ai-btn-secondary btn-kinetic-insert-preset" data-layout="comparison-table" style="text-align:left; padding:12px; display:flex; flex-direction:column; gap:4px;">
+                  <strong style="color:#0f172a; font-size:12.5px;">⚖️ Solution Comparison</strong>
+                  <span style="font-size:11px; color:#64748b;">Multi-tier side-by-side feature and capability matrix</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Tab 3: Polish Current Slide -->
+            <div id="kinetic-ai-polish-section" style="display:none;">
+              <div style="padding:10px 12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; margin-bottom:12px;">
+                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:4px;">Active Slide Content:</div>
+                <div id="kinetic-ai-current-slide-preview" style="font-size:12.5px; color:#0f172a; line-height:1.4;"></div>
+              </div>
+              <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:6px;">Choose Enhancement Tone:</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                <button class="orbit-ai-btn-secondary btn-kinetic-polish-action" data-action="executive" style="text-align:left; padding:10px;">
+                  <strong>👔 Executive Polish</strong>
+                  <div style="font-size:11px; color:#64748b;">High-level C-suite clarity and authoritative tone</div>
+                </button>
+                <button class="orbit-ai-btn-secondary btn-kinetic-polish-action" data-action="pitch" style="text-align:left; padding:10px;">
+                  <strong>🚀 Investor Pitch</strong>
+                  <div style="font-size:11px; color:#64748b;">Emphasize market scale, ROI, and competitive moat</div>
+                </button>
+                <button class="orbit-ai-btn-secondary btn-kinetic-polish-action" data-action="concise" style="text-align:left; padding:10px;">
+                  <strong>⚡ Make Punchy &amp; Concise</strong>
+                  <div style="font-size:11px; color:#64748b;">Remove redundant filler words for maximum legibility</div>
+                </button>
+                <button class="orbit-ai-btn-secondary btn-kinetic-polish-action" data-action="grammar" style="text-align:left; padding:10px;">
+                  <strong>✓ Grammar &amp; Mechanics</strong>
+                  <div style="font-size:11px; color:#64748b;">Flawless typography and punctuation correction</div>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="orbit-ai-modal-footer">
+            <div class="orbit-ai-footer-left">
+              <span>⚡ Sovereign Kinetic Engine • Client Parity</span>
+            </div>
+            <div class="orbit-ai-footer-right">
+              <button class="orbit-ai-btn-secondary" id="btn-kinetic-ai-dismiss">Dismiss</button>
+              <button class="orbit-ai-btn-primary" id="btn-kinetic-ai-action-primary" style="background:#a855f7; border-color:#9333ea;">⚡ Apply to Presentation</button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   `;
 
@@ -3549,7 +3694,7 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     localStorage.setItem('giri_orbit_kinetic_deck', JSON.stringify(slidesData));
     if (typeof window !== 'undefined' && window.giriSyncManager) {
       const slideCount = Array.isArray(slidesData) ? slidesData.length : 0;
-      const title = slidesData[0]?.title || 'Cinematic Presentation Deck';
+      const title = localStorage.getItem('giri_orbit_kinetic_title') || slidesData[0]?.title || 'Cinematic Presentation Deck';
       const snippet = slidesData[0]?.desc || slidesData[0]?.subtitle || 'Widescreen presentation slides in Giri Kinetic.';
       window.giriSyncManager.recordSync('kinetic', slidesData, title, {
         snippet,
@@ -4835,31 +4980,336 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     imgFileInput.value = '';
   });
 
-  // AI Slide Generator
-  container.querySelector('#btn-kinetic-ai-gen')?.addEventListener('click', () => {
-    const topic = prompt('Enter presentation slide topic (e.g. "Global Supply Chain 2027"):');
-    if (!topic) return;
+  // =========================================================================
+  // GIRIONIX AI PRESENTATION STUDIO (PRACTICAL PRESENTATION AI)
+  // =========================================================================
+  function initKineticAiStudio() {
+    const modal = container.querySelector('#kinetic-ai-studio-modal');
+    if (!modal) return;
 
-    const generatedSlide = {
-      id: Date.now(),
-      layout: 'metrics',
-      tag: 'AI STRATEGY BRIEF',
-      title: topic,
-      desc: `Automated executive thesis analyzing projected growth, operational bottlenecks, and capital deployment for ${topic}.`,
-      features: [
-        { num: '48.2%', title: 'Efficiency Uplift', desc: 'Projected optimization after full deployment' },
-        { num: '< 90ms', title: 'Response SLA', desc: 'Real-time telemetry across distributed global nodes' },
-        { num: '3.4x', title: 'ROI Multiplier', desc: 'Estimated sovereign return on investment' }
-      ],
-      notes: `Key talking points for ${topic}: stress risk mitigation, scalable architecture, and sovereign control.`
+    const topicInput = container.querySelector('#kinetic-ai-deck-topic');
+    const btnGenerateDeck = container.querySelector('#btn-kinetic-ai-generate-deck');
+    const btnCloseModal = container.querySelector('#btn-close-kinetic-ai-modal');
+    const btnDismiss = container.querySelector('#btn-kinetic-ai-dismiss');
+    const btnActionPrimary = container.querySelector('#btn-kinetic-ai-action-primary');
+    const slideBadge = container.querySelector('#kinetic-ai-slide-badge');
+    const slidePreviewEl = container.querySelector('#kinetic-ai-current-slide-preview');
+
+    // Tabs & sections
+    const tabDeck = container.querySelector('#kinetic-ai-tab-deck');
+    const tabSlide = container.querySelector('#kinetic-ai-tab-slide');
+    const tabPolish = container.querySelector('#kinetic-ai-tab-polish');
+    const secDeck = container.querySelector('#kinetic-ai-deck-section');
+    const secSlide = container.querySelector('#kinetic-ai-slide-section');
+    const secPolish = container.querySelector('#kinetic-ai-polish-section');
+
+    let currentMode = 'deck';
+
+    function switchTab(mode) {
+      currentMode = mode;
+      [tabDeck, tabSlide, tabPolish].forEach(t => t?.classList.remove('active'));
+      if (secDeck) secDeck.style.display = 'none';
+      if (secSlide) secSlide.style.display = 'none';
+      if (secPolish) secPolish.style.display = 'none';
+
+      if (mode === 'deck') {
+        tabDeck?.classList.add('active');
+        if (secDeck) secDeck.style.display = 'block';
+        if (btnActionPrimary) btnActionPrimary.textContent = '⚡ Generate 5-Slide Deck';
+        setTimeout(() => topicInput?.focus(), 50);
+      } else if (mode === 'slide') {
+        tabSlide?.classList.add('active');
+        if (secSlide) secSlide.style.display = 'block';
+        if (btnActionPrimary) btnActionPrimary.textContent = '⚡ Insert Diagram Slide';
+      } else if (mode === 'polish') {
+        tabPolish?.classList.add('active');
+        if (secPolish) secPolish.style.display = 'block';
+        if (btnActionPrimary) btnActionPrimary.textContent = '⚡ Polish Current Slide';
+        updateSlidePreview();
+      }
+    }
+
+    tabDeck?.addEventListener('click', () => switchTab('deck'));
+    tabSlide?.addEventListener('click', () => switchTab('slide'));
+    tabPolish?.addEventListener('click', () => switchTab('polish'));
+
+    function updateSlidePreview() {
+      if (!slidePreviewEl) return;
+      const s = slidesData[currentSlideIndex];
+      if (!s) {
+        slidePreviewEl.textContent = '(No active slide)';
+        return;
+      }
+      slidePreviewEl.innerHTML = `
+        <div style="font-weight:700; color:#0f172a; margin-bottom:2px;">"${s.title || 'Untitled Slide'}"</div>
+        <div style="color:#64748b; font-size:11.5px;">${s.desc || 'No description provided'}</div>
+        <div style="font-size:10px; color:#7c3aed; font-weight:700; margin-top:4px; text-transform:uppercase;">Layout: ${s.layout || 'standard'}</div>
+      `;
+    }
+
+    function openModal(defaultMode = 'deck') {
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      if (slideBadge) slideBadge.textContent = `Slide ${currentSlideIndex + 1} of ${slidesData.length}`;
+      switchTab(defaultMode);
+    }
+
+    function closeModal() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    btnCloseModal?.addEventListener('click', closeModal);
+    btnDismiss?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // Preset pills for Deck Topic
+    container.querySelectorAll('#kinetic-ai-deck-presets button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const topic = btn.dataset.topic || btn.textContent.trim();
+        if (topicInput) topicInput.value = topic;
+        generateFullPitchDeck(topic);
+      });
+    });
+
+    // Generate Full 5-Slide Deck
+    function generateFullPitchDeck(customTopic = null) {
+      const topic = (customTopic || topicInput?.value || '').trim() || 'Enterprise Strategy & Performance 2026';
+      
+      const newDeck = [
+        {
+          id: Date.now() + 1,
+          layout: 'title',
+          tag: 'GIRIONIX SOVEREIGN BRIEF',
+          title: topic,
+          desc: `Strategic Vision, Phased Architecture, and Quantified Value Proposition for ${topic}`,
+          features: [],
+          notes: `Executive kickoff introducing the core transformation pillars for ${topic}.`
+        },
+        {
+          id: Date.now() + 2,
+          layout: 'split-content',
+          tag: 'PROBLEM & OPPORTUNITY',
+          title: 'Market Dilemma & The Solution Paradigm',
+          desc: `Analyzing systemic bottlenecks in current operations and the transformative unlock offered by ${topic}.`,
+          features: [
+            { num: '01', title: 'Legacy Inertia', desc: 'Recurring cloud seat subscriptions and external server lock-in create immense operational overhead.' },
+            { num: '02', title: 'Sovereign Advantage', desc: 'Zero-cloud dependence, offline parity, and instant local execution eliminate cyber attack surfaces.' },
+            { num: '03', title: 'Scalable Parity', desc: 'Cross-platform native browser runtime delivers sub-millisecond execution without installs.' }
+          ],
+          notes: 'Contrast legacy vendor vulnerabilities directly against the sovereign runtime advantage.'
+        },
+        {
+          id: Date.now() + 3,
+          layout: 'swot-matrix',
+          tag: 'STRATEGIC AUDIT',
+          title: `${topic} SWOT Matrix`,
+          desc: 'Holistic 360-degree assessment of internal enterprise capabilities and external market dynamics.',
+          features: [
+            { num: 'S', title: 'Core Strengths', desc: 'Zero-database client-side architecture, 100% offline data sovereignty, zero per-seat SaaS taxes.' },
+            { num: 'W', title: 'Key Weaknesses', desc: 'Initial change-management curve across corporate divisions accustomed to legacy portals.' },
+            { num: 'O', title: 'Market Opportunities', desc: 'Strict data protection compliance mandates (GDPR, DPDP, HIPAA) requiring verifiable air-gapping.' },
+            { num: 'T', title: 'External Threats', desc: 'Aggressive ecosystem bundling and predatory discount renewals by dominant multi-nationals.' }
+          ],
+          notes: 'Walk through each quadrant, highlighting Strengths and Market Opportunities as our strategic moat.'
+        },
+        {
+          id: Date.now() + 4,
+          layout: 'chevron-flow',
+          tag: 'EXECUTION ROADMAP',
+          title: 'Phased Implementation & Rollout',
+          desc: 'Structured 4-stage delivery timeline engineered to guarantee zero operational downtime.',
+          features: [
+            { num: 'Phase 01', title: 'Discovery & Audit', desc: 'Baseline infrastructure assessment, security threat modeling, and stakeholder alignment.' },
+            { num: 'Phase 02', title: 'Architecture Setup', desc: 'Deployment of client-side sovereign engines with localized encrypted key stores.' },
+            { num: 'Phase 03', title: 'Steering Pilot', desc: 'Controlled production deployment across high-security executive business units.' },
+            { num: 'Phase 04', title: 'Enterprise Scale', desc: 'Complete organization-wide rollout with automated sovereign integrity audits.' }
+          ],
+          notes: 'Reassure executives that Phase 1 and 2 operate completely non-invasively.'
+        },
+        {
+          id: Date.now() + 5,
+          layout: 'metrics',
+          tag: 'ROI & BENCHMARKS',
+          title: 'Quantified Executive Impact',
+          desc: `Measurable performance uplifts and fiscal efficiency achieved upon implementing ${topic}.`,
+          features: [
+            { num: '99.99%', title: 'Local Uptime', desc: 'Zero service outages caused by third-party cloud downtime or network blips.' },
+            { num: '< 85ms', title: 'Execution Latency', desc: 'Near-instantaneous canvas interactions with zero remote server round-trips.' },
+            { num: '3.8x', title: 'Net Fiscal ROI', desc: 'Immediate elimination of annual per-seat licensing fees across the organization.' }
+          ],
+          notes: 'Summarize the closing ask and open the floor for executive Q&A.'
+        }
+      ];
+
+      slidesData.length = 0;
+      newDeck.forEach(s => slidesData.push(s));
+      currentSlideIndex = 0;
+      saveDeck();
+      renderNavThumbnails();
+      switchSlide(0);
+      closeModal();
+      if (window.orbitPlatform) {
+        window.orbitPlatform.triggerToast(`Generated 5-Slide Executive Deck for "${topic}"`);
+      }
+    }
+
+    btnGenerateDeck?.addEventListener('click', () => generateFullPitchDeck());
+    topicInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        generateFullPitchDeck();
+      }
+    });
+
+    // Preset Insert Diagram Handlers
+    container.querySelectorAll('.btn-kinetic-insert-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const layout = btn.dataset.layout;
+        insertStrategicDiagramSlide(layout);
+      });
+    });
+
+    function insertStrategicDiagramSlide(layout) {
+      let newSlide = null;
+      if (layout === 'swot-matrix') {
+        newSlide = {
+          id: Date.now(),
+          layout: 'swot-matrix',
+          tag: 'STRATEGIC MATRIX',
+          title: 'Strategic SWOT Analysis',
+          desc: '2x2 grid evaluating internal capabilities against external market forces.',
+          features: [
+            { num: 'S', title: 'Core Strengths', desc: 'Zero-DB client-side architecture, 100% offline data sovereignty, zero per-seat SaaS taxes.' },
+            { num: 'W', title: 'Key Weaknesses', desc: 'Initial change-management curve across corporate divisions accustomed to legacy portals.' },
+            { num: 'O', title: 'Market Opportunities', desc: 'Strict data protection compliance mandates requiring verifiable sovereign data custody.' },
+            { num: 'T', title: 'External Threats', desc: 'Aggressive ecosystem bundling and predatory discount renewals by dominant multi-nationals.' }
+          ],
+          notes: 'Highlight Strengths as the primary defense against competitive threats.'
+        };
+      } else if (layout === 'chevron-flow') {
+        newSlide = {
+          id: Date.now(),
+          layout: 'chevron-flow',
+          tag: 'EXECUTION FLOW',
+          title: '4-Phase Delivery Framework',
+          desc: 'End-to-end operational roadmap from initial scoping to enterprise adoption.',
+          features: [
+            { num: 'Phase 01', title: 'Discovery & Audit', desc: 'Baseline infrastructure assessment and security threat modeling.' },
+            { num: 'Phase 02', title: 'Architecture Setup', desc: 'Deployment of client-side sovereign engines with encrypted storage.' },
+            { num: 'Phase 03', title: 'Pilot Rollout', desc: 'Controlled production deployment across high-security executive business units.' },
+            { num: 'Phase 04', title: 'Enterprise Scale', desc: 'Complete organization-wide rollout with automated sovereign integrity audits.' }
+          ],
+          notes: 'Phases 1-2 complete within 14 business days without external dependencies.'
+        };
+      } else if (layout === 'metrics') {
+        newSlide = {
+          id: Date.now(),
+          layout: 'metrics',
+          tag: 'PERFORMANCE BENCHMARKS',
+          title: 'Executive KPI Metrics',
+          desc: 'Quantifiable operational metrics demonstrating performance uplift and cost reduction.',
+          features: [
+            { num: '99.98%', title: 'System Reliability', desc: 'Zero dependency on third-party cloud uptime.' },
+            { num: '10x Faster', title: 'Processing Velocity', desc: 'Native browser engine compilation outperforms legacy client apps.' },
+            { num: '$180K/yr', title: 'Licensing Savings', desc: 'Eliminates per-seat SaaS tax with sovereign office ownership.' }
+          ],
+          notes: 'Telemetry gathered directly from local browser benchmarking.'
+        };
+      } else {
+        newSlide = {
+          id: Date.now(),
+          layout: 'comparison-table',
+          tag: 'COMPETITIVE MATRIX',
+          title: 'Sovereign Architecture Comparison',
+          desc: 'Direct architectural differentiation between Giri Orbit and traditional legacy suites.',
+          features: [
+            { num: 'Giri Orbit', title: '100% Local Sovereign', desc: 'Zero database, zero cloud tracking, perpetual offline functionality.' },
+            { num: 'Legacy Cloud', title: 'Cloud-Dependent', desc: 'External telemetry, recurring monthly seat fees, data vulnerability.' },
+            { num: 'Open Source', title: 'Manual Maintenance', desc: 'Complex local builds, unpolished UX, lack of unified office interoperability.' }
+          ],
+          notes: 'Conclude with clear competitive differentiation.'
+        };
+      }
+
+      slidesData.splice(currentSlideIndex + 1, 0, newSlide);
+      saveDeck();
+      renderNavThumbnails();
+      switchSlide(currentSlideIndex + 1);
+      closeModal();
+      if (window.orbitPlatform) {
+        window.orbitPlatform.triggerToast(`Inserted ${newSlide.title} (Slide ${currentSlideIndex + 1})`);
+      }
+    }
+
+    // Polish Current Slide Actions
+    container.querySelectorAll('.btn-kinetic-polish-action').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const action = btn.dataset.action;
+        polishCurrentSlide(action);
+      });
+    });
+
+    function polishCurrentSlide(action) {
+      const s = slidesData[currentSlideIndex];
+      if (!s) return;
+
+      if (action === 'executive') {
+        s.tag = 'EXECUTIVE BRIEF';
+        s.title = s.title.replace(/^(the|a|an)\s+/i, '').replace(/\b\w/g, l => l.toUpperCase());
+        s.desc = `Strategic operational overview analyzing key performance drivers, resource allocation, and high-impact deliverables for ${s.title}.`;
+      } else if (action === 'pitch') {
+        s.tag = 'INVESTOR THESIS';
+        s.title = `${s.title}: Market Moat & Scalability`;
+        s.desc = `High-conviction value proposition delivering accelerated compounding returns, defensible differentiation, and sovereign execution velocity.`;
+      } else if (action === 'concise') {
+        s.tag = 'CORE SUMMARY';
+        s.title = s.title.split(' - ')[0].trim();
+        s.desc = s.desc.split('.')[0] + '.';
+      } else if (action === 'grammar') {
+        s.title = s.title.trim().replace(/\s+/g, ' ');
+        s.desc = s.desc.trim().replace(/\s+/g, ' ');
+        if (!s.desc.endsWith('.')) s.desc += '.';
+      }
+
+      saveDeck();
+      switchSlide(currentSlideIndex);
+      renderNavThumbnails();
+      closeModal();
+      if (window.orbitPlatform) {
+        window.orbitPlatform.triggerToast(`Slide polished (${action.toUpperCase()})`);
+      }
+    }
+
+    // Primary action button in footer
+    btnActionPrimary?.addEventListener('click', () => {
+      if (currentMode === 'deck') {
+        generateFullPitchDeck();
+      } else if (currentMode === 'slide') {
+        insertStrategicDiagramSlide('swot-matrix');
+      } else if (currentMode === 'polish') {
+        polishCurrentSlide('executive');
+      }
+    });
+
+    // Connect trigger buttons
+    container.querySelector('#btn-kinetic-ai-gen')?.addEventListener('click', () => openModal('slide'));
+    container.querySelector('#btn-kinetic-home-ai-studio')?.addEventListener('click', () => openModal('deck'));
+
+    // Window global hook
+    window.kineticAiStudio = {
+      open: openModal,
+      close: closeModal,
+      generateDeck: generateFullPitchDeck,
+      insertDiagram: insertStrategicDiagramSlide,
+      polishSlide: polishCurrentSlide
     };
+  }
 
-    slidesData.splice(currentSlideIndex + 1, 0, generatedSlide);
-    saveDeck();
-    renderThumbnails();
-    switchSlide(currentSlideIndex + 1);
-    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`AI generated slide for "${topic}"`);
-  });
+  // Initialize Girionix AI Presentation Studio
+  initKineticAiStudio();
 
   // =========================================================================
   // DESIGN TAB CONTROLS: THEMES, ASPECT RATIO, BG COLOR
@@ -5474,7 +5924,14 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
         exitPresenter();
       } else {
         clearShapeSelection();
+        window.kineticAiStudio?.close();
       }
+      return;
+    }
+
+    if ((e.altKey && e.key.toLowerCase() === 'j') || ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'j')) {
+      e.preventDefault();
+      window.kineticAiStudio?.open();
       return;
     }
 

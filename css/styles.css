@@ -4517,3 +4517,320 @@ body.dark .drift-merge-field-chip {
   border: none;
   display: block;
 }
+
+/* ==========================================================================
+   4. IN-CONTEXT PRACTICAL OFFICE SUITE AI ASSISTANTS (GIRIONIX EMBEDDED)
+   ========================================================================== */
+
+/* Universal Orbit AI Modal Dialog Backdrop */
+.orbit-ai-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10010;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: orbitAiFadeIn 0.2s ease-out;
+}
+.orbit-ai-modal-backdrop.open {
+  display: flex;
+}
+@keyframes orbitAiFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Modal Card */
+.orbit-ai-modal-card {
+  width: 680px;
+  max-width: 95vw;
+  max-height: 88vh;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: orbitAiSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes orbitAiSlideUp {
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Modal Header */
+.orbit-ai-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+.orbit-ai-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.orbit-ai-brand-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  color: #ffffff;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.3);
+}
+.orbit-ai-title-group h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.orbit-ai-title-group p {
+  margin: 2px 0 0 0;
+  font-size: 11.5px;
+  color: #64748b;
+}
+.orbit-ai-close-btn {
+  background: transparent;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.orbit-ai-close-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Modal Body */
+.orbit-ai-modal-body {
+  padding: 16px 18px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+/* Prompt Input Strip */
+.orbit-ai-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1.5px solid #3b82f6;
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.12);
+}
+.orbit-ai-input-wrap input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 13.5px;
+  background: transparent;
+  color: #0f172a;
+}
+.orbit-ai-generate-btn {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.orbit-ai-generate-btn:hover {
+  background: #1d4ed8;
+}
+
+/* Quick Action Chips */
+.orbit-ai-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.orbit-ai-chip {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+  border-radius: 16px;
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.orbit-ai-chip:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+.orbit-ai-chip.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+/* Preview Box */
+.orbit-ai-preview-box {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #1e293b;
+  max-height: 280px;
+  overflow-y: auto;
+  position: relative;
+}
+.orbit-ai-preview-box pre {
+  margin: 0;
+  font-family: var(--font-mono, monospace);
+  font-size: 12.5px;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* Formula Specific Display Card */
+.axis-formula-display-card {
+  background: #0f172a;
+  color: #38bdf8;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: var(--font-mono, monospace);
+  font-size: 14px;
+  font-weight: 700;
+  border: 1px solid #1e293b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.axis-formula-text {
+  user-select: all;
+  word-break: break-all;
+}
+
+/* Modal Footer Actions */
+.orbit-ai-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
+.orbit-ai-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #64748b;
+}
+.orbit-ai-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.orbit-ai-btn-secondary {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.orbit-ai-btn-secondary:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+.orbit-ai-btn-primary {
+  background: #2563eb;
+  border: 1px solid #1d4ed8;
+  color: #ffffff;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.15s;
+}
+.orbit-ai-btn-primary:hover {
+  background: #1d4ed8;
+}
+
+/* Kinetic AI Layout Cards Grid */
+.kinetic-ai-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.kinetic-ai-card-opt {
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.kinetic-ai-card-opt:hover {
+  border-color: #a855f7;
+  background: #faf5ff;
+}
+.kinetic-ai-card-opt.active {
+  border-color: #a855f7;
+  background: #f3e8ff;
+}
+.kinetic-ai-card-opt-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.kinetic-ai-card-opt-desc {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.35;
+}

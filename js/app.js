@@ -219,7 +219,9 @@ class GiriOrbitPlatform {
         <div class="girionix-workspace-topbar">
           <div class="girionix-topbar-left">
             <div class="girionix-topbar-brand">
-              <div class="girionix-topbar-brand-mark">⚡</div>
+              <div class="girionix-topbar-brand-mark" style="display:flex; align-items:center; justify-content:center;">
+                <img src="assets/girionix-logo.png" style="width:22px; height:22px; object-fit:contain; border-radius:4px;" alt="Girionix AI">
+              </div>
               <div>
                 <span class="girionix-topbar-title">Girionix AI Polymath Studio</span>
                 <span class="girionix-status-badge" style="margin-left:6px;">🟢 Sovereign Engine</span>
@@ -235,7 +237,7 @@ class GiriOrbitPlatform {
           </div>
           <div class="girionix-topbar-right">
             <button class="girionix-mini-btn" id="btn-girionix-full-reload" title="Reload Studio Engine">🔄 Reload</button>
-            <a href="https://girionix-ai.pages.dev/" target="_blank" rel="noopener" class="girionix-mini-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Open in External Tab">
+            <a href="https://girionix-ai.pages.dev/chat" target="_blank" rel="noopener" class="girionix-mini-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Open in External Tab">
               <span>↗ Popout</span>
             </a>
             <button class="girionix-mini-btn" id="btn-girionix-copilot-toggle" title="Toggle Assistant Side-Panel">💬 Assistant</button>
@@ -248,7 +250,7 @@ class GiriOrbitPlatform {
           <iframe 
             id="girionix-main-workspace-frame" 
             class="girionix-full-iframe" 
-            src="https://girionix-ai.pages.dev/" 
+            src="https://girionix-ai.pages.dev/chat" 
             title="Girionix AI Sovereign Polymath Workspace"
             allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen">
           </iframe>
@@ -260,7 +262,7 @@ class GiriOrbitPlatform {
     const frame = this.workspace.querySelector('#girionix-main-workspace-frame');
     this.workspace.querySelector('#btn-girionix-full-reload')?.addEventListener('click', () => {
       if (frame) {
-        frame.src = 'https://girionix-ai.pages.dev/';
+        frame.src = 'https://girionix-ai.pages.dev/chat';
         this.showToast('Reloaded Girionix AI Workspace', 'blue');
       }
     });
@@ -338,12 +340,12 @@ class GiriOrbitPlatform {
             <div style="display:flex; flex-direction:column; gap:6px;">
               <span class="follow-journey-label">GIRIONIX AI</span>
               <div class="giri-corp-card" id="btn-hero-launch-girionix" style="cursor:pointer;" title="Launch Girionix AI Polymath Studio">
-                <div class="corp-logo-badge" style="width:42px; height:42px; border-radius:11px; background:linear-gradient(135deg, #06b6d4, #2563eb); border:1px solid #38bdf8; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:18px; color:#fff; box-shadow:0 0 12px rgba(6,182,212,0.5);">
-                  ⚡
+                <div class="corp-logo-badge" style="width:42px; height:42px; border-radius:11px; background:linear-gradient(135deg, #06b6d4, #2563eb); border:1px solid #38bdf8; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 0 12px rgba(6,182,212,0.5);">
+                  <img src="assets/girionix-logo.png" style="width:28px; height:28px; object-fit:contain; border-radius:6px;" alt="Girionix AI">
                 </div>
                 <div class="instagram-card-text">
                   <strong class="instagram-handle" style="color:#0f172a;">Girionix AI</strong>
-                  <span class="instagram-sub" style="color:#0284c7;">girionix-ai.pages.dev &rarr;</span>
+                  <span class="instagram-sub" style="color:#0284c7;">girionix-ai.pages.dev/chat &rarr;</span>
                 </div>
               </div>
             </div>
@@ -437,12 +439,9 @@ class GiriOrbitPlatform {
             </div>
 
             <!-- 6. Girionix AI Polymath Studio -->
-            <div class="zoho-app-card" data-launch="girionix" role="button" tabindex="0" title="Launch Girionix AI Polymath Studio (https://girionix-ai.pages.dev/)">
-              <div class="app-card-icon">
-                <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
-                  <rect x="4" y="4" width="24" height="24" rx="5" fill="#ecfeff" stroke="#06b6d4" stroke-width="2"/>
-                  <polygon points="17 6 7 18 15 18 13 26 23 14 15 14 17 6" fill="#06b6d4"/>
-                </svg>
+            <div class="zoho-app-card" data-launch="girionix" role="button" tabindex="0" title="Launch Girionix AI Polymath Studio (https://girionix-ai.pages.dev/chat)">
+              <div class="app-card-icon" style="display:flex; align-items:center; justify-content:center;">
+                <img src="assets/girionix-logo.png" style="width:26px; height:26px; object-fit:contain; border-radius:4px;" alt="Girionix AI">
               </div>
               <div class="app-card-meta">
                 <span class="app-card-prefix">GIRI</span>
@@ -455,7 +454,9 @@ class GiriOrbitPlatform {
           <!-- Girionix AI Sovereign Showcase Card -->
           <div class="girionix-hero-banner" style="margin-top:16px; padding:14px 18px; background:linear-gradient(135deg, rgba(6,182,212,0.08), rgba(59,130,246,0.12)); border:1px solid rgba(56,189,248,0.3); border-radius:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
             <div style="display:flex; align-items:center; gap:10px;">
-              <div style="width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg, #06b6d4, #2563eb); display:flex; align-items:center; justify-content:center; font-size:18px; color:#fff; box-shadow:0 0 12px rgba(6,182,212,0.5); flex-shrink:0;">⚡</div>
+              <div style="width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg, #06b6d4, #2563eb); display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px rgba(6,182,212,0.5); flex-shrink:0;">
+                <img src="assets/girionix-logo.png" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" alt="Girionix AI">
+              </div>
               <div>
                 <div style="display:flex; align-items:center; gap:6px;">
                   <strong style="font-size:13.5px; color:#0f172a;">Girionix AI — Sovereign Polymath Workspace</strong>
@@ -585,6 +586,15 @@ class GiriOrbitPlatform {
               <button class="tool-category-pill" data-filter="kinetic">Show</button>
               <button class="tool-category-pill" data-filter="pdf">PDF</button>
             </div>
+            <div style="display:flex; align-items:center; gap:5px; margin-left:2px;" id="recent-sort-wrap">
+              <span style="font-size:11px; color:#64748b; font-weight:600;">Sort:</span>
+              <select id="recent-sort-select" style="font-size:11.5px; padding:4px 8px; border-radius:6px; border:1px solid #cbd5e1; background:#ffffff; color:#334155; font-weight:600; cursor:pointer; outline:none;" title="Sort recent documents">
+                <option value="recent">🕒 Recent</option>
+                <option value="name-asc">🔤 Name (A-Z)</option>
+                <option value="name-desc">🔤 Name (Z-A)</option>
+                <option value="type">📁 Type</option>
+              </select>
+            </div>
             <div style="display:flex; gap:6px; margin-left:4px;">
               <button id="btn-landing-backup-device" class="btn-giri-action-pill" title="Save entire office workspace snapshot directly to your computer (Zero-DB disk sync)" style="background:#059669; color:#fff; border:1px solid #047857; font-size:11.5px; padding:5px 11px; border-radius:6px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; transition:opacity 0.15s;">
                 <span>💾</span> Backup to Device
@@ -645,9 +655,10 @@ class GiriOrbitPlatform {
       this.restoreWorkspaceFromDevice();
     });
 
-    // Recent Documents Search & Filter
+    // Recent Documents Search, Filter & Sort
     const searchInput = landingContainer.querySelector('#recent-docs-search-input');
     const filterBtns = landingContainer.querySelectorAll('#recent-filter-pills .tool-category-pill');
+    const sortSelect = landingContainer.querySelector('#recent-sort-select');
 
     const runRecentFilters = () => {
       const q = (searchInput?.value || '').toLowerCase().trim();
@@ -672,6 +683,11 @@ class GiriOrbitPlatform {
         runRecentFilters();
       });
     });
+
+    sortSelect?.addEventListener('change', () => {
+      this.renderRecentDocsGrid(landingContainer);
+      runRecentFilters();
+    });
   }
 
   /**
@@ -681,7 +697,20 @@ class GiriOrbitPlatform {
     const grid = container.querySelector('#recent-docs-cards-grid');
     if (!grid) return;
 
-    const items = syncManager.getAllSyncedWork();
+    let items = syncManager.getAllSyncedWork();
+    const sortSelect = container.querySelector('#recent-sort-select');
+    const sortVal = sortSelect?.value || 'recent';
+
+    if (sortVal === 'name-asc') {
+      items.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
+    } else if (sortVal === 'name-desc') {
+      items.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
+    } else if (sortVal === 'type') {
+      items.sort((a, b) => (a.tool || '').localeCompare(b.tool || ''));
+    } else {
+      items.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    }
+
     if (items.length === 0) {
       grid.innerHTML = `
         <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; color: #64748b;">
@@ -712,20 +741,33 @@ class GiriOrbitPlatform {
           <h3 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 6px 0; line-height:1.3; cursor:pointer;" class="recent-doc-title-click" title="Click to open ${item.toolName}">
             ${item.title}
           </h3>
-          <p style="font-size:12px; color:#64748b; line-height:1.45; margin:0 0 14px 0;">
+          <p style="font-size:12px; color:#64748b; line-height:1.45; margin:0 0 12px 0;">
             ${item.snippet}
           </p>
-          <div style="font-size:11px; color:#94a3b8; font-family:var(--font-mono, monospace); margin-bottom:12px;">
+          <div style="font-size:11px; color:#64748b; font-family:var(--font-mono, monospace); margin-bottom:12px; background:#f8fafc; padding:4px 8px; border-radius:4px; border:1px solid #f1f5f9; display:inline-block;">
             ${item.stats || ''}
           </div>
         </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid #f1f5f9; padding-top:10px; font-size:11px;">
-          <button class="recent-doc-delete-btn" data-tool="${item.tool}" title="Delete this saved draft from browser storage">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-            <span>Delete</span>
-          </button>
-          <button class="btn-resume-work" data-tool="${item.tool}" data-doc-title="${(item.title || '').replace(/"/g, '&quot;')}" style="background:${item.badgeColor}; color:#ffffff; border:none; border-radius:5px; padding:5px 12px; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:4px; font-size:11.5px; transition:transform 0.15s ease;">
-            <span>▶ Resume</span>
+        <div style="border-top:1px solid #f1f5f9; padding-top:12px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:6px;">
+            <div style="display:flex; align-items:center; gap:4px;">
+              <button class="btn-recent-rename" data-tool="${item.tool}" title="Rename this document" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:5px; padding:3px 7px; font-size:11px; color:#334155; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:3px; transition:background 0.15s;">
+                <span>✏️</span> Rename
+              </button>
+              <button class="btn-recent-duplicate" data-tool="${item.tool}" title="Duplicate this document" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:5px; padding:3px 7px; font-size:11px; color:#334155; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:3px; transition:background 0.15s;">
+                <span>📋</span> Clone
+              </button>
+              <button class="btn-recent-export" data-tool="${item.tool}" title="Quick export document in various formats" style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:5px; padding:3px 7px; font-size:11px; color:#334155; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:3px; transition:background 0.15s;">
+                <span>📥</span> Export
+              </button>
+            </div>
+            <button class="recent-doc-delete-btn" data-tool="${item.tool}" title="Delete this saved draft from browser storage" style="background:none; border:none; color:#ef4444; font-size:11px; cursor:pointer; display:inline-flex; align-items:center; gap:3px; padding:3px 5px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+              <span>Delete</span>
+            </button>
+          </div>
+          <button class="btn-resume-work" data-tool="${item.tool}" data-doc-title="${(item.title || '').replace(/"/g, '&quot;')}" style="background:${item.badgeColor}; color:#ffffff; border:none; border-radius:6px; padding:6px 12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; width:100%; transition:transform 0.15s ease, opacity 0.15s ease;">
+            <span>▶ Open &amp; Resume Work</span>
             <span style="font-size:12px;">&rarr;</span>
           </button>
         </div>
@@ -748,6 +790,43 @@ class GiriOrbitPlatform {
         const tool = btn.dataset.tool;
         const docTitle = btn.dataset.docTitle;
         this.navigateTo(tool, docTitle);
+      });
+    });
+
+    grid.querySelectorAll('.btn-recent-rename').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const tool = btn.dataset.tool;
+        const card = btn.closest('.recent-doc-card');
+        const currentTitle = card?.dataset.docTitle || '';
+        const info = syncManager.getToolSyncInfo(tool);
+        const promptTitle = prompt(`Enter new title for ${info?.toolName || tool}:`, currentTitle);
+        if (promptTitle && promptTitle.trim() && promptTitle.trim() !== currentTitle) {
+          syncManager.renameSyncedWork(tool, promptTitle.trim());
+          this.renderRecentDocsGrid(container);
+          this.showToast(`Renamed document to "${promptTitle.trim()}"`, 'blue');
+        }
+      });
+    });
+
+    grid.querySelectorAll('.btn-recent-duplicate').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const tool = btn.dataset.tool;
+        const card = btn.closest('.recent-doc-card');
+        const currentTitle = card?.dataset.docTitle || 'Document';
+        const clonedTitle = `${currentTitle} (Copy)`;
+        syncManager.duplicateSyncedWork(tool, clonedTitle);
+        this.renderRecentDocsGrid(container);
+        this.showToast(`Duplicated document as "${clonedTitle}"`, 'green');
+      });
+    });
+
+    grid.querySelectorAll('.btn-recent-export').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const tool = btn.dataset.tool;
+        this.openExportModal(tool);
       });
     });
 
@@ -979,10 +1058,13 @@ class GiriOrbitPlatform {
       { name: 'Open Giri PDF Studio', category: 'Tool', action: () => this.navigateTo('pdf') },
       { name: '⚡ Open Girionix AI Polymath Studio', category: 'Tool', action: () => this.navigateTo('girionix') },
       { name: '💬 Toggle Girionix AI Assistant Side-Panel (Ctrl+J)', category: 'AI', action: () => this.toggleGirionixAiDrawer() },
+      { name: '⚡ Drift AI Assistant Modal (Alt+J / Ctrl+Shift+J)', category: 'AI', action: () => { this.navigateTo('drift'); setTimeout(() => window.driftAiCopilot?.open(), 150); } },
+      { name: '⚡ Axis AI Formula Copilot (Alt+J / Ctrl+Shift+J)', category: 'AI', action: () => { this.navigateTo('axis'); setTimeout(() => window.axisAiCopilot?.open(), 150); } },
+      { name: '⚡ Kinetic AI Studio Modal (Alt+J / Ctrl+Shift+J)', category: 'AI', action: () => { this.navigateTo('kinetic'); setTimeout(() => window.kineticAiStudio?.open(), 150); } },
       { name: '✍️ Girionix: Generate Content in Drift', category: 'AI', action: () => { this.navigateTo('drift'); this.openGirionixAiDrawer('quick'); } },
       { name: '🧮 Girionix: Generate Formula in Axis', category: 'AI', action: () => { this.navigateTo('axis'); this.openGirionixAiDrawer('quick'); } },
       { name: '🎬 Girionix: Generate Slide in Kinetic', category: 'AI', action: () => { this.navigateTo('kinetic'); this.openGirionixAiDrawer('quick'); } },
-      { name: '↗ Launch Girionix AI in External Tab', category: 'AI', action: () => window.open('https://girionix-ai.pages.dev/', '_blank') },
+      { name: '↗ Launch Girionix AI in External Tab', category: 'AI', action: () => window.open('https://girionix-ai.pages.dev/chat', '_blank') },
       { name: 'Return to Suite Hub', category: 'Navigation', action: () => this.navigateTo('launcher') },
       { name: 'Toggle Fullscreen Desktop App', category: 'View', action: () => document.getElementById('nav-desktop-app')?.click() },
       { name: '💾 Save Entire Workspace to Device (.giriworkspace)', category: 'Backup', action: () => this.saveWorkspaceToDevice() },
@@ -1233,81 +1315,111 @@ class GiriOrbitPlatform {
         this.showToast('Girionix AI: Inserted content into Drift Docs', 'blue');
 
       } else if (tool === 'axis') {
-        const defaultCell = document.querySelector('.axis-cell[data-cell-id="B8"]') || document.querySelector('.axis-cell');
-        if (defaultCell) {
+        if (window.axisAiCopilot) {
           if (promptType === 'xlookup') {
-            defaultCell.textContent = '=XLOOKUP(A2, Catalog!A:A, Catalog!B:B, "Not Found")';
+            window.axisAiCopilot.insert('=XLOOKUP(A2, Catalog!A:A, Catalog!B:B, "Not Found")');
           } else if (promptType === 'data-clean') {
-            defaultCell.textContent = '=TRIM(CLEAN(PROPER(A2)))';
+            window.axisAiCopilot.insert('=TRIM(CLEAN(PROPER(A2)))');
+          } else if (promptType === 'financial-projections') {
+            window.axisAiCopilot.generateDataset('financials');
+          } else if (promptType === 'strategic-table') {
+            window.axisAiCopilot.generateDataset('tech');
+          } else if (customQuery) {
+            window.axisAiCopilot.generate(customQuery);
           } else {
-            defaultCell.textContent = '875000';
-            defaultCell.classList.add('num-cell');
-            const labelCell = document.querySelector('.axis-cell[data-cell-id="A8"]');
-            if (labelCell) labelCell.textContent = customQuery ? `AI: ${customQuery}` : 'Girionix AI Autonomous Vector Operations';
+            window.axisAiCopilot.insert('=SUMIFS(Sales!C:C, Sales!A:A, "Direct", Sales!B:B, ">5000")');
           }
+        } else {
+          const defaultCell = document.querySelector('.axis-cell[data-cell-id="B8"]') || document.querySelector('.axis-cell');
+          if (defaultCell) {
+            if (promptType === 'xlookup') {
+              defaultCell.textContent = '=XLOOKUP(A2, Catalog!A:A, Catalog!B:B, "Not Found")';
+            } else if (promptType === 'data-clean') {
+              defaultCell.textContent = '=TRIM(CLEAN(PROPER(A2)))';
+            } else {
+              defaultCell.textContent = '875000';
+              defaultCell.classList.add('num-cell');
+              const labelCell = document.querySelector('.axis-cell[data-cell-id="A8"]');
+              if (labelCell) labelCell.textContent = customQuery ? `AI: ${customQuery}` : 'Girionix AI Autonomous Vector Operations';
+            }
+          }
+          this.showToast('Girionix AI: Injected formula vector in Axis Sheets', 'green');
         }
-        this.showToast('Girionix AI: Injected formula vector in Axis Sheets', 'green');
 
       } else if (tool === 'kinetic') {
-        let slides = [];
-        try {
-          slides = typeof this.getKineticSlides === 'function' ? this.getKineticSlides() : JSON.parse(localStorage.getItem('giri_orbit_kinetic_deck') || '[]');
-        } catch (e) {
-          slides = [];
-        }
-        if (!Array.isArray(slides) || slides.length === 0) {
-          slides = [
-            { id: 1, tag: 'SLIDE 1', title: 'Executive Overview', desc: 'Sovereign computing paradigm', features: [] }
-          ];
-        }
-
-        let newSlide;
-        if (promptType === 'swot-matrix') {
-          newSlide = {
-            id: Date.now(),
-            layout: 'swot-matrix',
-            tag: 'STRATEGIC AUDIT',
-            title: 'SWOT Vector Analysis',
-            desc: 'Generated via Girionix AI: Comprehensive enterprise operational assessment.',
-            features: [
-              { num: 'S', title: 'Strengths', desc: '100% sovereign client-side architecture' },
-              { num: 'W', title: 'Weaknesses', desc: 'Browser sandbox storage quotas' },
-              { num: 'O', title: 'Opportunities', desc: 'Zero-cloud latency advantage' },
-              { num: 'T', title: 'Threats', desc: 'Legacy enterprise vendor lock-in' }
-            ]
-          };
-        } else if (promptType === 'chevron-flow') {
-          newSlide = {
-            id: Date.now(),
-            layout: 'chevron-flow',
-            tag: 'EXECUTION FLOW',
-            title: '4-Stage Velocity Pipeline',
-            desc: 'Generated via Girionix AI: Continuous integration and deployment.',
-            features: [
-              { num: '01', title: 'Discovery', desc: 'Sub-millisecond local indexing' },
-              { num: '02', title: 'Modeling', desc: 'In-memory matrix computation' },
-              { num: '03', title: 'Validation', desc: 'Cryptographic SHA-256 signing' },
-              { num: '04', title: 'Dispatch', desc: 'Multi-format native export' }
-            ]
-          };
+        if (window.kineticAiStudio) {
+          if (promptType === 'swot-matrix') {
+            window.kineticAiStudio.insertDiagram('swot-matrix');
+          } else if (promptType === 'chevron-flow') {
+            window.kineticAiStudio.insertDiagram('chevron-flow');
+          } else if (promptType === 'pitch-directive') {
+            window.kineticAiStudio.insertDiagram('metrics');
+          } else if (customQuery) {
+            window.kineticAiStudio.generateDeck(customQuery);
+          } else {
+            window.kineticAiStudio.insertDiagram('metrics');
+          }
         } else {
-          newSlide = {
-            id: Date.now(),
-            layout: 'metrics',
-            tag: 'AI DIRECTIVE',
-            title: customQuery ? `AI Strategy: ${customQuery}` : 'Girionix Executive Directive',
-            desc: 'Generated via Girionix AI: Deep analysis of corporate velocity and spatial computing.',
-            features: [
-              { num: '99.9%', title: 'Uptime Integrity', desc: 'Zero cloud dependencies' },
-              { num: '3.4x', title: 'Work Velocity', desc: 'Elimination of context switching' },
-              { num: '0 ms', title: 'Compile Latency', desc: 'Local in-memory rendering' }
-            ]
-          };
+          let slides = [];
+          try {
+            slides = typeof this.getKineticSlides === 'function' ? this.getKineticSlides() : JSON.parse(localStorage.getItem('giri_orbit_kinetic_deck') || '[]');
+          } catch (e) {
+            slides = [];
+          }
+          if (!Array.isArray(slides) || slides.length === 0) {
+            slides = [
+              { id: 1, tag: 'SLIDE 1', title: 'Executive Overview', desc: 'Sovereign computing paradigm', features: [] }
+            ];
+          }
+
+          let newSlide;
+          if (promptType === 'swot-matrix') {
+            newSlide = {
+              id: Date.now(),
+              layout: 'swot-matrix',
+              tag: 'STRATEGIC AUDIT',
+              title: 'SWOT Vector Analysis',
+              desc: 'Generated via Girionix AI: Comprehensive enterprise operational assessment.',
+              features: [
+                { num: 'S', title: 'Strengths', desc: '100% sovereign client-side architecture' },
+                { num: 'W', title: 'Weaknesses', desc: 'Browser sandbox storage quotas' },
+                { num: 'O', title: 'Opportunities', desc: 'Zero-cloud latency advantage' },
+                { num: 'T', title: 'Threats', desc: 'Legacy enterprise vendor lock-in' }
+              ]
+            };
+          } else if (promptType === 'chevron-flow') {
+            newSlide = {
+              id: Date.now(),
+              layout: 'chevron-flow',
+              tag: 'EXECUTION FLOW',
+              title: '4-Stage Velocity Pipeline',
+              desc: 'Generated via Girionix AI: Continuous integration and deployment.',
+              features: [
+                { num: '01', title: 'Discovery', desc: 'Sub-millisecond local indexing' },
+                { num: '02', title: 'Modeling', desc: 'In-memory matrix computation' },
+                { num: '03', title: 'Validation', desc: 'Cryptographic SHA-256 signing' },
+                { num: '04', title: 'Dispatch', desc: 'Multi-format native export' }
+              ]
+            };
+          } else {
+            newSlide = {
+              id: Date.now(),
+              layout: 'metrics',
+              tag: 'AI DIRECTIVE',
+              title: customQuery ? `AI Strategy: ${customQuery}` : 'Girionix Executive Directive',
+              desc: 'Generated via Girionix AI: Deep analysis of corporate velocity and spatial computing.',
+              features: [
+                { num: '99.9%', title: 'Uptime Integrity', desc: 'Zero cloud dependencies' },
+                { num: '3.4x', title: 'Work Velocity', desc: 'Elimination of context switching' },
+                { num: '0 ms', title: 'Compile Latency', desc: 'Local in-memory rendering' }
+              ]
+            };
+          }
+          slides.push(newSlide);
+          localStorage.setItem('giri_orbit_kinetic_deck', JSON.stringify(slides));
+          renderKineticApp(this.workspace);
+          this.showToast('Girionix AI: Appended generated slide to Kinetic Presentation', 'red');
         }
-        slides.push(newSlide);
-        localStorage.setItem('giri_orbit_kinetic_deck', JSON.stringify(slides));
-        renderKineticApp(this.workspace);
-        this.showToast('Girionix AI: Appended generated slide to Kinetic Presentation', 'red');
 
       } else if (tool === 'pdf') {
         const sheet = document.getElementById('pdf-sheet');
@@ -1345,8 +1457,8 @@ class GiriOrbitPlatform {
    */
   initGirionixAiDrawer() {
     const drawer = document.getElementById('girionix-ai-drawer');
-    const floatingBtn = document.getElementById('btn-floating-girionix-trigger');
-    const headerBtn = document.getElementById('btn-open-girionix-ai');
+    const floatingBtn = document.getElementById('btn-floating-girionix-trigger') || document.getElementById('btn-floating-girionix-copilot');
+    const headerBtn = document.getElementById('btn-open-girionix-ai') || document.getElementById('btn-header-girionix-copilot');
     const closeBtn = document.getElementById('btn-girionix-drawer-close');
     const expandBtn = document.getElementById('btn-girionix-expand');
     const tabBtns = drawer?.querySelectorAll('.girionix-tab-btn') || [];
@@ -1369,7 +1481,7 @@ class GiriOrbitPlatform {
 
       // Lazy-load iframe source on first open
       if (iframe && (!iframe.src || iframe.src === 'about:blank')) {
-        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/';
+        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/chat';
       }
 
       // Switch tab if requested
@@ -1425,7 +1537,7 @@ class GiriOrbitPlatform {
     // Reload iframe
     reloadBtn?.addEventListener('click', () => {
       if (iframe) {
-        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/';
+        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/chat';
         this.showToast('Reloading Girionix AI Assistant...', 'blue');
       }
     });

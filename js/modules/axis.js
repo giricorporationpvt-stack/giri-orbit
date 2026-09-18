@@ -1307,6 +1307,17 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
                 <span class="fluent-group-label">Add-ins</span>
               </div>
             </div>
+
+            <!-- Girionix AI Formula Group -->
+            <div class="fluent-ribbon-group" style="background:rgba(37,99,235,0.06); border-radius:4px;">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-axis-home-ai-copilot" title="Girionix AI Formula Copilot (Alt+J / Ctrl+Shift+J)" style="color:#2563eb; font-weight:700;">
+                  <strong style="color:#2563eb; font-size:18px;">⚡</strong>
+                  <span style="color:#2563eb;">AI Formula</span>
+                </button>
+              </div>
+              <div class="fluent-group-footer"><span class="fluent-group-label" style="color:#2563eb; font-weight:700;">Girionix AI</span></div>
+            </div>
           </div>
 
           <!-- 2. INSERT TAB PANE -->
@@ -1493,6 +1504,17 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
               </div>
               <div class="fluent-group-footer"><span class="fluent-group-label">Calculation</span></div>
             </div>
+
+            <!-- Girionix AI Formula Copilot Group -->
+            <div class="fluent-ribbon-group" style="background:rgba(37,99,235,0.06); border-radius:4px;">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-axis-ribbon-ai-copilot" title="Girionix AI Formula Copilot (Alt+J / Ctrl+Shift+J)" style="color:#2563eb; font-weight:700;">
+                  <strong style="color:#2563eb; font-size:18px;">⚡</strong>
+                  <span style="color:#2563eb;">AI Copilot</span>
+                </button>
+              </div>
+              <div class="fluent-group-footer"><span class="fluent-group-label" style="color:#2563eb; font-weight:700;">Girionix AI</span></div>
+            </div>
           </div>
 
           <!-- 5. DATA TAB PANE -->
@@ -1672,6 +1694,10 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
         <span class="fx-icon-btn" id="axis-fx-label" title="Function Wizard (Insert Function)">fx</span>
         <input type="text" class="axis-formula-input" id="axis-formula-input" placeholder="" spellcheck="false">
         <button class="axis-formula-expand-btn" id="btn-axis-expand-formula" title="Expand / Collapse Formula Bar (Ctrl+Shift+U)">⌵</button>
+        <button class="axis-formula-action-btn" id="btn-axis-ai-formula-copilot" title="Girionix AI Formula Copilot (Alt+J / Ctrl+Shift+J)" style="width:auto; padding:0 10px; font-size:11px; gap:4px; margin-left:4px; height:24px; border:1px solid #2563eb; border-radius:4px; background:rgba(37,99,235,0.1); color:#2563eb; font-weight:700; cursor:pointer;">
+          <span>⚡</span>
+          <span>AI Formula</span>
+        </button>
         <button class="axis-formula-action-btn" id="btn-axis-toggle-sidebar-bar" title="Toggle Formulas Sidebar" style="width:auto; padding:0 8px; font-size:11px; gap:4px; margin-left:4px; height:24px; border:1px solid #cbd5e1; border-radius:4px; background:#f8fafc;">
           <span>📐</span>
           <span style="font-weight:600; font-size:11px;">Formulas</span>
@@ -1838,6 +1864,112 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
         <button class="mobile-tool-btn" id="btn-mobile-axis-add-col" title="Insert Column">+C</button>
         <button class="mobile-tool-btn" id="btn-mobile-axis-clear" title="Clear Cell">✕</button>
         <button class="mobile-tool-btn" id="btn-mobile-axis-save" title="Save Workbook" style="color:#38bdf8;">💾</button>
+      </div>
+
+      <!-- Girionix AI Formula Copilot Modal (Practical Office Spreadsheet AI) -->
+      <div class="orbit-ai-modal-backdrop" id="axis-ai-formula-modal" aria-hidden="true">
+        <div class="orbit-ai-modal-card" role="dialog" aria-modal="true" aria-label="Girionix AI Formula Copilot">
+          <div class="orbit-ai-modal-header">
+            <div class="orbit-ai-header-left">
+              <span class="orbit-ai-brand-badge" style="background:linear-gradient(135deg, #107c41, #0284c7);">⚡</span>
+              <div class="orbit-ai-title-group">
+                <h3>Girionix AI Formula Copilot <span class="girionix-status-badge" style="font-size:10px; margin-left:4px;" id="axis-ai-target-badge">Cell A1</span></h3>
+                <p>Describe in plain English what you want to calculate, lookup, or automate</p>
+              </div>
+            </div>
+            <button class="orbit-ai-close-btn" id="btn-close-axis-ai-modal" title="Close (ESC)">✕</button>
+          </div>
+
+          <div class="orbit-ai-modal-body">
+            <!-- Mode Selector: Generator vs Explainer vs Sample Data -->
+            <div class="orbit-ai-chips-row" style="margin-bottom:2px;">
+              <button class="orbit-ai-chip active" id="axis-ai-tab-generate">✨ Formula Generator</button>
+              <button class="orbit-ai-chip" id="axis-ai-tab-explain">💡 Explain Active Formula</button>
+              <button class="orbit-ai-chip" id="axis-ai-tab-sample">📊 Generate Data Table</button>
+            </div>
+
+            <!-- Natural Language Formula Input -->
+            <div id="axis-ai-generator-section">
+              <div class="orbit-ai-input-wrap">
+                <input type="text" id="axis-ai-query-input" placeholder="e.g. 'Sum column C if column A is East', 'Lookup price for SKU in A2'..." spellcheck="false">
+                <button class="orbit-ai-generate-btn" id="btn-axis-ai-generate" style="background:#107c41;">
+                  <span>Generate ⚡</span>
+                </button>
+              </div>
+
+              <!-- Quick Query Presets -->
+              <div style="margin-top:10px;">
+                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:6px;">Common Formula Queries:</div>
+                <div class="orbit-ai-chips-row" id="axis-ai-quick-presets">
+                  <button class="orbit-ai-chip" data-axis-query="Sum column C if column A is East and column B is Closed">∑ Multi-criteria SUMIFS</button>
+                  <button class="orbit-ai-chip" data-axis-query="Lookup product price from column B based on code in A2">🔍 Safe XLOOKUP</button>
+                  <button class="orbit-ai-chip" data-axis-query="Calculate percentage change from B2 to C2 handling division by zero">📈 % Growth with IFERROR</button>
+                  <button class="orbit-ai-chip" data-axis-query="Combine first name in A2 and last name in B2 with space">🔤 CONCAT Names</button>
+                  <button class="orbit-ai-chip" data-axis-query="Count how many rows have value greater than 1000 in column D"># COUNTIF &gt; 1000</button>
+                  <button class="orbit-ai-chip" data-axis-query="Calculate monthly loan payment for 6% rate, 20 years, 250000 principal">🏦 PMT Loan Payment</button>
+                  <button class="orbit-ai-chip" data-axis-query="Extract domain from email address in A2">✉️ Extract Domain</button>
+                  <button class="orbit-ai-chip" data-axis-query="Flag duplicates in column A">⚠️ Find Duplicates</button>
+                </div>
+              </div>
+
+              <!-- Generated Formula Display Card -->
+              <div style="margin-top:12px; display:flex; flex-direction:column; gap:6px;">
+                <span style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Generated Formula:</span>
+                <div class="axis-formula-display-card" id="axis-ai-formula-result-card">
+                  <span class="axis-formula-text" id="axis-ai-formula-text">=SUMIFS(C:C, A:A, "East", B:B, "Closed")</span>
+                  <button class="orbit-ai-btn-secondary" id="btn-axis-ai-copy-formula" style="background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.25); color:#ffffff; padding:4px 10px; font-size:11px;">📋 Copy</button>
+                </div>
+                <div id="axis-ai-formula-explanation" style="font-size:12px; color:#334155; line-height:1.5; padding:8px 12px; background:#f1f5f9; border-radius:6px;">
+                  Calculates total sum of values in Column C only where Column A equals "East" and Column B equals "Closed".
+                </div>
+              </div>
+            </div>
+
+            <!-- Formula Explainer Section -->
+            <div id="axis-ai-explainer-section" style="display:none;">
+              <div style="padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; font-size:12.5px;">
+                <div style="font-weight:700; margin-bottom:6px; color:#0f172a;">Active Cell Formula Analysis:</div>
+                <div id="axis-ai-active-formula-display" style="font-family:monospace; background:#0f172a; color:#38bdf8; padding:8px 12px; border-radius:4px; margin-bottom:8px;">(No formula in active cell)</div>
+                <div id="axis-ai-active-formula-breakdown" style="line-height:1.6; color:#475569;">
+                  Select any cell containing a formula (e.g. =SUM, =AVERAGE, =IF) to see an instantaneous step-by-step breakdown.
+                </div>
+              </div>
+            </div>
+
+            <!-- Sample Data Generator Section -->
+            <div id="axis-ai-sample-section" style="display:none;">
+              <div style="font-size:12px; color:#64748b; margin-bottom:8px;">Choose a dataset to populate starting at active cell:</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <button class="orbit-ai-btn-secondary btn-axis-gen-dataset" data-dataset="sales" style="text-align:left; padding:10px; display:flex; flex-direction:column; gap:3px;">
+                  <strong style="color:#0f172a;">📈 Quarterly Sales Ledger</strong>
+                  <span style="font-size:10.5px; color:#64748b;">Quarter, Region, Product, Units, Revenue</span>
+                </button>
+                <button class="orbit-ai-btn-secondary btn-axis-gen-dataset" data-dataset="saas" style="text-align:left; padding:10px; display:flex; flex-direction:column; gap:3px;">
+                  <strong style="color:#0f172a;">💻 SaaS Subscription Metrics</strong>
+                  <span style="font-size:10.5px; color:#64748b;">Cohort, Plan, MRR, Churn Rate, LTV</span>
+                </button>
+                <button class="orbit-ai-btn-secondary btn-axis-gen-dataset" data-dataset="employees" style="text-align:left; padding:10px; display:flex; flex-direction:column; gap:3px;">
+                  <strong style="color:#0f172a;">👥 Team &amp; Payroll Matrix</strong>
+                  <span style="font-size:10.5px; color:#64748b;">Name, Department, Role, Base, Bonus</span>
+                </button>
+                <button class="orbit-ai-btn-secondary btn-axis-gen-dataset" data-dataset="inventory" style="text-align:left; padding:10px; display:flex; flex-direction:column; gap:3px;">
+                  <strong style="color:#0f172a;">📦 Logistics Inventory Log</strong>
+                  <span style="font-size:10.5px; color:#64748b;">SKU, Item Name, Stock, Reorder Point, Cost</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="orbit-ai-modal-footer">
+            <div class="orbit-ai-footer-left">
+              <span>⚡ Sovereign Matrix Engine • Client Parity</span>
+            </div>
+            <div class="orbit-ai-footer-right">
+              <button class="orbit-ai-btn-secondary" id="btn-axis-ai-dismiss">Dismiss</button>
+              <button class="orbit-ai-btn-primary" id="btn-axis-ai-insert-active" style="background:#107c41; border-color:#0d6937;">✓ Insert into Active Cell</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -2205,7 +2337,8 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
         if (Array.isArray(s)) totalCells += s.length;
         else if (typeof s === 'object' && s) totalCells += Object.keys(s).length;
       });
-      window.giriSyncManager.recordSync('axis', sheetsData, 'Capital & Revenue Matrix', {
+      const axisTitle = localStorage.getItem('giri_orbit_axis_title') || 'Capital & Revenue Matrix';
+      window.giriSyncManager.recordSync('axis', sheetsData, axisTitle, {
         snippet: `Interactive financial matrix with ${sheetCount} sheet${sheetCount > 1 ? 's' : ''} and formula modeling.`,
         stats: `${sheetCount} Sheets • ${totalCells} Data Cells • Auto-Formula`
       });
@@ -3009,6 +3142,66 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
         return '#N/A';
       }
 
+      // 18o. IFERROR(expression, fallback)
+      const iferrorMatch = clean.match(/^IFERROR\((.+),\s*(.+)\)$/i);
+      if (iferrorMatch) {
+        try {
+          const res = computeFormula(iferrorMatch[1].trim());
+          if (res !== undefined && res !== null && !isNaN(res) && res !== '#ERROR' && res !== '#N/A') {
+            return res;
+          }
+        } catch {}
+        const fb = iferrorMatch[2].trim().replace(/['"]/g, '');
+        return isNaN(Number(fb)) ? fb : parseFloat(fb);
+      }
+
+      // 18p. SUMIFS(sum_range, crit_range1, crit1, ...)
+      const sumifsMatch = clean.match(/^SUMIFS\(([A-Z]+)(?::[A-Z]+|\d+:[A-Z]+\d+)?,\s*([A-Z]+)(?::[A-Z]+|\d+:[A-Z]+\d+)?,\s*(.+?)(?:,\s*([A-Z]+)(?::[A-Z]+|\d+:[A-Z]+\d+)?,\s*(.+?))?\)$/i);
+      if (sumifsMatch) {
+        const sumCol = colNameToIndex(sumifsMatch[1].charAt(0).toUpperCase());
+        const critCol1 = colNameToIndex(sumifsMatch[2].charAt(0).toUpperCase());
+        const crit1 = sumifsMatch[3].trim().replace(/['"]/g, '').toLowerCase();
+        const hasSecondCrit = Boolean(sumifsMatch[4]);
+        const critCol2 = hasSecondCrit ? colNameToIndex(sumifsMatch[4].charAt(0).toUpperCase()) : -1;
+        const crit2 = hasSecondCrit && sumifsMatch[5] ? sumifsMatch[5].trim().replace(/['"]/g, '').toLowerCase() : '';
+
+        let total = 0;
+        const maxR = currentRenderedRows || 100;
+        for (let r = 1; r <= maxR; r++) {
+          const c1Txt = getCellText(`${indexToColName(critCol1)}${r}`).toLowerCase();
+          const match1 = (c1Txt === crit1 || (!isNaN(parseFloat(crit1)) && parseFloat(c1Txt) === parseFloat(crit1)));
+          let match2 = true;
+          if (hasSecondCrit) {
+            const c2Txt = getCellText(`${indexToColName(critCol2)}${r}`).toLowerCase();
+            match2 = (c2Txt === crit2 || (!isNaN(parseFloat(crit2)) && parseFloat(c2Txt) === parseFloat(crit2)));
+          }
+          if (match1 && match2) {
+            total += getCellValue(`${indexToColName(sumCol)}${r}`);
+          }
+        }
+        return total;
+      }
+
+      // 18q. XLOOKUP(lookup_val, lookup_range, return_range, [if_not_found])
+      const xlookupMatch = clean.match(/^XLOOKUP\((.+?),\s*([A-Z]+)(?::[A-Z]+|\d+:[A-Z]+\d+)?,\s*([A-Z]+)(?::[A-Z]+|\d+:[A-Z]+\d+)?(?:,\s*(.+?))?\)$/i);
+      if (xlookupMatch) {
+        const lookupParam = xlookupMatch[1].trim();
+        const lookupVal = /^[A-Z]\d+$/i.test(lookupParam) ? getCellText(lookupParam.toUpperCase()) : lookupParam.replace(/['"]/g, '');
+        const lCol = colNameToIndex(xlookupMatch[2].charAt(0).toUpperCase());
+        const rCol = colNameToIndex(xlookupMatch[3].charAt(0).toUpperCase());
+        const notFound = xlookupMatch[4] ? xlookupMatch[4].trim().replace(/['"]/g, '') : '#N/A';
+        const maxR = currentRenderedRows || 100;
+        for (let r = 1; r <= maxR; r++) {
+          const checkTxt = getCellText(`${indexToColName(lCol)}${r}`);
+          if (checkTxt.toLowerCase() === lookupVal.toLowerCase() || (!isNaN(parseFloat(lookupVal)) && parseFloat(checkTxt) === parseFloat(lookupVal))) {
+            const resultVal = getCellValue(`${indexToColName(rCol)}${r}`);
+            const resultTxt = getCellText(`${indexToColName(rCol)}${r}`);
+            return !isNaN(parseFloat(resultTxt)) && resultTxt === String(resultVal) ? resultVal : resultTxt;
+          }
+        }
+        return notFound;
+      }
+
       // 19. Arithmetic expression with cell references: e.g. =B4+C4+D4 or =(D4-B4)/B4
       const replaced = upper.replace(/([A-Z]\d+)/g, (match) => getCellValue(match));
       if (/^[\d\s+\-*/.()]+$/.test(replaced)) {
@@ -3331,7 +3524,14 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
   }
   document.addEventListener('click', closeContextMenu);
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeContextMenu();
+    if (e.key === 'Escape') {
+      closeContextMenu();
+      window.axisAiCopilot?.close();
+    }
+    if (e.altKey && e.key.toLowerCase() === 'j') {
+      e.preventDefault();
+      window.axisAiCopilot?.open();
+    }
   });
 
   function openSheetTabContextMenu(clientX, clientY, sheetName) {
@@ -5857,6 +6057,11 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
         btnFormulaExpand?.click();
         return;
       }
+      if ((e.shiftKey && k === 'j') || (e.altKey && k === 'j')) {
+        e.preventDefault();
+        window.axisAiCopilot?.open();
+        return;
+      }
       if (k === 'c') {
         e.preventDefault();
         const range = selectedRange || { minCol: coord.col, maxCol: coord.col, minRow: coord.row, maxRow: coord.row };
@@ -6249,6 +6454,377 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     }
   }
 
+  // =========================================================================
+  // GIRIONIX AI FORMULA COPILOT (PRACTICAL OFFICE SPREADSHEET AI)
+  // =========================================================================
+  function initAxisAiFormulaCopilot() {
+    const modal = container.querySelector('#axis-ai-formula-modal');
+    if (!modal) return;
+
+    const queryInput = container.querySelector('#axis-ai-query-input');
+    const btnGenerate = container.querySelector('#btn-axis-ai-generate');
+    const formulaText = container.querySelector('#axis-ai-formula-text');
+    const formulaExpl = container.querySelector('#axis-ai-formula-explanation');
+    const btnCopy = container.querySelector('#btn-axis-ai-copy-formula');
+    const btnInsert = container.querySelector('#btn-axis-ai-insert-active');
+    const btnDismiss = container.querySelector('#btn-axis-ai-dismiss');
+    const btnClose = container.querySelector('#btn-close-axis-ai-modal');
+    const targetBadge = container.querySelector('#axis-ai-target-badge');
+
+    // Tab buttons & sections
+    const tabGenerate = container.querySelector('#axis-ai-tab-generate');
+    const tabExplain = container.querySelector('#axis-ai-tab-explain');
+    const tabSample = container.querySelector('#axis-ai-tab-sample');
+    const secGenerator = container.querySelector('#axis-ai-generator-section');
+    const secExplainer = container.querySelector('#axis-ai-explainer-section');
+    const secSample = container.querySelector('#axis-ai-sample-section');
+
+    let activeTab = 'generate';
+    let currentGeneratedFormula = '=SUMIFS(C:C, A:A, "East", B:B, "Closed")';
+
+    function switchTab(tab) {
+      activeTab = tab;
+      [tabGenerate, tabExplain, tabSample].forEach(t => t?.classList.remove('active'));
+      if (secGenerator) secGenerator.style.display = 'none';
+      if (secExplainer) secExplainer.style.display = 'none';
+      if (secSample) secSample.style.display = 'none';
+
+      if (tab === 'generate') {
+        tabGenerate?.classList.add('active');
+        if (secGenerator) secGenerator.style.display = 'block';
+        setTimeout(() => queryInput?.focus(), 50);
+      } else if (tab === 'explain') {
+        tabExplain?.classList.add('active');
+        if (secExplainer) secExplainer.style.display = 'block';
+        updateExplainerView();
+      } else if (tab === 'sample') {
+        tabSample?.classList.add('active');
+        if (secSample) secSample.style.display = 'block';
+      }
+    }
+
+    tabGenerate?.addEventListener('click', () => switchTab('generate'));
+    tabExplain?.addEventListener('click', () => switchTab('explain'));
+    tabSample?.addEventListener('click', () => switchTab('sample'));
+
+    function openModal(defaultQuery = null) {
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+      const activeCellId = activeCell ? activeCell.dataset.cellId : 'A1';
+      if (targetBadge) targetBadge.textContent = `Cell ${activeCellId}`;
+
+      if (defaultQuery) {
+        switchTab('generate');
+        if (queryInput) queryInput.value = defaultQuery;
+        generateFormula(defaultQuery);
+      } else {
+        const activeFormula = activeCell ? rawFormulas.get(activeCell.dataset.cellId) : null;
+        if (activeFormula) {
+          switchTab('explain');
+        } else {
+          switchTab('generate');
+        }
+      }
+    }
+
+    function closeModal() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    btnClose?.addEventListener('click', closeModal);
+    btnDismiss?.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    // NLP Formula Synthesizer
+    function generateFormula(rawQuery) {
+      const q = (rawQuery || queryInput?.value || '').trim();
+      if (!q) return;
+
+      const activeCellId = activeCell ? activeCell.dataset.cellId : 'A1';
+      const coord = parseCellCoordinates(activeCellId) || { col: 0, colLetter: 'A', row: 1 };
+      const curCol = coord.colLetter;
+      const curRow = coord.row;
+      const prevRow = Math.max(1, curRow - 1);
+
+      let formula = '';
+      let explanation = '';
+
+      const lower = q.toLowerCase();
+
+      if (lower.includes('sumif') || (lower.includes('sum') && (lower.includes('if') || lower.includes('criteria') || lower.includes('where')))) {
+        formula = `=SUMIFS(C:C, A:A, "East", B:B, "Closed")`;
+        explanation = `Calculates total sum of values in Column C where Column A equals "East" and Column B equals "Closed". Multi-criteria summation.`;
+      } else if (lower.includes('xlookup') || lower.includes('lookup') || lower.includes('vlookup') || lower.includes('find price') || lower.includes('sku')) {
+        formula = `=XLOOKUP(A${curRow}, A:A, B:B, "Not Found", 0)`;
+        explanation = `Searches Column A for the key in A${curRow} and returns the corresponding value from Column B. Returns "Not Found" if missing.`;
+      } else if (lower.includes('percent') || lower.includes('growth') || lower.includes('rate') || lower.includes('margin') || lower.includes('div/0')) {
+        formula = `=IFERROR((C${curRow}-B${curRow})/B${curRow}, 0)`;
+        explanation = `Calculates rate of growth between B${curRow} and C${curRow}, wrapped in IFERROR to gracefully prevent #DIV/0! errors.`;
+      } else if (lower.includes('concat') || lower.includes('combine') || lower.includes('join') || lower.includes('merge name')) {
+        formula = `=CONCAT(A${curRow}, " ", B${curRow})`;
+        explanation = `Concatenates text in A${curRow} and B${curRow} separated by an authentic single whitespace delimiter.`;
+      } else if (lower.includes('countif') || (lower.includes('count') && (lower.includes('greater') || lower.includes('>') || lower.includes('less') || lower.includes('<') || lower.includes('condition')))) {
+        formula = `=COUNTIF(D:D, ">1000")`;
+        explanation = `Scans all rows in Column D and counts cells containing values strictly greater than 1000.`;
+      } else if (lower.includes('pmt') || lower.includes('loan') || lower.includes('mortgage') || lower.includes('interest') || lower.includes('payment')) {
+        formula = `=PMT(6%/12, 20*12, -250000)`;
+        explanation = `Calculates the monthly mortgage installment for a $250,000 principal balance at 6.0% annual rate over a 20-year term.`;
+      } else if (lower.includes('domain') || lower.includes('email') || lower.includes('extract')) {
+        formula = `=MID(A${curRow}, FIND("@", A${curRow})+1, LEN(A${curRow}))`;
+        explanation = `Finds the "@" delimiter in cell A${curRow} and extracts the company domain name cleanly.`;
+      } else if (lower.includes('duplicate') || lower.includes('flag') || lower.includes('unique')) {
+        formula = `=IF(COUNTIF(A:A, A${curRow})>1, "Duplicate", "Unique")`;
+        explanation = `Evaluates frequency of A${curRow} across Column A; flags records appearing more than once as "Duplicate".`;
+      } else if (lower.includes('average') || lower.includes('mean')) {
+        formula = `=AVERAGE(${curCol}1:${curCol}${prevRow})`;
+        explanation = `Calculates arithmetic mean across cells in column ${curCol} from row 1 down to row ${prevRow}.`;
+      } else if (lower.includes('max') || lower.includes('highest') || lower.includes('peak')) {
+        formula = `=MAX(${curCol}1:${curCol}${prevRow})`;
+        explanation = `Finds the maximum numerical ceiling in column ${curCol} up to row ${prevRow}.`;
+      } else if (lower.includes('min') || lower.includes('lowest') || lower.includes('floor')) {
+        formula = `=MIN(${curCol}1:${curCol}${prevRow})`;
+        explanation = `Finds the minimum numerical floor in column ${curCol} up to row ${prevRow}.`;
+      } else if (lower.includes('sum') || lower.includes('total') || lower.includes('add up')) {
+        formula = `=SUM(${curCol}1:${curCol}${prevRow})`;
+        explanation = `Aggregates the sum of all numerical values in column ${curCol} above the active cell (${curCol}1 to ${curCol}${prevRow}).`;
+      } else {
+        formula = `=IF(B${curRow}>1000, "High Performance", "Standard")`;
+        explanation = `Conditional logic rule testing if B${curRow} exceeds 1000 threshold and assigning status indicators.`;
+      }
+
+      currentGeneratedFormula = formula;
+      if (formulaText) formulaText.textContent = formula;
+      if (formulaExpl) formulaExpl.textContent = explanation;
+    }
+
+    btnGenerate?.addEventListener('click', () => {
+      generateFormula(queryInput?.value);
+    });
+
+    queryInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        generateFormula(queryInput.value);
+      }
+    });
+
+    // Quick presets
+    container.querySelectorAll('#axis-ai-quick-presets button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const query = btn.dataset.axisQuery || btn.textContent.trim();
+        if (queryInput) queryInput.value = query;
+        generateFormula(query);
+      });
+    });
+
+    // Copy formula
+    btnCopy?.addEventListener('click', () => {
+      if (navigator.clipboard && currentGeneratedFormula) {
+        navigator.clipboard.writeText(currentGeneratedFormula).then(() => {
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast('Formula copied to clipboard!');
+        });
+      }
+    });
+
+    // Insert into Active Cell
+    btnInsert?.addEventListener('click', () => {
+      if (activeTab === 'generate') {
+        if (!activeCell) {
+          const firstCell = gridTable.querySelector('.axis-cell[data-cell-id="A1"]');
+          if (firstCell) setActiveCell(firstCell);
+        }
+        if (activeCell) {
+          const cellId = activeCell.dataset.cellId;
+          const formula = currentGeneratedFormula;
+          if (formulaInput) formulaInput.value = formula;
+          rawFormulas.set(cellId, formula);
+          evaluateCell(activeCell);
+          saveCurrentSheet();
+          updateLiveStatusBar();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Formula ${formula} inserted into ${cellId}`);
+        }
+      }
+      closeModal();
+    });
+
+    // Explainer View updater
+    function updateExplainerView() {
+      const activeFormulaDisplay = container.querySelector('#axis-ai-active-formula-display');
+      const activeFormulaBreakdown = container.querySelector('#axis-ai-active-formula-breakdown');
+      if (!activeFormulaDisplay || !activeFormulaBreakdown) return;
+
+      const cellId = activeCell ? activeCell.dataset.cellId : null;
+      const formula = cellId ? rawFormulas.get(cellId) : null;
+      const val = cellId && activeCell ? (activeCell.textContent || '').trim() : '';
+
+      if (formula && formula.startsWith('=')) {
+        activeFormulaDisplay.textContent = formula;
+        const upper = formula.toUpperCase();
+
+        let breakdownHtml = `<div style="display:flex; flex-direction:column; gap:6px;">`;
+        breakdownHtml += `<div><strong>Formula Syntax:</strong> <span style="color:#0284c7; font-weight:700;">${formula}</span></div>`;
+        breakdownHtml += `<div><strong>Target Cell:</strong> <span style="color:#107c41; font-weight:700;">${cellId}</span></div>`;
+
+        if (upper.includes('SUMIFS')) {
+          breakdownHtml += `<div><strong>Function:</strong> SUMIFS (Multi-criteria aggregate sum)</div>`;
+          breakdownHtml += `<div><strong>Auditing:</strong> Inspects each criteria pair and only sums rows where all conditions are TRUE.</div>`;
+        } else if (upper.includes('XLOOKUP') || upper.includes('VLOOKUP')) {
+          breakdownHtml += `<div><strong>Function:</strong> Lookup &amp; Reference (Exact match search)</div>`;
+          breakdownHtml += `<div><strong>Auditing:</strong> Locates key in index column and fetches mapped field without column index errors.</div>`;
+        } else if (upper.includes('IFERROR')) {
+          breakdownHtml += `<div><strong>Function:</strong> IFERROR (Error suppression &amp; safety fallback)</div>`;
+          breakdownHtml += `<div><strong>Auditing:</strong> Evaluates primary expression and substitutes fallback if #DIV/0!, #N/A or #VALUE! occurs.</div>`;
+        } else if (upper.includes('IF')) {
+          breakdownHtml += `<div><strong>Function:</strong> IF (Logical conditional branching)</div>`;
+          breakdownHtml += `<div><strong>Auditing:</strong> Tests logical condition; branches to true outcome or false outcome accordingly.</div>`;
+        } else if (upper.includes('SUM')) {
+          breakdownHtml += `<div><strong>Function:</strong> SUM (Mathematical summation)</div>`;
+          breakdownHtml += `<div><strong>Auditing:</strong> Adds all numerical values in range, skipping empty and text cells.</div>`;
+        } else if (upper.includes('AVERAGE')) {
+          breakdownHtml += `<div><strong>Function:</strong> AVERAGE (Mean calculation)</div>`;
+          breakdownHtml += `<div><strong>Auditing:</strong> Divides sum of numeric values by count of non-empty numbers.</div>`;
+        } else {
+          breakdownHtml += `<div><strong>Function:</strong> Expression Calculation</div>`;
+          breakdownHtml += `<div><strong>Auditing:</strong> Executes mathematical and logical operators with standard precedence.</div>`;
+        }
+
+        breakdownHtml += `<div><strong>Current Result:</strong> <code style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-weight:700;">${val}</code></div>`;
+        breakdownHtml += `</div>`;
+        activeFormulaBreakdown.innerHTML = breakdownHtml;
+      } else if (cellId && val) {
+        activeFormulaDisplay.textContent = `Static Value: "${val}"`;
+        activeFormulaBreakdown.innerHTML = `
+          <div style="color:#475569;">
+            This cell contains static text or numbers rather than a dynamic formula.<br>
+            Use the <strong>✨ Formula Generator</strong> tab to synthesize an executive formula, or type an <code>=</code> sign in the formula bar to begin calculating.
+          </div>
+        `;
+      } else {
+        activeFormulaDisplay.textContent = '(No cell or empty cell selected)';
+        activeFormulaBreakdown.innerHTML = `
+          <div style="color:#64748b;">
+            Select any cell containing a formula (e.g. =SUM, =AVERAGE, =IF) on the sheet to view an instant breakdown.
+          </div>
+        `;
+      }
+    }
+
+    // Sample Data Generation Handlers
+    container.querySelectorAll('.btn-axis-gen-dataset').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const dsKey = btn.dataset.dataset;
+        generateSampleDataset(dsKey);
+      });
+    });
+
+    function generateSampleDataset(type) {
+      let headers = [];
+      let rows = [];
+      let title = '';
+
+      if (type === 'sales') {
+        title = 'Quarterly Sales Ledger';
+        headers = ['Quarter', 'Region', 'Product', 'Units Sold', 'Unit Price', 'Revenue', 'Target', 'Performance'];
+        rows = [
+          ['Q1 2026', 'North America', 'Enterprise Cloud', '145', '1200', '=D2*E2', '150000', '=IF(F2>=G2,"Target Met","Behind")'],
+          ['Q1 2026', 'EMEA', 'DevOps Suite', '210', '850', '=D3*E3', '160000', '=IF(F3>=G3,"Target Met","Behind")'],
+          ['Q2 2026', 'Asia-Pacific', 'Enterprise Cloud', '320', '1200', '=D4*E4', '350000', '=IF(F4>=G4,"Target Met","Behind")'],
+          ['Q2 2026', 'Latin America', 'Cyber Shield', '95', '2100', '=D5*E5', '180000', '=IF(F5>=G5,"Target Met","Behind")'],
+          ['Total', '', '', '=SUM(D2:D5)', '', '=SUM(F2:F5)', '=SUM(G2:G5)', '']
+        ];
+      } else if (type === 'saas') {
+        title = 'SaaS Subscription Metrics';
+        headers = ['Plan Tier', 'Active Users', 'Monthly Price', 'MRR', 'Annual Run Rate', 'Status'];
+        rows = [
+          ['Starter', '450', '29', '=B2*C2', '=D2*12', 'Active'],
+          ['Professional', '820', '79', '=B3*C3', '=D3*12', 'Active'],
+          ['Enterprise', '190', '499', '=B4*C4', '=D4*12', 'Growth'],
+          ['Total ARR', '=SUM(B2:B4)', '', '=SUM(D2:D4)', '=SUM(E2:E4)', '']
+        ];
+      } else if (type === 'employees') {
+        title = 'Team & Payroll Matrix';
+        headers = ['Emp ID', 'Full Name', 'Department', 'Base Salary', 'Bonus Pct', 'Total Comp'];
+        rows = [
+          ['EMP-101', 'Sarah Connor', 'Engineering', '125000', '0.15', '=D2*(1+E2)'],
+          ['EMP-102', 'Marcus Wright', 'Product', '118000', '0.12', '=D3*(1+E3)'],
+          ['EMP-103', 'Grace Harper', 'Design', '98000', '0.10', '=D4*(1+E4)'],
+          ['EMP-104', 'Kyle Reese', 'Marketing', '92000', '0.10', '=D5*(1+E5)'],
+          ['Total Payroll', '', '', '=SUM(D2:D5)', '', '=SUM(F2:F5)']
+        ];
+      } else if (type === 'inventory') {
+        title = 'Logistics Inventory Log';
+        headers = ['SKU Code', 'Item Description', 'Stock Level', 'Reorder Point', 'Unit Cost', 'Inventory Value'];
+        rows = [
+          ['SKU-801', 'Rackmount Server 2U', '45', '20', '1850', '=C2*E2'],
+          ['SKU-802', '10GbE Switch 48-Port', '72', '30', '920', '=C3*E3'],
+          ['SKU-803', 'Cat6A Patch Cable 100m', '350', '100', '45', '=C4*E4'],
+          ['SKU-804', 'Optic Transceiver SFP+', '180', '50', '120', '=C5*E5'],
+          ['Total Valuation', '', '', '', '', '=SUM(F2:F5)']
+        ];
+      }
+
+      // Populate into grid starting at row 1, col A
+      headers.forEach((h, colIdx) => {
+        const colLetter = indexToColName(colIdx);
+        const cellId = `${colLetter}1`;
+        const cell = gridTable.querySelector(`[data-cell-id="${cellId}"]`);
+        if (cell) {
+          rawFormulas.delete(cellId);
+          cell.textContent = h;
+          cell.style.fontWeight = '700';
+          cell.style.background = '#f1f5f9';
+        }
+      });
+
+      rows.forEach((row, rowIdx) => {
+        const rNum = rowIdx + 2;
+        row.forEach((val, colIdx) => {
+          const colLetter = indexToColName(colIdx);
+          const cellId = `${colLetter}${rNum}`;
+          const cell = gridTable.querySelector(`[data-cell-id="${cellId}"]`);
+          if (cell) {
+            if (String(val).startsWith('=')) {
+              rawFormulas.set(cellId, val);
+              evaluateCell(cell);
+            } else {
+              rawFormulas.delete(cellId);
+              cell.textContent = val;
+              if (!isNaN(parseFloat(val)) && isFinite(val)) {
+                cell.classList.add('num-cell');
+              }
+            }
+          }
+        });
+      });
+
+      saveCurrentSheet();
+      updateLiveStatusBar();
+      closeModal();
+      if (window.orbitPlatform) {
+        window.orbitPlatform.triggerToast(`Generated ${title} (${rows.length + 1} rows)`);
+      }
+    }
+
+    // Connect trigger buttons
+    container.querySelector('#btn-axis-ai-formula-copilot')?.addEventListener('click', () => openModal());
+    container.querySelector('#btn-axis-home-ai-copilot')?.addEventListener('click', () => openModal());
+    container.querySelector('#btn-axis-ribbon-ai-copilot')?.addEventListener('click', () => openModal());
+
+    // Window global hook
+    window.axisAiCopilot = {
+      open: openModal,
+      close: closeModal,
+      generate: generateFormula,
+      insert: () => btnInsert?.click(),
+      generateDataset: generateSampleDataset
+    };
+  }
+
+  // Initialize Girionix AI Formula Copilot
+  initAxisAiFormulaCopilot();
 
 }
 }

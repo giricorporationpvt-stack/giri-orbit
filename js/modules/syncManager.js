@@ -204,6 +204,65 @@ class GiriSyncManager {
     const savedTitle = localStorage.getItem(config.titleKey);
     const savedTime = localStorage.getItem(config.timeKey);
     const hasData = this.hasSavedWork(tool);
+    const rawData = localStorage.getItem(config.dataKey) || '';
+
+    // Calculate smart stats based on real data
+    let stats = entry.stats || config.defaultStats;
+    const sizeKb = rawData ? (rawData.length / 1024).toFixed(1) : '0.0';
+
+    if (tool === 'drift') {
+      if (hasData && rawData && rawData !== '<p><br></p>') {
+        const text = rawData.replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+        const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+        const chars = text.length;
+        if (words > 0) {
+          stats = `${words.toLocaleString()} words • ${chars.toLocaleString()} chars • ${sizeKb} KB`;
+        } else {
+          stats = `Draft Document • Ready for AI Assist • ${sizeKb} KB`;
+        }
+      } else {
+        stats = `New Document • Blank Canvas • 0.0 KB`;
+      }
+    } else if (tool === 'axis') {
+      if (hasData && rawData) {
+        try {
+          const parsed = JSON.parse(rawData);
+          const sheets = Array.isArray(parsed) ? parsed : (typeof parsed === 'object' ? Object.values(parsed) : []);
+          let cellCount = 0;
+          sheets.forEach(s => {
+            if (s && s.data && typeof s.data === 'object') {
+              cellCount += Object.keys(s.data).length;
+            } else if (Array.isArray(s)) {
+              cellCount += s.length;
+            }
+          });
+          const sheetCount = sheets.length || 1;
+          stats = `${sheetCount} ${sheetCount === 1 ? 'Sheet' : 'Sheets'} • ${cellCount} Cells • ${sizeKb} KB`;
+        } catch (e) {
+          stats = `${config.defaultStats} • ${sizeKb} KB`;
+        }
+      }
+    } else if (tool === 'kinetic') {
+      if (hasData && rawData) {
+        try {
+          const parsed = JSON.parse(rawData);
+          const slides = Array.isArray(parsed) ? parsed : [];
+          stats = `${slides.length} ${slides.length === 1 ? 'Slide' : 'Slides'} • 16:9 Widescreen • ${sizeKb} KB`;
+        } catch (e) {
+          stats = `${config.defaultStats} • ${sizeKb} KB`;
+        }
+      }
+    } else if (tool === 'pdf') {
+      if (hasData && rawData) {
+        try {
+          const parsed = JSON.parse(rawData);
+          const pages = Array.isArray(parsed) ? parsed : [];
+          stats = `${pages.length} ${pages.length === 1 ? 'Page' : 'Pages'} • PKI Validated • ${sizeKb} KB`;
+        } catch (e) {
+          stats = `${config.defaultStats} • ${sizeKb} KB`;
+        }
+      }
+    }
 
     return {
       tool,
@@ -215,10 +274,70 @@ class GiriSyncManager {
       url: config.url,
       title: savedTitle || entry.title || config.defaultTitle,
       snippet: entry.snippet || config.defaultSnippet,
-      stats: entry.stats || config.defaultStats,
+      stats: stats,
       updatedAt: savedTime ? parseInt(savedTime, 10) : (entry.updatedAt || Date.now()),
       hasSavedData: hasData
     };
+  }
+
+  /**
+   * Rename a saved document for a specific tool
+   */
+  renameSyncedWork(tool, newTitle) {
+    const config = TOOL_DEFAULTS[tool];
+    if (!config || !newTitle) return false;
+
+    try {
+      localStorage.setItem(config.titleKey, newTitle);
+      let registry = this.getRegistry();
+      let entry = registry.find(r => r.tool === tool);
+      if (entry) {
+        entry.title = newTitle;
+        entry.updatedAt = Date.now();
+        localStorage.setItem(this.registryKey, JSON.stringify(registry));
+      }
+    } catch (e) {
+      console.warn('[SyncManager] Rename error:', e);
+      return false;
+    }
+
+    window.dispatchEvent(new CustomEvent('orbit:sync-change', {
+      detail: { tool, action: 'rename', title: newTitle }
+    }));
+    return true;
+  }
+
+  /**
+   * Duplicate / clone a saved document for a specific tool
+   */
+  duplicateSyncedWork(tool, clonedTitle) {
+    const config = TOOL_DEFAULTS[tool];
+    if (!config) return false;
+
+    try {
+      const currentTitle = localStorage.getItem(config.titleKey) || config.defaultTitle;
+      const title = clonedTitle || `${currentTitle} (Copy)`;
+      const now = Date.now();
+
+      localStorage.setItem(config.titleKey, title);
+      localStorage.setItem(config.timeKey, now.toString());
+
+      let registry = this.getRegistry();
+      let entry = registry.find(r => r.tool === tool);
+      if (entry) {
+        entry.title = title;
+        entry.updatedAt = now;
+        localStorage.setItem(this.registryKey, JSON.stringify(registry));
+      }
+    } catch (e) {
+      console.warn('[SyncManager] Duplicate error:', e);
+      return false;
+    }
+
+    window.dispatchEvent(new CustomEvent('orbit:sync-change', {
+      detail: { tool, action: 'duplicate', title: clonedTitle }
+    }));
+    return true;
   }
 
   /**
