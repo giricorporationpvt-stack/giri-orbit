@@ -2402,6 +2402,10 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
 
           <!-- Top-Right Actions -->
           <div class="fluent-top-actions">
+            <button class="fluent-drive-action-pill" id="btn-kinetic-drive-sync" title="Google Drive Sync: Direct editing & cloud auto-save">
+              <span class="drive-dot-live"></span>
+              <span id="txt-kinetic-drive-status">☁️ Drive</span>
+            </button>
             <button class="fluent-sync-action-pill" id="btn-kinetic-browser-sync" title="Browser Sync: Slides automatically save to browser storage. Click to open sync manager.">
               <span class="sync-dot-live"></span>
               <span id="txt-kinetic-browser-sync-status">Synced to Browser</span>
@@ -2435,6 +2439,11 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
 
         <!-- Dark Office 365 File Dropdown Menu (Exact match to screenshot) -->
         <div class="office-file-menu-dropdown" id="kinetic-file-menu-dropdown">
+          <div class="file-menu-item" data-action="drive-sync" id="file-menu-kinetic-drive-sync" style="background:rgba(66,133,244,0.15); color:#60a5fa; font-weight:600;">
+            <span class="file-menu-icon">☁️</span>
+            <span>Google Drive Cloud Sync...</span>
+            <span class="file-menu-arrow">›</span>
+          </div>
           <div class="file-menu-item" data-action="templates" id="btn-kinetic-file-templates">
             <span class="file-menu-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
             <span>Global Templates...</span>
@@ -3532,6 +3541,9 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
       const action = item.dataset.action;
       fileMenuDropdown.classList.remove('open');
       switch (action) {
+        case 'drive-sync':
+          window.orbitDriveSync?.openDriveModal('browser', 'kinetic');
+          break;
         case 'save-device':
           performKineticDirectSave(true);
           break;
@@ -3650,6 +3662,12 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
   kineticSaveDeviceBtn?.addEventListener('click', () => performKineticDirectSave(false));
   container.querySelector('#file-menu-kinetic-save-device')?.addEventListener('click', () => performKineticDirectSave(true));
   container.querySelector('#file-menu-kinetic-open-device')?.addEventListener('click', () => performKineticDirectOpen());
+  container.querySelector('#btn-kinetic-drive-sync')?.addEventListener('click', () => {
+    window.orbitDriveSync?.openDriveModal('browser', 'kinetic');
+  });
+  container.querySelector('#file-menu-kinetic-drive-sync')?.addEventListener('click', () => {
+    window.orbitDriveSync?.openDriveModal('browser', 'kinetic');
+  });
 
   localSync.subscribe((tool, fileName, handle) => {
     if (tool === 'kinetic' && kineticSyncStatusText) {
@@ -3700,6 +3718,12 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
         snippet,
         stats: `${slideCount} Slides • 16:9 Widescreen • Animations`
       });
+    }
+    if (typeof window !== 'undefined') {
+      const title = localStorage.getItem('giri_orbit_kinetic_title') || slidesData[0]?.title || 'Cinematic Presentation Deck';
+      window.dispatchEvent(new CustomEvent('orbit:document-edit', {
+        detail: { tool: 'kinetic', content: JSON.stringify(slidesData), title: title }
+      }));
     }
     if (onDeckUpdate) onDeckUpdate();
   }

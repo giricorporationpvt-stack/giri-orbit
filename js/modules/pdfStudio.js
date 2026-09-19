@@ -909,6 +909,10 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
 
           <!-- Top-Right Actions -->
           <div class="fluent-top-actions">
+            <button class="fluent-drive-action-pill" id="btn-pdf-drive-sync" title="Google Drive Sync: Direct editing & cloud auto-save">
+              <span class="drive-dot-live"></span>
+              <span id="txt-pdf-drive-status">☁️ Drive</span>
+            </button>
             <button class="fluent-sync-action-pill" id="btn-pdf-browser-sync" title="Browser Sync: Edits and signatures automatically save to browser storage. Click to open sync manager.">
               <span class="sync-dot-live"></span>
               <span id="txt-pdf-browser-sync-status">Synced to Browser</span>
@@ -938,6 +942,11 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
 
         <!-- Dark Office 365 File Dropdown Menu (Exact match to screenshot) -->
         <div class="office-file-menu-dropdown" id="pdf-file-menu-dropdown">
+          <div class="file-menu-item" data-action="drive-sync" id="file-menu-pdf-drive-sync" style="background:rgba(66,133,244,0.15); color:#60a5fa; font-weight:600;">
+            <span class="file-menu-icon">☁️</span>
+            <span>Google Drive Cloud Sync...</span>
+            <span class="file-menu-arrow">›</span>
+          </div>
           <div class="file-menu-item" data-action="save-device" id="file-menu-pdf-save-device" style="background:rgba(5,150,105,0.15); color:#34d399; font-weight:600;">
             <span class="file-menu-icon">💾</span>
             <span>Save to Device (Direct Sync)</span>
@@ -2110,6 +2119,12 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
         stats: `${pages.length} Pages • ISO Compliant • Sovereign`
       });
     }
+    if (typeof window !== 'undefined') {
+      const docTitle = pages[0]?.title || 'PDF Document';
+      window.dispatchEvent(new CustomEvent('orbit:document-edit', {
+        detail: { tool: 'pdf', content: JSON.stringify(pages), title: docTitle }
+      }));
+    }
     const docTitle = pages[0]?.title || 'Aegis_Document';
     const res = await localSync.saveToDevice({
       tool: 'pdf',
@@ -2166,6 +2181,9 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
       const action = item.dataset.action;
       fileMenuDropdown.classList.remove('open');
       switch (action) {
+        case 'drive-sync':
+          window.orbitDriveSync?.openDriveModal('browser', 'pdf');
+          break;
         case 'save-device':
           performPdfDirectSave(true);
           break;
@@ -2352,6 +2370,9 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
   // Top action pills
   container.querySelector('#btn-pdf-save-device')?.addEventListener('click', () => {
     performPdfDirectSave(false);
+  });
+  container.querySelector('#btn-pdf-drive-sync')?.addEventListener('click', () => {
+    window.orbitDriveSync?.openDriveModal('browser', 'pdf');
   });
 
   localSync.subscribe((tool, fileName, handle) => {

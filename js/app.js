@@ -20,6 +20,7 @@ import { LauncherPhysicsEngine } from './physics.js?v=9.0';
 import { PrintStudioManager } from './components/printManager.js?v=9.0';
 import { syncManager } from './modules/syncManager.js?v=9.0';
 import { localSync } from './components/localFileDirectSync.js?v=9.0';
+import { driveSyncManager } from './modules/driveSyncManager.js?v=9.0';
 
 class GiriOrbitPlatform {
   constructor() {
@@ -31,6 +32,7 @@ class GiriOrbitPlatform {
     this.physicsEngine = null;
     this.currentView = 'launcher';
     window.orbitPlatform = this;
+    window.orbitDriveSync = driveSyncManager;
     this.printManager = new PrintStudioManager(this);
 
     this.init();
@@ -40,6 +42,7 @@ class GiriOrbitPlatform {
     this.bindHeaderNavigation();
     this.bindGlobalActions();
     this.initSyncSystem();
+    this.initDriveSyncSystem();
     this.initCommandPalette();
     this.initAiCopilot();
     this.initGirionixAiDrawer();
@@ -195,13 +198,13 @@ class GiriOrbitPlatform {
       renderDriftApp(this.workspace, null, docTitle, docTitle ? true : false);
       this.showToast('Giri Drift Workspace Ready', 'blue');
     } else if (view === 'axis') {
-      renderAxisApp(this.workspace, null, false);
+      renderAxisApp(this.workspace, null, docTitle ? true : false);
       this.showToast('Giri Axis Spreadsheet Ready', 'green');
     } else if (view === 'kinetic') {
-      renderKineticApp(this.workspace, null, false);
+      renderKineticApp(this.workspace, null, docTitle ? true : false);
       this.showToast('Giri Kinetic Presentation Studio Ready', 'red');
     } else if (view === 'pdf') {
-      renderPdfStudioApp(this.workspace, null, false);
+      renderPdfStudioApp(this.workspace, null, docTitle ? true : false);
       this.showToast('Giri Aegis PDF Studio Ready', 'orange');
     } else if (view === 'girionix') {
       this.mountGirionixAiStudio();
@@ -948,6 +951,27 @@ class GiriOrbitPlatform {
   }
 
   /**
+   * Google Drive & Cloud Sync System Initializer
+   */
+  initDriveSyncSystem() {
+    const drivePill = document.getElementById('btn-global-drive-sync');
+    drivePill?.addEventListener('click', () => {
+      driveSyncManager.openDriveModal('browser', this.currentView);
+    });
+
+    window.addEventListener('orbit:drive-change', () => {
+      if (this.currentView === 'launcher') {
+        const landing = this.workspace.querySelector('.zoho-suite-landing');
+        if (landing) {
+          this.renderRecentDocsGrid(landing);
+        }
+      }
+    });
+
+    driveSyncManager.broadcastSyncStatus('synced');
+  }
+
+  /**
    * Header Navigation Bindings
    */
   bindHeaderNavigation() {
@@ -1083,6 +1107,10 @@ class GiriOrbitPlatform {
       { name: 'Open Giri Sheet (Axis Spreadsheets)', category: 'Tool', action: () => this.navigateTo('axis') },
       { name: 'Open Giri Show (Kinetic Presentation)', category: 'Tool', action: () => this.navigateTo('kinetic') },
       { name: 'Open Giri PDF Studio', category: 'Tool', action: () => this.navigateTo('pdf') },
+      { name: '☁️ Open Google Drive Workspace', category: 'Drive', action: () => driveSyncManager.openDriveModal('browser', this.currentView) },
+      { name: '💾 Save Active File to Google Drive', category: 'Drive', action: () => driveSyncManager.openDriveModal('save', this.currentView) },
+      { name: '✨ Create New File in Google Drive', category: 'Drive', action: () => driveSyncManager.openDriveModal('new', this.currentView) },
+      { name: '📁 Sync with Local Desktop Drive Folder', category: 'Drive', action: () => driveSyncManager.openLocalDriveFile() },
       { name: '⚡ Open Girionix AI Polymath Studio', category: 'Tool', action: () => this.navigateTo('girionix') },
       { name: '💬 Toggle Girionix AI Assistant Side-Panel (Ctrl+J)', category: 'AI', action: () => this.toggleGirionixAiDrawer() },
       { name: '⚡ Drift AI Assistant Modal (Alt+J / Ctrl+Shift+J)', category: 'AI', action: () => { this.navigateTo('drift'); setTimeout(() => window.driftAiCopilot?.open(), 150); } },
@@ -2049,6 +2077,19 @@ class GiriOrbitPlatform {
       this.navigateTo('axis');
     }
 
+    try {
+      const trimmed = (text || '').trim();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        const parsed = JSON.parse(trimmed);
+        if (typeof parsed === 'object' && parsed !== null) {
+          localStorage.setItem('giri_orbit_axis_sheets', JSON.stringify(parsed));
+          renderAxisApp(this.workspace, null, true);
+          this.showToast('✅ Loaded workbook into Giri Axis Sheets!', 'green');
+          return;
+        }
+      }
+    } catch (_) {}
+
     let rows = [];
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
 
@@ -2164,6 +2205,19 @@ class GiriOrbitPlatform {
       this.navigateTo('kinetic');
     }
 
+    try {
+      const trimmed = (text || '').trim();
+      if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          localStorage.setItem('giri_orbit_kinetic_deck', JSON.stringify(parsed));
+          renderKineticApp(this.workspace, null, true);
+          this.showToast(`✅ Loaded ${parsed.length} slide(s) into Giri Kinetic!`, 'red');
+          return;
+        }
+      }
+    } catch (_) {}
+
     let slides = [];
     try {
       slides = typeof this.getKineticSlides === 'function' ? this.getKineticSlides() : JSON.parse(localStorage.getItem('giri_orbit_kinetic_deck') || '[]');
@@ -2242,6 +2296,19 @@ class GiriOrbitPlatform {
     if (this.currentView !== 'pdf') {
       this.navigateTo('pdf');
     }
+
+    try {
+      const trimmed = (text || '').trim();
+      if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          localStorage.setItem('giri_orbit_pdf_pages', JSON.stringify(parsed));
+          renderPdfStudioApp(this.workspace, null, true);
+          this.showToast('✅ Loaded PDF document into Giri Aegis!', 'orange');
+          return;
+        }
+      }
+    } catch (_) {}
 
     const sheet = document.getElementById('pdf-sheet') || document.querySelector('.pdf-paper-sheet');
     if (sheet) {

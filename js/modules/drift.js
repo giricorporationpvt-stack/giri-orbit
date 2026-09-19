@@ -1221,6 +1221,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
             <!-- Right Action Strip (Exact match to media_1789113480130.png) -->
             <div class="fluent-top-actions">
+              <button class="fluent-drive-action-pill" id="btn-drift-drive-sync" title="Google Drive Sync: Direct editing & cloud auto-save">
+                <span class="drive-dot-live"></span>
+                <span id="txt-drift-drive-status">☁️ Drive</span>
+              </button>
+
               <button class="fluent-sync-action-pill" id="btn-drift-browser-sync" title="Browser Sync: Edits are automatically saved to browser storage. Click to manage or purge.">
                 <span class="sync-dot-live"></span>
                 <span id="txt-drift-sync-status">Synced to Browser</span>
@@ -1254,6 +1259,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
           <!-- Dark Office 365 File Dropdown Menu (Exact match to screenshot) -->
           <div class="office-file-menu-dropdown" id="drift-file-menu-dropdown">
+            <div class="file-menu-item" data-action="drive-sync" id="file-menu-drift-drive-sync" style="background:rgba(66,133,244,0.15); color:#60a5fa; font-weight:600;">
+              <span class="file-menu-icon">☁️</span>
+              <span>Google Drive Cloud Sync...</span>
+              <span class="file-menu-arrow">›</span>
+            </div>
             
             <div class="file-menu-item" data-action="save-device" id="file-menu-save-device" style="background:rgba(5,150,105,0.15); color:#34d399; font-weight:600;">
               <span class="file-menu-icon">💾</span>
@@ -3215,6 +3225,10 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           fileMenuDropdown.classList.remove('open');
 
           switch (action) {
+            case 'drive-sync': {
+              window.orbitDriveSync?.openDriveModal('browser', 'drift');
+              break;
+            }
             case 'save-device': {
               performDirectSave(true);
               break;
@@ -3861,12 +3875,21 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
             stats
           });
         }
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('orbit:document-edit', {
+            detail: { tool: 'drift', content: html, title: currentDocTitle }
+          }));
+        }
         updateTelemetry();
         updateOutline();
         if (onUpdate) onUpdate();
       }
 
       paper.addEventListener('input', saveDocument);
+
+      container.querySelector('#btn-drift-drive-sync')?.addEventListener('click', () => {
+        window.orbitDriveSync?.openDriveModal('browser', 'drift');
+      });
 
       // Telemetry updates
       // Page Thumbnails & Navigation Engine

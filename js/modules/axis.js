@@ -889,6 +889,10 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
 
           <!-- Top-Right Actions (Exact Match to Image 2) -->
           <div class="fluent-top-actions">
+            <button class="fluent-drive-action-pill" id="btn-axis-drive-sync" title="Google Drive Sync: Direct editing & cloud auto-save">
+              <span class="drive-dot-live"></span>
+              <span id="txt-axis-drive-status">☁️ Drive</span>
+            </button>
             <button class="fluent-top-action-pill" id="btn-axis-save-device" title="Direct Disk Sync: Save spreadsheet directly to your PC without re-downloads" style="background:#059669; color:#ffffff; font-weight:600; border-color:#047857;">
               <span style="font-size:12px;">💾</span>
               <span id="txt-axis-sync-status">Save to Device</span>
@@ -918,6 +922,11 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
 
         <!-- Dark Office 365 File Dropdown Menu -->
         <div class="office-file-menu-dropdown" id="axis-file-menu-dropdown">
+          <div class="file-menu-item" data-action="drive-sync" id="file-menu-axis-drive-sync" style="background:rgba(66,133,244,0.15); color:#60a5fa; font-weight:600;">
+            <span class="file-menu-icon">☁️</span>
+            <span>Google Drive Cloud Sync...</span>
+            <span class="file-menu-arrow">›</span>
+          </div>
           <div class="file-menu-item" data-action="templates" id="btn-axis-file-templates">
             <span class="file-menu-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
             <span>Global Templates...</span>
@@ -2342,6 +2351,12 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
         snippet: `Interactive financial matrix with ${sheetCount} sheet${sheetCount > 1 ? 's' : ''} and formula modeling.`,
         stats: `${sheetCount} Sheets • ${totalCells} Data Cells • Auto-Formula`
       });
+    }
+    if (typeof window !== 'undefined') {
+      const axisTitle = localStorage.getItem('giri_orbit_axis_title') || 'Capital & Revenue Matrix';
+      window.dispatchEvent(new CustomEvent('orbit:document-edit', {
+        detail: { tool: 'axis', content: JSON.stringify(sheetsData), title: axisTitle }
+      }));
     }
     if (onGridUpdate) onGridUpdate();
     updateLiveStatusBar();
@@ -4063,6 +4078,12 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
   axisSaveDeviceBtn?.addEventListener('click', () => performAxisDirectSave(false));
   container.querySelector('#file-menu-axis-save-device')?.addEventListener('click', () => performAxisDirectSave(true));
   container.querySelector('#file-menu-axis-open-device')?.addEventListener('click', () => performAxisDirectOpen());
+  container.querySelector('#btn-axis-drive-sync')?.addEventListener('click', () => {
+    window.orbitDriveSync?.openDriveModal('browser', 'axis');
+  });
+  container.querySelector('#file-menu-axis-drive-sync')?.addEventListener('click', () => {
+    window.orbitDriveSync?.openDriveModal('browser', 'axis');
+  });
 
   localSync.subscribe((tool, fileName, handle) => {
     if (tool === 'axis' && axisSyncStatusText) {
