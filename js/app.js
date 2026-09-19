@@ -1078,7 +1078,7 @@ class GiriOrbitPlatform {
       }
     });
 
-    driveSyncManager.broadcastSyncStatus('synced');
+    driveSyncManager.updateUIStatus();
   }
 
   /**

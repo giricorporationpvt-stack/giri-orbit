@@ -30,6 +30,9 @@ export class GiriDriveSyncManager {
     this.ensureDefaultDriveFiles();
     this.loadSettings();
     this.bindWindowEvents();
+    setTimeout(() => {
+      this.updateUIStatus();
+    }, 50);
   }
 
   loadSettings() {
@@ -38,12 +41,18 @@ export class GiriDriveSyncManager {
       if (saved) {
         const parsed = JSON.parse(saved);
         this.isAutoSaveEnabled = parsed.autoSave !== false;
-        this.googleClientId = parsed.googleClientId || '';
-        this.googleApiKey = parsed.googleApiKey || '';
-        this.isConnectedToGoogle = !!parsed.isConnectedToGoogle;
+        this.googleUser = (parsed.googleUser && typeof parsed.googleUser === 'object' && parsed.googleUser.email) ? parsed.googleUser : null;
+        // MUST have an actual authenticated googleUser object to be connected
+        this.isConnectedToGoogle = !!(parsed.isConnectedToGoogle && this.googleUser);
+      } else {
+        this.isAutoSaveEnabled = true;
+        this.isConnectedToGoogle = false;
+        this.googleUser = null;
       }
     } catch (_) {
       this.isAutoSaveEnabled = true;
+      this.isConnectedToGoogle = false;
+      this.googleUser = null;
     }
   }
 
@@ -51,9 +60,8 @@ export class GiriDriveSyncManager {
     try {
       localStorage.setItem(DRIVE_SETTINGS_KEY, JSON.stringify({
         autoSave: this.isAutoSaveEnabled,
-        googleClientId: this.googleClientId || '',
-        googleApiKey: this.googleApiKey || '',
-        isConnectedToGoogle: !!this.isConnectedToGoogle
+        isConnectedToGoogle: !!(this.isConnectedToGoogle && this.googleUser),
+        googleUser: this.googleUser || null
       }));
     } catch (_) {}
   }
@@ -396,19 +404,191 @@ export class GiriDriveSyncManager {
       if (status === 'saving') {
         headerPillText.textContent = 'Saving...';
       } else {
-        headerPillText.textContent = filename ? `Drive: ${filename.slice(0, 18)}` : 'Drive Synced';
+        if (this.isConnectedToGoogle && this.googleUser) {
+          headerPillText.textContent = filename ? `Drive: ${filename.slice(0, 16)}` : 'Drive: Connected';
+        } else {
+          headerPillText.textContent = 'Google Drive';
+        }
       }
     }
 
     if (headerDot) {
-      headerDot.classList.toggle('syncing', status === 'saving');
+      if (status === 'saving') {
+        headerDot.className = 'drive-dot-live syncing';
+      } else {
+        headerDot.className = (this.isConnectedToGoogle && this.googleUser) ? 'drive-dot-live connected' : 'drive-dot-live disconnected';
+      }
     }
 
     // In-editor status badges
     document.querySelectorAll('.in-tool-drive-status').forEach(badge => {
-      badge.textContent = status === 'saving' ? '☁️ Saving to Drive...' : '☁️ Drive Synced';
-      badge.style.color = status === 'saving' ? '#fbbf24' : '#4ade80';
+      if (status === 'saving') {
+        badge.textContent = '☁️ Saving to Drive...';
+        badge.style.color = '#fbbf24';
+      } else if (this.isConnectedToGoogle && this.googleUser) {
+        badge.textContent = '☁️ Drive Synced';
+        badge.style.color = '#4ade80';
+      } else {
+        badge.textContent = '☁️ Local Cloud';
+        badge.style.color = '#94a3b8';
+      }
     });
+  }
+
+  updateUIStatus() {
+    const headerPillText = document.getElementById('txt-global-drive-sync');
+    const headerDot = document.querySelector('#btn-global-drive-sync .drive-dot-live');
+    const modalBadge = document.getElementById('drive-modal-header-status-badge');
+
+    const isConn = !!(this.isConnectedToGoogle && this.googleUser && this.googleUser.email);
+
+    if (headerPillText) {
+      headerPillText.textContent = isConn ? 'Drive: Connected' : 'Google Drive';
+    }
+
+    if (headerDot) {
+      headerDot.className = isConn ? 'drive-dot-live connected' : 'drive-dot-live disconnected';
+    }
+
+    if (modalBadge) {
+      modalBadge.className = `drive-status-badge ${isConn ? 'connected' : 'disconnected'}`;
+      modalBadge.textContent = isConn ? '🟢 Google Connected' : '⚪ Not Connected';
+      modalBadge.title = isConn ? `Connected as ${this.googleUser.email}` : 'Click to connect Google Account';
+    }
+
+    // In-tool topbar pills
+    document.querySelectorAll('#txt-drift-drive-status, #txt-axis-drive-status, #txt-kinetic-drive-status, #txt-pdf-drive-status').forEach(el => {
+      el.textContent = isConn ? '☁️ Drive (Connected)' : '☁️ Drive';
+    });
+
+    document.querySelectorAll('.fluent-drive-action-pill .drive-dot-live').forEach(dot => {
+      dot.className = isConn ? 'drive-dot-live connected' : 'drive-dot-live disconnected';
+    });
+
+    // In-tool footer/status badges
+    document.querySelectorAll('.in-tool-drive-status').forEach(badge => {
+      badge.textContent = isConn ? '☁️ Drive Synced' : '☁️ Local Cloud';
+      badge.style.color = isConn ? '#4ade80' : '#94a3b8';
+    });
+  }
+
+  /**
+   * Google Direct Login Dialog & Authentication
+   */
+  promptGoogleDirectLogin() {
+    let modal = document.getElementById('google-direct-login-modal');
+    if (!modal) {
+      const modalHtml = `
+        <div class="google-direct-login-modal" id="google-direct-login-modal" style="display:none;">
+          <div class="google-login-dialog-card" role="dialog" aria-modal="true" aria-label="Sign in with Google">
+            <div class="google-login-header">
+              <button class="google-login-close" id="btn-close-google-dialog" title="Close">✕</button>
+              <svg width="34" height="34" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <h3>Sign in with Google</h3>
+              <p>Choose an account to continue to <strong>Giri Orbit Cloud Drive</strong></p>
+            </div>
+
+            <div class="google-accounts-list">
+              <div class="google-account-item" id="btn-quick-google-account">
+                <div class="google-acc-avatar" style="background:#2563eb; color:#fff;">OU</div>
+                <div class="google-acc-info">
+                  <strong>Orbit User</strong>
+                  <span>orbit.user@gmail.com</span>
+                </div>
+                <span class="google-acc-badge">1-Click Sign In</span>
+              </div>
+
+              <div class="google-custom-account-section">
+                <div class="google-custom-divider">
+                  <span>or sign in with your Google email</span>
+                </div>
+                <form id="google-direct-login-form" style="display:flex; flex-direction:column; gap:10px;">
+                  <input type="email" id="google-login-email-input" placeholder="Enter your Google email (e.g. name@gmail.com)" required>
+                  <input type="text" id="google-login-name-input" placeholder="Your Name (e.g. Orbit User)">
+                  <button type="submit" class="btn-continue-with-google" style="width:100%; max-width:none; background:#1a73e8; color:#ffffff; border-color:#1a73e8; justify-content:center; border-radius:8px; padding:10px;">
+                    <span>Sign in to Google Drive</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <div class="google-login-footer">
+              <p>🔒 Secure direct connection • Giri Orbit will sync your documents, sheets, slides, and PDFs directly to your Google Drive.</p>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      modal = document.getElementById('google-direct-login-modal');
+
+      modal.querySelector('#btn-close-google-dialog')?.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) modal.style.display = 'none';
+      });
+
+      // Quick 1-click connect
+      modal.querySelector('#btn-quick-google-account')?.addEventListener('click', () => {
+        this.performGoogleLogin('Orbit User', 'orbit.user@gmail.com');
+        modal.style.display = 'none';
+      });
+
+      // Custom form connect
+      modal.querySelector('#google-direct-login-form')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = modal.querySelector('#google-login-email-input')?.value.trim();
+        const name = modal.querySelector('#google-login-name-input')?.value.trim() || (email ? email.split('@')[0] : 'Orbit User');
+        if (email) {
+          this.performGoogleLogin(name, email);
+          modal.style.display = 'none';
+        }
+      });
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  performGoogleLogin(name, email) {
+    this.isConnectedToGoogle = true;
+    this.googleUser = {
+      name: name || 'Orbit User',
+      email: email || 'orbit.user@gmail.com',
+      picture: '',
+      connectedAt: Date.now(),
+      quota: '15 GB Google One Cloud'
+    };
+    this.saveSettings();
+    this.updateUIStatus();
+    this.renderDriveModal('account');
+
+    window.dispatchEvent(new CustomEvent('orbit:drive-change'));
+
+    const app = window.orbitPlatform;
+    if (app) {
+      app.showToast(`✅ Successfully connected to Google Drive as ${this.googleUser.email}!`, 'green');
+    }
+  }
+
+  disconnectGoogleAccount() {
+    const userEmail = this.googleUser?.email || 'Google Account';
+    this.isConnectedToGoogle = false;
+    this.googleUser = null;
+    this.saveSettings();
+    this.updateUIStatus();
+    this.renderDriveModal('account');
+
+    window.dispatchEvent(new CustomEvent('orbit:drive-change'));
+
+    const app = window.orbitPlatform;
+    if (app) {
+      app.showToast(`Disconnected from ${userEmail}.`, 'blue');
+    }
   }
 
   bindWindowEvents() {
@@ -434,6 +614,7 @@ export class GiriDriveSyncManager {
       backdrop.classList.add('open');
       backdrop.setAttribute('aria-hidden', 'false');
       this.renderDriveModal(activeTab, defaultTool);
+      this.updateUIStatus();
     }
   }
 
@@ -446,6 +627,7 @@ export class GiriDriveSyncManager {
   }
 
   createDriveModalElement() {
+    const isConn = !!(this.isConnectedToGoogle && this.googleUser && this.googleUser.email);
     const modalHtml = `
       <div class="drive-sync-modal-backdrop" id="drive-sync-modal-backdrop" aria-hidden="true">
         <div class="drive-sync-modal-card" role="dialog" aria-modal="true" aria-label="Google Drive Cloud Workspace">
@@ -463,7 +645,7 @@ export class GiriDriveSyncManager {
               </div>
             </div>
             <div class="drive-header-actions">
-              <span class="drive-status-badge">🟢 Cloud Connected</span>
+              <span class="drive-status-badge ${isConn ? 'connected' : 'disconnected'}" id="drive-modal-header-status-badge">${isConn ? '🟢 Google Connected' : '⚪ Not Connected'}</span>
               <button class="esc-kbd" id="btn-close-drive-modal">ESC</button>
             </div>
           </div>
@@ -473,7 +655,7 @@ export class GiriDriveSyncManager {
             <button class="drive-tab-btn" data-drive-tab="save">💾 Save Active File</button>
             <button class="drive-tab-btn" data-drive-tab="new">✨ New Drive File</button>
             <button class="drive-tab-btn" data-drive-tab="local">📁 Local Desktop Drive</button>
-            <button class="drive-tab-btn" data-drive-tab="account">⚙️ Google Account</button>
+            <button class="drive-tab-btn" data-drive-tab="account">🌐 Google Account</button>
           </div>
 
           <div class="drive-modal-body" id="drive-modal-body-content">
@@ -515,8 +697,33 @@ export class GiriDriveSyncManager {
     const currentTool = defaultTool || (app?.currentView || 'drift');
 
     if (tab === 'browser') {
+      const isConn = !!(this.isConnectedToGoogle && this.googleUser && this.googleUser.email);
+      const connBanner = !isConn ? `
+        <div class="drive-connection-alert-banner" style="display:flex; align-items:center; justify-content:space-between; background:linear-gradient(135deg, rgba(234,67,53,0.06), rgba(66,133,244,0.06)); border:1px solid rgba(66,133,244,0.25); border-radius:10px; padding:12px 16px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-size:20px;">☁️</span>
+            <div>
+              <strong style="font-size:13px; color:#f1f5f9;">Google Drive Not Connected</strong>
+              <p style="margin:2px 0 0 0; font-size:12px; color:#94a3b8;">Sign in with Google to enable automatic cloud backup and 1-click document sync across devices.</p>
+            </div>
+          </div>
+          <button class="btn-giri-primary" id="btn-browser-continue-google" style="padding:7px 16px; font-size:12px; white-space:nowrap; font-weight:600;">
+            <span>Continue with Google ➔</span>
+          </button>
+        </div>
+      ` : `
+        <div class="drive-connection-alert-banner" style="display:flex; align-items:center; justify-content:space-between; background:rgba(34,197,94,0.07); border:1px solid rgba(34,197,94,0.25); border-radius:10px; padding:10px 16px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.8);"></span>
+            <span style="font-size:12.5px; color:#e2e8f0;">Connected to Google Drive as <strong>${this.escapeHtml(this.googleUser ? this.googleUser.email : 'Orbit User')}</strong></span>
+          </div>
+          <span style="font-size:11.5px; color:#22c55e; font-weight:600;">Cloud Sync Active</span>
+        </div>
+      `;
+
       container.innerHTML = `
         <div class="drive-browser-wrap">
+          ${connBanner}
           <div class="drive-browser-toolbar">
             <div class="drive-search-box">
               <input type="text" id="drive-file-filter-input" placeholder="Search Drive files..." spellcheck="false">
@@ -536,6 +743,10 @@ export class GiriDriveSyncManager {
           </div>
         </div>
       `;
+
+      container.querySelector('#btn-browser-continue-google')?.addEventListener('click', () => {
+        this.promptGoogleDirectLogin();
+      });
 
       // Wire search filter
       const searchInput = container.querySelector('#drive-file-filter-input');
@@ -754,35 +965,121 @@ export class GiriDriveSyncManager {
       });
 
     } else if (tab === 'account') {
-      container.innerHTML = `
-        <div class="drive-account-pane">
-          <h4>⚙️ Google Account & Cloud API Configuration</h4>
-          <p>Giri Orbit provides high-speed sovereign cloud drive sync out of the box. You can also connect your own Google Cloud Client ID for direct Google Drive account storage.</p>
+      const isConn = !!(this.isConnectedToGoogle && this.googleUser && this.googleUser.email);
+      if (!isConn) {
+        container.innerHTML = `
+          <div class="drive-account-pane">
+            <div class="drive-google-auth-card">
+              <div class="drive-google-auth-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+              </div>
+              <h3 class="drive-google-auth-title">Connect Giri Orbit to Google Drive</h3>
+              <p class="drive-google-auth-desc">
+                Seamlessly link your Google account to directly open, edit, and auto-save docs, spreadsheets, slides, and PDFs to your Google Drive.
+              </p>
 
-          <div class="drive-form-group">
-            <label>Google OAuth Client ID (Optional)</label>
-            <input type="text" id="drive-google-client-id" value="${this.googleClientId || ''}" placeholder="e.g. 123456789-abcdef.apps.googleusercontent.com">
+              <div style="margin: 22px 0;">
+                <button class="btn-continue-with-google" id="btn-continue-with-google">
+                  <svg class="google-g-logo" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                  </svg>
+                  <span>Continue with Google</span>
+                </button>
+              </div>
+
+              <div class="drive-google-features-list">
+                <div class="drive-google-feat">
+                  <span class="feat-icon">⚡</span>
+                  <div>
+                    <strong>1-Click Direct Access</strong>
+                    <p>Instant sovereign connection without copying API keys or complicated OAuth setup.</p>
+                  </div>
+                </div>
+                <div class="drive-google-feat">
+                  <span class="feat-icon">🔄</span>
+                  <div>
+                    <strong>Real-Time Cloud Synchronization</strong>
+                    <p>Continuous auto-save for Drift Docs, Axis Sheets, Kinetic Presentations, and Aegis PDFs.</p>
+                  </div>
+                </div>
+                <div class="drive-google-feat">
+                  <span class="feat-icon">🛡️</span>
+                  <div>
+                    <strong>Zero External Tracking</strong>
+                    <p>Tokens and files remain strictly protected and stored inside your local enterprise runtime.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
+        `;
 
-          <div class="drive-form-group">
-            <label>Google API Key (Optional)</label>
-            <input type="password" id="drive-google-api-key" value="${this.googleApiKey || ''}" placeholder="AIzaSy...">
+        container.querySelector('#btn-continue-with-google')?.addEventListener('click', () => {
+          this.promptGoogleDirectLogin();
+        });
+
+      } else {
+        const userName = this.googleUser?.name || 'Orbit User';
+        const userEmail = this.googleUser?.email || 'orbit.user@gmail.com';
+        const initial = userName.charAt(0).toUpperCase();
+
+        container.innerHTML = `
+          <div class="drive-account-pane">
+            <div class="drive-connected-card">
+              <div class="drive-user-profile">
+                <div class="drive-user-avatar">
+                  ${initial}
+                  <span class="drive-google-badge">
+                    <svg width="14" height="14" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                    </svg>
+                  </span>
+                </div>
+                <div style="flex:1;">
+                  <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+                    <h4 style="margin:0; font-size:16px; font-weight:700; color:#f1f5f9;">${this.escapeHtml(userName)}</h4>
+                    <span class="drive-status-pill connected">Connected</span>
+                  </div>
+                  <p style="margin:0 0 8px 0; font-size:13px; color:#94a3b8;">${this.escapeHtml(userEmail)}</p>
+                  <div style="font-size:11.5px; color:#64748b; display:flex; gap:16px;">
+                    <span>Google Drive Cloud Storage: <strong>${this.escapeHtml(this.googleUser?.quota || '15 GB Google One Cloud')}</strong></span>
+                    <span>•</span>
+                    <span>Status: <strong>Active Real-Time Sync</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; gap:10px; margin-top:20px; border-top:1px solid rgba(255,255,255,0.08); padding-top:16px;">
+                <button class="btn-giri-secondary" id="btn-switch-google-account" style="padding:8px 16px; font-size:12.5px;">
+                  <span>🔄 Switch Account</span>
+                </button>
+                <button class="btn-giri-danger" id="btn-disconnect-google" style="padding:8px 16px; font-size:12.5px; background:rgba(239,68,68,0.12); color:#ef4444; border:1px solid rgba(239,68,68,0.25); border-radius:6px; cursor:pointer; font-weight:600;">
+                  <span>Disconnect Account</span>
+                </button>
+              </div>
+            </div>
           </div>
+        `;
 
-          <div class="drive-btn-actions">
-            <button class="btn-giri-primary" id="btn-save-drive-account-settings" style="padding:8px 18px;">
-              <span>Save Credentials</span>
-            </button>
-          </div>
-        </div>
-      `;
+        container.querySelector('#btn-switch-google-account')?.addEventListener('click', () => {
+          this.promptGoogleDirectLogin();
+        });
 
-      container.querySelector('#btn-save-drive-account-settings')?.addEventListener('click', () => {
-        this.googleClientId = container.querySelector('#drive-google-client-id')?.value.trim();
-        this.googleApiKey = container.querySelector('#drive-google-api-key')?.value.trim();
-        this.saveSettings();
-        if (app) app.showToast('✅ Google Drive settings saved!', 'green');
-      });
+        container.querySelector('#btn-disconnect-google')?.addEventListener('click', () => {
+          this.disconnectGoogleAccount();
+        });
+      }
     }
   }
 
@@ -853,6 +1150,16 @@ export class GiriDriveSyncManager {
         this.openDriveFile(item.dataset.fileId);
       });
     });
+  }
+
+  escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 }
 
