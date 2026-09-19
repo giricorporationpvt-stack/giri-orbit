@@ -244,7 +244,7 @@ class GiriOrbitPlatform {
           <div class="girionix-topbar-right">
             <button class="girionix-import-badge-btn" id="btn-girionix-workspace-import" title="Import latest AI content directly into active workplace">📥 Import to Workplace</button>
             <button class="girionix-mini-btn" id="btn-girionix-full-reload" title="Reload Studio Engine">🔄 Reload</button>
-            <a href="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Abhinav" target="_blank" rel="noopener" class="girionix-mini-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Open in External Tab">
+            <a href="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Orbit%20User" target="_blank" rel="noopener" class="girionix-mini-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Open in External Tab">
               <span>↗ Popout</span>
             </a>
             <button class="girionix-mini-btn" id="btn-girionix-copilot-toggle" title="Toggle Assistant Side-Panel">💬 Assistant</button>
@@ -257,7 +257,7 @@ class GiriOrbitPlatform {
           <iframe 
             id="girionix-main-workspace-frame" 
             class="girionix-full-iframe" 
-            src="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Abhinav" 
+            src="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Orbit%20User" 
             title="Girionix AI Sovereign Office Workspace"
             allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen">
           </iframe>
@@ -269,7 +269,7 @@ class GiriOrbitPlatform {
     const frame = this.workspace.querySelector('#girionix-main-workspace-frame');
     this.workspace.querySelector('#btn-girionix-full-reload')?.addEventListener('click', () => {
       if (frame) {
-        frame.src = 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Abhinav';
+        frame.src = 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Orbit%20User';
         this.showToast('Reloaded Girionix AI Workspace', 'blue');
       }
     });
@@ -1700,7 +1700,7 @@ class GiriOrbitPlatform {
 
       // Lazy-load iframe source on first open
       if (iframe && (!iframe.src || iframe.src === 'about:blank')) {
-        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Abhinav';
+        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Orbit%20User';
       }
 
       // Switch tab if requested
@@ -1756,7 +1756,7 @@ class GiriOrbitPlatform {
     // Reload iframe
     reloadBtn?.addEventListener('click', () => {
       if (iframe) {
-        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Abhinav';
+        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Orbit%20User';
         this.showToast('Reloading Girionix AI Assistant...', 'blue');
       }
     });
