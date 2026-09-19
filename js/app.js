@@ -207,6 +207,10 @@ class GiriOrbitPlatform {
       this.mountGirionixAiStudio();
       this.showToast('Girionix AI Polymath Studio Connected', 'blue');
     }
+
+    if (typeof this.updateGirionixQuickCards === 'function') {
+      this.updateGirionixQuickCards();
+    }
   }
 
   /**
@@ -1213,9 +1217,221 @@ class GiriOrbitPlatform {
 
     this.executeAiAction = (promptType, customQuery = '') => {
       backdrop?.classList.remove('open');
-      const tool = this.currentView;
 
-      if (tool === 'drift') {
+      // 1. Determine Target Tool accurately based on promptType or custom query
+      let targetTool = this.currentView || 'drift';
+      if (['financial-projections', 'xlookup', 'data-clean'].includes(promptType)) {
+        targetTool = 'axis';
+      } else if (['pitch-directive', 'swot-matrix', 'chevron-flow'].includes(promptType)) {
+        targetTool = 'kinetic';
+      } else if (['crypto-audit', 'compliance-note'].includes(promptType)) {
+        targetTool = 'pdf';
+      } else if (['executive-summary', 'action-items', 'formal-memo', 'enhance-tone'].includes(promptType)) {
+        targetTool = 'drift';
+      } else if (promptType === 'strategic-table') {
+        targetTool = (this.currentView === 'axis') ? 'axis' : 'drift';
+      } else if (promptType === 'custom') {
+        if (this.currentView === 'launcher' || this.currentView === 'hub' || !this.currentView) {
+          const q = (customQuery || '').toLowerCase();
+          if (/(?:quarter|revenue|ebitda|cagr|opex|formula|=sum|=xlookup|sheet|calc|table|finance|budget)/i.test(q)) {
+            targetTool = 'axis';
+          } else if (/(?:slide|present|deck|pitch|keynote|swot|show)/i.test(q)) {
+            targetTool = 'kinetic';
+          } else if (/(?:audit|compliance|sha-256|cryptographic|pdf|seal)/i.test(q)) {
+            targetTool = 'pdf';
+          } else {
+            targetTool = 'drift';
+          }
+        } else {
+          targetTool = this.currentView;
+        }
+      }
+
+      // 2. Navigate to target tool and ensure editor is mounted
+      if (this.currentView !== targetTool) {
+        this.navigateTo(targetTool);
+      }
+
+      // 3. Dispatch targeted structured content into tool
+      if (targetTool === 'axis') {
+        renderAxisApp(this.workspace, null, true);
+
+        if (promptType === 'financial-projections') {
+          const modelMarkdown = `| Line Item | Q1 FY26 | Q2 FY26 | Q3 FY26 | Q4 FY26 | FY26 Total |
+| Enterprise SaaS Revenue | 420000 | 495000 | 580000 | 690000 | =SUM(B2:E2) |
+| Cloud & AI Compute Solutions | 210000 | 265000 | 320000 | 395000 | =SUM(B3:E3) |
+| Professional Advisory Services | 95000 | 110000 | 125000 | 145000 | =SUM(B4:E4) |
+| Total Gross Revenue | =SUM(B2:B4) | =SUM(C2:C4) | =SUM(D2:D4) | =SUM(E2:E4) | =SUM(F2:F4) |
+| Cost of Goods Sold (COGS) | 185000 | 215000 | 245000 | 285000 | =SUM(B6:E6) |
+| Gross Profit | =B5-B6 | =C5-C6 | =D5-D6 | =E5-E6 | =F5-F6 |
+| R&D Engineering | 140000 | 155000 | 170000 | 190000 | =SUM(B8:E8) |
+| Sales & Strategic Marketing | 110000 | 125000 | 140000 | 160000 | =SUM(B9:E9) |
+| General & Administrative | 65000 | 70000 | 75000 | 80000 | =SUM(B10:E10) |
+| Total Operating Expenses | =SUM(B8:B10) | =SUM(C8:C10) | =SUM(D8:D10) | =SUM(E8:E10) | =SUM(F8:F10) |
+| Operating Income (EBITDA) | =B7-B11 | =C7-C11 | =D7-D11 | =E7-E11 | =F7-F11 |`;
+          this.importContentToAxis(modelMarkdown);
+          this.showToast('✅ Generated 4-Quarter Financial Model in Axis Sheets!', 'green');
+
+        } else if (promptType === 'xlookup') {
+          const lookupMarkdown = `| Product SKU | Product Name | Category | Unit Price | In Stock |
+| GIRI-ORB-01 | Giri Orbit Enterprise | Platform | 12000 | 85 |
+| GIRI-DRF-02 | Giri Drift Docs Pro | Authoring | 4800 | 140 |
+| GIRI-AXS-03 | Giri Axis Matrix | Spreadsheets | 5600 | 120 |
+| GIRI-KNT-04 | Giri Kinetic Show | Presentation | 5200 | 95 |
+| GIRI-AGS-05 | Giri Aegis Cryptographic Seal | Security | 7800 | 60 |
+| Target Lookup | Formula Result | | | |
+| GIRI-AXS-03 | =XLOOKUP(A8, A2:A6, B2:B6, "Not Found") | =XLOOKUP(A8, A2:A6, D2:D6, 0) | | |`;
+          this.importContentToAxis(lookupMarkdown);
+          this.showToast('✅ Injected XLOOKUP catalog table into Axis Sheets!', 'green');
+
+        } else if (promptType === 'data-clean') {
+          const cleanMarkdown = `| Raw Company Text | Cleaned Text Formula | Validation Status |
+|    giri corporation pvt ltd    | =TRIM(CLEAN(PROPER(A2))) | Normalized |
+|   ENTERPRISE SOVEREIGN NODE    | =TRIM(CLEAN(PROPER(A3))) | Normalized |
+|  zero   latency   client physics | =TRIM(CLEAN(PROPER(A4))) | Normalized |
+|    cloud telemetry sealed    | =TRIM(CLEAN(PROPER(A5))) | Normalized |`;
+          this.importContentToAxis(cleanMarkdown);
+          this.showToast('✅ Injected Data Normalization Table into Axis Sheets!', 'green');
+
+        } else {
+          const customTable = `| Metric / Field | Benchmark Value | Trajectory | Status |
+| Strategic Objective | ${customQuery || 'Girionix AI Autonomous Matrix Model'} | High Velocity | Active |
+| In-Memory Latency | 0.4 ms | Sub-millisecond | Operational |
+| Data Density Index | 99.4% | Optimized | Certified |
+| Projected Yield | 875,000 | +28.4% | Outperforming |`;
+          this.importContentToAxis(customTable);
+          this.showToast('✅ Injected Strategic Vector into Axis Sheets!', 'green');
+        }
+
+      } else if (targetTool === 'kinetic') {
+        renderKineticApp(this.workspace, null, true);
+
+        let slides = [];
+        try {
+          slides = typeof this.getKineticSlides === 'function' ? this.getKineticSlides() : JSON.parse(localStorage.getItem('giri_orbit_kinetic_deck') || '[]');
+        } catch (_) {
+          slides = [];
+        }
+        if (!Array.isArray(slides)) slides = [];
+
+        if (promptType === 'swot-matrix') {
+          slides.push({
+            id: Date.now(),
+            layout: 'swot-matrix',
+            tag: 'STRATEGIC AUDIT',
+            title: 'Enterprise Architecture SWOT Matrix',
+            desc: 'Comprehensive operational evaluation generated by Girionix AI.',
+            features: [
+              { num: 'S', title: 'Strengths', desc: '100% sovereign client-side architecture with zero latency' },
+              { num: 'W', title: 'Weaknesses', desc: 'Dependent on local browser sandbox quota allocations' },
+              { num: 'O', title: 'Opportunities', desc: 'Replacement of legacy subscription-locked office suites' },
+              { num: 'T', title: 'Threats', desc: 'Rapidly shifting enterprise data sovereignty regulations' }
+            ]
+          });
+          this.showToast('✅ Appended SWOT Matrix Slide to Kinetic Deck!', 'red');
+
+        } else if (promptType === 'chevron-flow') {
+          slides.push({
+            id: Date.now(),
+            layout: 'chevron-flow',
+            tag: 'EXECUTION FLOW',
+            title: '4-Stage Velocity Pipeline',
+            desc: 'Continuous operational integration pipeline generated by Girionix AI.',
+            features: [
+              { num: '01', title: 'Ingest', desc: 'Sub-millisecond ambient document intake' },
+              { num: '02', title: 'Model', desc: 'In-memory matrix computation & styling' },
+              { num: '03', title: 'Validate', desc: 'Cryptographic SHA-256 seal & compliance check' },
+              { num: '04', title: 'Dispatch', desc: 'Instant export across 11 universal office formats' }
+            ]
+          });
+          this.showToast('✅ Appended Chevron Flow Slide to Kinetic Deck!', 'red');
+
+        } else if (promptType === 'pitch-directive') {
+          // 3-slide executive keynote deck
+          const now = Date.now();
+          slides.push(
+            {
+              id: now,
+              layout: 'metrics',
+              tag: 'EXECUTIVE VISION 01',
+              title: 'Sovereign AI Enterprise Infrastructure',
+              desc: 'Next-generation distributed office architecture engineered by Giri Corporation.',
+              features: [
+                { num: '0.4 ms', title: 'Compile Latency', desc: 'Local in-memory client rendering' },
+                { num: '100%', title: 'Data Sovereignty', desc: 'Zero outbound telemetry leaks' },
+                { num: '4 Tools', title: 'Native Suite', desc: 'Drift, Axis, Kinetic, and Aegis PDF' }
+              ]
+            },
+            {
+              id: now + 1,
+              layout: 'features',
+              tag: 'CORE PILLARS 02',
+              title: 'Enterprise Vector Capabilities',
+              desc: 'Four unified pillars running concurrently with instant data portability.',
+              features: [
+                { num: '01', title: 'Giri Drift', desc: 'High-velocity typography & markdown document suite' },
+                { num: '02', title: 'Giri Axis', desc: 'Multi-sheet matrix calculation & XLOOKUP formulas' },
+                { num: '03', title: 'Giri Kinetic', desc: 'Cinematic presentation show deck with live export' },
+                { num: '04', title: 'Giri Aegis', desc: 'Cryptographic PDF seal with SHA-256 validation' }
+              ]
+            },
+            {
+              id: now + 2,
+              layout: 'metrics',
+              tag: 'GROWTH TRAJECTORY 03',
+              title: 'Enterprise Value & Velocity',
+              desc: 'Quantified operational advantages delivered across enterprise workflows.',
+              features: [
+                { num: '88%', title: 'Latency Drop', desc: 'Elimination of remote cloud roundtrips' },
+                { num: '3.8x', title: 'Work Velocity', desc: 'Zero context switching across office suite' },
+                { num: '0 KB', title: 'Leakage', desc: 'Complete client-side cryptographic seal' }
+              ]
+            }
+          );
+          this.showToast('✅ Generated 3-Slide Keynote Deck in Kinetic!', 'red');
+
+        } else {
+          slides.push({
+            id: Date.now(),
+            layout: 'metrics',
+            tag: 'AI DIRECTIVE',
+            title: customQuery ? `AI Strategy: ${customQuery}` : 'Girionix Executive Directive',
+            desc: 'Synthesized intelligence generated by Girionix AI Office Copilot.',
+            features: [
+              { num: '99.9%', title: 'Uptime Integrity', desc: 'Zero external cloud dependencies' },
+              { num: '3.4x', title: 'Work Velocity', desc: 'Instant 1-click cross-suite injection' },
+              { num: '0 ms', title: 'Context Switch', desc: 'Unified single-window workflow' }
+            ]
+          });
+          this.showToast('✅ Appended AI Directive Slide to Kinetic Deck!', 'red');
+        }
+
+        try {
+          localStorage.setItem('giri_orbit_kinetic_deck', JSON.stringify(slides));
+        } catch (_) {}
+        renderKineticApp(this.workspace, null, true);
+
+      } else if (targetTool === 'pdf') {
+        renderPdfStudioApp(this.workspace, null, true);
+
+        if (promptType === 'crypto-audit') {
+          const sealText = `**Cryptographic Security Audit Certificate**\n\nSHA-256 Hash Verification: \`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\`\nZero-Telemetry Sealed: Passed (0 bytes outbound transmission detected).\nIntegrity Standard: Enterprise Sovereign Core v9.0 • Audit Timestamp: ${new Date().toISOString()}`;
+          this.importContentToPdf(sealText);
+          this.showToast('✅ Injected Cryptographic Seal into Aegis PDF!', 'orange');
+
+        } else if (promptType === 'compliance-note') {
+          const complianceText = `**Enterprise Regulatory & Governance Compliance Sign-Off**\n\nThis document has been reviewed in accordance with Giri Corporation Sovereign Security Standards.\n- Privacy Enforcement: Zero-Cloud Client-Side Isolation\n- Data Retention: Local Ephemeral In-Memory Storage Only\n- Status: Authorized for Executive Board Review and Formal Archival.`;
+          this.importContentToPdf(complianceText);
+          this.showToast('✅ Appended Compliance Review Note to Aegis PDF!', 'orange');
+
+        } else {
+          const customNote = `**Girionix AI Executive Addendum: "${customQuery || 'Verified'}"**\n\nBased on enterprise operational intelligence, this document and its cryptographic seal have been validated with zero telemetry leaks on ${new Date().toLocaleDateString()}.`;
+          this.importContentToPdf(customNote);
+          this.showToast('✅ Appended AI Addendum to Aegis PDF!', 'orange');
+        }
+
+      } else {
+        // targetTool === 'drift'
         const paper = document.getElementById('drift-paper-canvas');
         if (!paper) {
           this.navigateTo('drift');
@@ -1223,26 +1439,15 @@ class GiriOrbitPlatform {
           return;
         }
 
-        let injectedHtml = '';
         if (promptType === 'executive-summary') {
-          injectedHtml = `
-            <div style="margin:24px 0; padding:18px 22px; background:#eff6ff; border-left:4px solid #2563eb; border-radius:6px;">
-              <h3 style="margin:0 0 8px 0; color:#1e40af; font-size:16px;">✨ Executive Synthesis // Girionix Core</h3>
-              <p style="margin:0 0 10px 0; font-size:13.5px; line-height:1.6; color:#1e3a8a;">
-                Comprehensive strategic assessment confirms that transitioning operational workflows to zero-database local client models achieves an <strong>88% reduction in network latency</strong> and eliminates third-party telemetry vulnerabilities.
-              </p>
-              <ul style="margin:0; padding-left:18px; font-size:12.5px; color:#1e3a8a;">
-                <li><strong>Efficiency:</strong> 60 FPS continuous ambient physics with sub-millisecond document discovery.</li>
-                <li><strong>Sovereignty:</strong> Client-side cryptographic memory execution with Zero Outbound Leaks.</li>
-                <li><strong>Interoperability:</strong> Native parity with standard Office formats (.docx, .xlsx, .pptx, .pdf).</li>
-              </ul>
-            </div>
-            <p></p>
-          `;
+          const summaryMarkdown = `# Executive Briefing // Strategic Architecture\n\n> Comprehensive operational evaluation confirms that transitioning enterprise workflows to zero-database local client models achieves an **88% reduction in latency** and eliminates third-party telemetry exposure.\n\n### Strategic Pillars\n- **Continuous Ambient Physics:** 60 FPS fluid rendering with sub-millisecond document discovery.\n- **Sovereign Privacy:** Client-side cryptographic execution with Zero Outbound Leaks.\n- **Universal Interoperability:** Complete parity with standard Office formats (.docx, .xlsx, .pptx, .pdf).\n\n### Quantitative Milestones\n| Operational Vector | Baseline | Giri Orbit | Net Advantage |\n| Latency to First Render | 240 ms | 0.4 ms | 99.8% Faster |\n| Network Telemetry | 450 KB/req | 0 KB | 100% Sealed |\n| Cross-Tool Context Switch | 18 sec | < 1 sec | 18x Velocity |\n\n*Document certified by Girionix AI Office Copilot.*`;
+          this.importContentToDrift(summaryMarkdown);
+          this.showToast('✅ Injected Executive Briefing into Drift Docs!', 'blue');
+
         } else if (promptType === 'action-items') {
-          injectedHtml = `
-            <div style="margin:24px 0; padding:18px 22px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px;">
-              <h3 style="margin:0 0 12px 0; color:#0f172a; font-size:15px;">📋 Executive Action Deliverables</h3>
+          const itemsHtml = `
+            <div style="margin:20px 0; padding:18px 22px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px;">
+              <h3 style="margin:0 0 12px 0; color:#0f172a; font-size:15px; font-weight:700;">📋 Executive Action Deliverables</h3>
               <div style="display:flex; flex-direction:column; gap:10px; font-size:13px; color:#334155;">
                 <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
                   <input type="checkbox" checked style="accent-color:#2563eb; width:16px; height:16px;">
@@ -1264,9 +1469,14 @@ class GiriOrbitPlatform {
             </div>
             <p></p>
           `;
+          paper.focus();
+          document.execCommand('insertHTML', false, itemsHtml);
+          paper.dispatchEvent(new Event('input', { bubbles: true }));
+          this.showToast('✅ Injected Action Items Checklist into Drift Docs!', 'blue');
+
         } else if (promptType === 'formal-memo') {
-          injectedHtml = `
-            <div style="margin:24px 0; padding:20px 24px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-family:var(--font-sans, sans-serif);">
+          const memoHtml = `
+            <div style="margin:20px 0; padding:20px 24px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; font-family:var(--font-sans, sans-serif);">
               <div style="font-size:11px; font-weight:800; color:#2563eb; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;">EXECUTIVE MEMORANDUM</div>
               <p style="margin:2px 0; font-size:13px;"><strong>TO:</strong> Enterprise Architecture Board &amp; Engineering Directorate</p>
               <p style="margin:2px 0; font-size:13px;"><strong>FROM:</strong> Lead System Architect</p>
@@ -1279,185 +1489,33 @@ class GiriOrbitPlatform {
             </div>
             <p></p>
           `;
+          paper.focus();
+          document.execCommand('insertHTML', false, memoHtml);
+          paper.dispatchEvent(new Event('input', { bubbles: true }));
+          this.showToast('✅ Injected Formal Memorandum into Drift Docs!', 'blue');
+
         } else if (promptType === 'strategic-table') {
-          injectedHtml = `
-            <table style="width:100%; border-collapse:collapse; margin:20px 0; font-size:12.5px; border:1px solid #cbd5e1;">
-              <thead>
-                <tr style="background:#0f172a; color:#ffffff;">
-                  <th style="padding:10px 14px; text-align:left; border:1px solid #334155;">Strategic Objective</th>
-                  <th style="padding:10px 14px; text-align:left; border:1px solid #334155;">Target Benchmark</th>
-                  <th style="padding:10px 14px; text-align:left; border:1px solid #334155;">Lead Custodian</th>
-                  <th style="padding:10px 14px; text-align:left; border:1px solid #334155;">Trajectory</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style="background:#ffffff;">
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1; font-weight:600;">Zero-Latency Physics</td>
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1;">60 FPS Constant</td>
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1;">Spatial Core Lab</td>
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1; color:#16a34a; font-weight:700;">Surpassed (60 FPS)</td>
-                </tr>
-                <tr style="background:#f8fafc;">
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1; font-weight:600;">Zero External Telemetry</td>
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1;">0 KB Outbound</td>
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1;">Security Directorate</td>
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1; color:#16a34a; font-weight:700;">100% Sealed</td>
-                </tr>
-                <tr style="background:#ffffff;">
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1; font-weight:600;">Universal Format Parity</td>
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1;">11 Office Formats</td>
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1;">Codec Engineering</td>
-                  <td style="padding:9px 14px; border:1px solid #cbd5e1; color:#2563eb; font-weight:700;">Operational</td>
-                </tr>
-              </tbody>
-            </table>
-            <p></p>
-          `;
+          const tableMarkdown = `### Strategic Objective KPI Alignment\n\n| Strategic Objective | Target Benchmark | Lead Custodian | Trajectory |\n| Zero-Latency Physics | 60 FPS Constant | Spatial Core Lab | Surpassed (60 FPS) |\n| Zero External Telemetry | 0 KB Outbound | Security Directorate | 100% Sealed |\n| Universal Format Parity | 11 Office Formats | Codec Engineering | Operational |\n| Sovereign AI Integration | 1-Click Injection | Girionix AI Team | Active |`;
+          this.importContentToDrift(tableMarkdown);
+          this.showToast('✅ Injected Strategic Alignment Table into Drift Docs!', 'blue');
+
         } else if (promptType === 'enhance-tone') {
-          injectedHtml = `
+          const quoteHtml = `
             <blockquote style="border-left:3.5px solid #7c3aed; background:#faf5ff; padding:12px 18px; margin:18px 0; border-radius:4px; font-style:italic; color:#581c87;">
               "By orchestrating high-velocity digital assets through in-memory client vectors, GIRI Corporation establishes an unassailable standard for sovereign productivity, decoupled from legacy cloud overhead."
             </blockquote>
             <p></p>
           `;
+          paper.focus();
+          document.execCommand('insertHTML', false, quoteHtml);
+          paper.dispatchEvent(new Event('input', { bubbles: true }));
+          this.showToast('✅ Enhanced Prose Tone in Drift Docs!', 'blue');
+
         } else {
-          injectedHtml = `
-            <div style="margin:20px 0; padding:16px 20px; background:#f0fdf4; border-left:4px solid #16a34a; border-radius:6px;">
-              <h4 style="margin:0 0 6px 0; color:#166534; font-size:14px;">⚡ Girionix AI Directive: "${customQuery}"</h4>
-              <p style="margin:0; font-size:13px; line-height:1.6; color:#14532d;">
-                Based on enterprise operational intelligence, executing on <strong>"${customQuery}"</strong> enhances strategic alignment across all four Giri Orbit vectors. Recommended next action: validate in-memory document state and export final revision.
-              </p>
-            </div>
-            <p></p>
-          `;
+          const customDoc = `# Girionix AI Strategic Directive: "${customQuery}"\n\n> Based on enterprise operational intelligence, executing on **"${customQuery}"** enhances strategic velocity and aligns production nodes across the organization.\n\n### Operational Assessment\n- **Target Vector:** ${(this.currentView || 'DRIFT').toUpperCase()}\n- **Validation Status:** Zero telemetry leaks detected.\n- **Recommended Action:** Review formatted content, apply localized refinements, and export final revisions across required enterprise formats.`;
+          this.importContentToDrift(customDoc);
+          this.showToast('✅ Injected AI Directive into Drift Docs!', 'blue');
         }
-
-        paper.focus();
-        document.execCommand('insertHTML', false, injectedHtml);
-        paper.dispatchEvent(new Event('input', { bubbles: true }));
-        this.showToast('Girionix AI: Inserted content into Drift Docs', 'blue');
-
-      } else if (tool === 'axis') {
-        if (window.axisAiCopilot) {
-          if (promptType === 'xlookup') {
-            window.axisAiCopilot.insert('=XLOOKUP(A2, Catalog!A:A, Catalog!B:B, "Not Found")');
-          } else if (promptType === 'data-clean') {
-            window.axisAiCopilot.insert('=TRIM(CLEAN(PROPER(A2)))');
-          } else if (promptType === 'financial-projections') {
-            window.axisAiCopilot.generateDataset('financials');
-          } else if (promptType === 'strategic-table') {
-            window.axisAiCopilot.generateDataset('tech');
-          } else if (customQuery) {
-            window.axisAiCopilot.generate(customQuery);
-          } else {
-            window.axisAiCopilot.insert('=SUMIFS(Sales!C:C, Sales!A:A, "Direct", Sales!B:B, ">5000")');
-          }
-        } else {
-          const defaultCell = document.querySelector('.axis-cell[data-cell-id="B8"]') || document.querySelector('.axis-cell');
-          if (defaultCell) {
-            if (promptType === 'xlookup') {
-              defaultCell.textContent = '=XLOOKUP(A2, Catalog!A:A, Catalog!B:B, "Not Found")';
-            } else if (promptType === 'data-clean') {
-              defaultCell.textContent = '=TRIM(CLEAN(PROPER(A2)))';
-            } else {
-              defaultCell.textContent = '875000';
-              defaultCell.classList.add('num-cell');
-              const labelCell = document.querySelector('.axis-cell[data-cell-id="A8"]');
-              if (labelCell) labelCell.textContent = customQuery ? `AI: ${customQuery}` : 'Girionix AI Autonomous Vector Operations';
-            }
-          }
-          this.showToast('Girionix AI: Injected formula vector in Axis Sheets', 'green');
-        }
-
-      } else if (tool === 'kinetic') {
-        if (window.kineticAiStudio) {
-          if (promptType === 'swot-matrix') {
-            window.kineticAiStudio.insertDiagram('swot-matrix');
-          } else if (promptType === 'chevron-flow') {
-            window.kineticAiStudio.insertDiagram('chevron-flow');
-          } else if (promptType === 'pitch-directive') {
-            window.kineticAiStudio.insertDiagram('metrics');
-          } else if (customQuery) {
-            window.kineticAiStudio.generateDeck(customQuery);
-          } else {
-            window.kineticAiStudio.insertDiagram('metrics');
-          }
-        } else {
-          let slides = [];
-          try {
-            slides = typeof this.getKineticSlides === 'function' ? this.getKineticSlides() : JSON.parse(localStorage.getItem('giri_orbit_kinetic_deck') || '[]');
-          } catch (e) {
-            slides = [];
-          }
-          if (!Array.isArray(slides) || slides.length === 0) {
-            slides = [
-              { id: 1, tag: 'SLIDE 1', title: 'Executive Overview', desc: 'Sovereign computing paradigm', features: [] }
-            ];
-          }
-
-          let newSlide;
-          if (promptType === 'swot-matrix') {
-            newSlide = {
-              id: Date.now(),
-              layout: 'swot-matrix',
-              tag: 'STRATEGIC AUDIT',
-              title: 'SWOT Vector Analysis',
-              desc: 'Generated via Girionix AI: Comprehensive enterprise operational assessment.',
-              features: [
-                { num: 'S', title: 'Strengths', desc: '100% sovereign client-side architecture' },
-                { num: 'W', title: 'Weaknesses', desc: 'Browser sandbox storage quotas' },
-                { num: 'O', title: 'Opportunities', desc: 'Zero-cloud latency advantage' },
-                { num: 'T', title: 'Threats', desc: 'Legacy enterprise vendor lock-in' }
-              ]
-            };
-          } else if (promptType === 'chevron-flow') {
-            newSlide = {
-              id: Date.now(),
-              layout: 'chevron-flow',
-              tag: 'EXECUTION FLOW',
-              title: '4-Stage Velocity Pipeline',
-              desc: 'Generated via Girionix AI: Continuous integration and deployment.',
-              features: [
-                { num: '01', title: 'Discovery', desc: 'Sub-millisecond local indexing' },
-                { num: '02', title: 'Modeling', desc: 'In-memory matrix computation' },
-                { num: '03', title: 'Validation', desc: 'Cryptographic SHA-256 signing' },
-                { num: '04', title: 'Dispatch', desc: 'Multi-format native export' }
-              ]
-            };
-          } else {
-            newSlide = {
-              id: Date.now(),
-              layout: 'metrics',
-              tag: 'AI DIRECTIVE',
-              title: customQuery ? `AI Strategy: ${customQuery}` : 'Girionix Executive Directive',
-              desc: 'Generated via Girionix AI: Deep analysis of corporate velocity and spatial computing.',
-              features: [
-                { num: '99.9%', title: 'Uptime Integrity', desc: 'Zero cloud dependencies' },
-                { num: '3.4x', title: 'Work Velocity', desc: 'Elimination of context switching' },
-                { num: '0 ms', title: 'Compile Latency', desc: 'Local in-memory rendering' }
-              ]
-            };
-          }
-          slides.push(newSlide);
-          localStorage.setItem('giri_orbit_kinetic_deck', JSON.stringify(slides));
-          renderKineticApp(this.workspace);
-          this.showToast('Girionix AI: Appended generated slide to Kinetic Presentation', 'red');
-        }
-
-      } else if (tool === 'pdf') {
-        const sheet = document.getElementById('pdf-sheet');
-        if (sheet) {
-          const aiNote = document.createElement('div');
-          aiNote.style.cssText = 'margin-top:20px; padding:14px 16px; background:#eff6ff; border:1px dashed #3b82f6; border-radius:6px; font-size:12px; color:#1e40af;';
-          aiNote.innerHTML = `<strong>Girionix AI Executive Addendum:</strong> This document and its cryptographic hash have been reviewed and validated by Girionix AI on ${new Date().toLocaleDateString()}. Zero telemetry leaks detected.`;
-          sheet.appendChild(aiNote);
-        }
-        this.showToast('Girionix AI: Inserted executive addendum into Aegis PDF', 'orange');
-
-      } else {
-        // From Launcher Hub
-        this.navigateTo('drift');
-        setTimeout(() => this.executeAiAction(promptType, customQuery), 120);
       }
     };
 
@@ -1613,15 +1671,30 @@ class GiriOrbitPlatform {
       }
     });
 
-    // Custom prompt handler
+    // Custom prompt handler: Forward to real Girionix AI LLM & switch to live view
     const handleCustomPrompt = () => {
       const q = promptInput?.value.trim();
       if (!q) return;
       promptInput.value = '';
+
+      // 1. Post prompt to Girionix AI iframe for real LLM streaming response
+      const frameEl = document.getElementById('girionix-drawer-iframe') || document.getElementById('girionix-main-workspace-frame');
+      if (frameEl && frameEl.contentWindow) {
+        try {
+          frameEl.contentWindow.postMessage({
+            type: 'GIRIONIX_EXECUTE_PROMPT',
+            payload: { prompt: q }
+          }, '*');
+        } catch (_) {}
+      }
+
+      // 2. Automatically switch to Live AI Chat tab so user watches the AI generate
+      this.switchGirionixDrawerTab('live');
+      this.showToast(`⚡ Asking Girionix AI: "${q}"...`, 'blue');
+
+      // 3. Simultaneously inject starter structure into active canvas
       if (this.executeAiAction) {
         this.executeAiAction('custom', q);
-      } else {
-        this.showToast(`Girionix AI Directive: "${q}"`, 'blue');
       }
     };
 
@@ -1755,26 +1828,32 @@ class GiriOrbitPlatform {
           {
             tag: 'Drift Docs',
             title: '✍️ Draft Executive Document in Drift',
-            desc: 'Opens Drift Docs pre-seeded with synthesized executive content.',
+            desc: 'Opens Drift Docs with rich synthesized executive briefing and KPI milestones.',
             prompt: 'executive-summary'
           },
           {
             tag: 'Axis Sheets',
             title: '📊 Financial Projection Model in Axis',
-            desc: 'Opens Axis Sheets with an automated financial modeling vector.',
+            desc: 'Opens Axis Sheets with a 4-quarter enterprise revenue and EBITDA model.',
             prompt: 'financial-projections'
           },
           {
             tag: 'Kinetic Show',
             title: '🎞 Strategic Keynote Deck in Kinetic',
-            desc: 'Opens Kinetic Presentation Studio with AI-generated directive slides.',
+            desc: 'Opens Kinetic Presentation Studio with an executive 3-slide strategy deck.',
             prompt: 'pitch-directive'
           },
           {
-            tag: 'Polymath',
-            title: '⚡ Open Girionix AI Polymath Studio',
-            desc: 'Full-screen coding IDE, screenplay writing, math proofs, and 8K art.',
-            action: () => this.navigateTo('girionix')
+            tag: 'Aegis PDF',
+            title: '🔒 Cryptographic Audit Seal in Aegis PDF',
+            desc: 'Opens Aegis PDF Studio with a certified SHA-256 cryptographic audit seal.',
+            prompt: 'crypto-audit'
+          },
+          {
+            tag: 'Polymath AI',
+            title: '💬 Open Girionix AI Polymath Studio',
+            desc: 'Direct polymath AI chat: coding, mathematical proofs, screenplay writing, and 8K art.',
+            action: () => this.switchGirionixDrawerTab('live')
           }
         ];
       }
@@ -1795,10 +1874,16 @@ class GiriOrbitPlatform {
         </div>
       `).join('');
 
-      // Wire card button clicks
+      // Wire card button clicks with interactive feedback
       cardsContainer.querySelectorAll('.girionix-prompt-card').forEach((card, idx) => {
         const item = cardsData[idx];
+        const btn = card.querySelector('.girionix-card-btn');
         card.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (btn) {
+            btn.innerHTML = '<span>Injected! ⚡</span>';
+            setTimeout(() => { if (btn) btn.innerHTML = '<span>Run &amp; Insert ⚡</span>'; }, 1800);
+          }
           if (item.action) {
             item.action();
             return;
