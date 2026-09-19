@@ -632,6 +632,9 @@ class GiriOrbitPlatform {
               <button id="btn-landing-restore-device" class="btn-giri-action-pill" title="Restore entire workspace from a previously saved .giriworkspace or .json file" style="background:#f1f5f9; color:#0f172a; border:1px solid #cbd5e1; font-size:11.5px; padding:5px 11px; border-radius:6px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; transition:background 0.15s;">
                 <span>📥</span> Restore Workspace
               </button>
+              <button id="btn-landing-open-drive" class="btn-giri-action-pill" title="Open Google Drive Cloud Workspace" style="background:#2563eb; color:#fff; border:1px solid #1d4ed8; font-size:11.5px; padding:5px 11px; border-radius:6px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; transition:opacity 0.15s;">
+                <span>☁️</span> Google Drive
+              </button>
             </div>
           </div>
         </div>
@@ -640,12 +643,50 @@ class GiriOrbitPlatform {
           <!-- Dynamically injected by renderRecentDocsGrid() -->
         </div>
       </section>
+
+      <!-- GOOGLE DRIVE CLOUD FILES SECTION -->
+      <section class="zoho-drive-docs-section" style="max-width:1240px; margin:24px auto 40px auto; padding:0 28px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path d="M7.71 3.5L1.15 15l3.43 6 6.56-11.5L7.71 3.5z" fill="#0066DA"/>
+              <path d="M16.29 3.5h-8.58l6.56 11.5h8.58l-6.56-11.5z" fill="#00AC47"/>
+              <path d="M22.85 15H9.71l-3.43 6h13.14l3.43-6z" fill="#EA4335"/>
+              <path d="M14.27 15l-3.42 6-3.43-6h6.85z" fill="#FFBA00"/>
+            </svg>
+            <div>
+              <h2 style="font-size:18px; font-weight:700; color:#0f172a; margin:0 0 2px 0;">Google Drive Cloud Workspace</h2>
+              <p style="font-size:12px; color:#64748b; margin:0;">Direct editing &amp; live cloud auto-save across Docs, Sheets, Slides, and PDFs</p>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-giri-primary" id="btn-hub-new-drive-file" style="padding:6px 14px; font-size:11.5px;">+ New Drive File</button>
+            <button class="btn-giri-secondary" id="btn-hub-open-drive-modal" style="padding:6px 14px; font-size:11.5px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-weight:600; color:#334155;">Browse All Files ➔</button>
+          </div>
+        </div>
+
+        <div id="hub-drive-files-grid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(270px, 1fr)); gap:16px;">
+          <!-- Dynamically injected by renderHubDriveFilesGrid() -->
+        </div>
+      </section>
     `;
 
     this.workspace.appendChild(landingContainer);
 
-    // Initial render of dynamic recent synced work
+    // Initial render of dynamic recent synced work and Google Drive cloud files
     this.renderRecentDocsGrid(landingContainer);
+    this.renderHubDriveFilesGrid(landingContainer);
+
+    // Bind Hub Google Drive Actions
+    landingContainer.querySelector('#btn-landing-open-drive')?.addEventListener('click', () => {
+      driveSyncManager.openDriveModal('browser');
+    });
+    landingContainer.querySelector('#btn-hub-new-drive-file')?.addEventListener('click', () => {
+      driveSyncManager.openDriveModal('new');
+    });
+    landingContainer.querySelector('#btn-hub-open-drive-modal')?.addEventListener('click', () => {
+      driveSyncManager.openDriveModal('browser');
+    });
 
     // Bind Primary CTA button to open Writer
     landingContainer.querySelector('#btn-try-suite')?.addEventListener('click', () => {
@@ -875,6 +916,74 @@ class GiriOrbitPlatform {
   }
 
   /**
+   * Dynamically Render Google Drive Cloud File Cards in Hub
+   */
+  renderHubDriveFilesGrid(container) {
+    const grid = container.querySelector('#hub-drive-files-grid');
+    if (!grid) return;
+
+    const files = driveSyncManager.getDriveFiles();
+    if (files.length === 0) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; text-align: center; padding: 30px 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; color: #64748b;">
+          <p style="font-size: 13px; margin: 0 0 10px 0;">No files in your Google Drive cloud yet.</p>
+          <button class="btn-giri-primary" id="btn-create-sample-drive-file" style="padding: 6px 14px; font-size: 12px; margin: 0 auto;">
+            + Create New Drive File
+          </button>
+        </div>
+      `;
+      grid.querySelector('#btn-create-sample-drive-file')?.addEventListener('click', () => {
+        driveSyncManager.openDriveModal('new');
+      });
+      return;
+    }
+
+    const toolMeta = {
+      drift: { label: 'DOCS', bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe' },
+      axis: { label: 'SHEETS', bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0' },
+      kinetic: { label: 'SLIDES', bg: '#fef2f2', color: '#dc2626', border: '#fecaca' },
+      pdf: { label: 'PDF', bg: '#fff7ed', color: '#ea580c', border: '#fed7aa' }
+    };
+
+    grid.innerHTML = files.slice(0, 4).map(file => {
+      const meta = toolMeta[file.tool] || toolMeta.drift;
+      const dateStr = new Date(file.lastModified).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+      return `
+        <article class="recent-doc-card" style="background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:18px; transition:all 0.2s ease; box-shadow:0 1px 4px rgba(0,0,0,0.04); display:flex; flex-direction:column; justify-content:space-between; position:relative;">
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+              <span style="font-size:10px; font-weight:700; background:${meta.bg}; color:${meta.color}; border:1px solid ${meta.border}; padding:2px 7px; border-radius:4px; text-transform:uppercase;">
+                ☁️ ${meta.label}
+              </span>
+              <div style="display:flex; align-items:center; gap:5px;">
+                <span class="drive-dot-live" style="width:6px; height:6px;"></span>
+                <span style="font-size:11px; color:#94a3b8;">${file.folder} • ${file.size}</span>
+              </div>
+            </div>
+            <h3 style="font-size:14px; font-weight:700; color:#0f172a; margin:0 0 6px 0; line-height:1.3; cursor:pointer;" class="hub-drive-file-title" data-file-id="${file.id}" title="Click to open ${file.name}">
+              ${file.name}
+            </h3>
+            <p style="font-size:12px; color:#64748b; line-height:1.45; margin:0 0 12px 0;">
+              Google Drive Cloud Synchronized • Modified ${dateStr}
+            </p>
+          </div>
+          <div style="border-top:1px solid #f1f5f9; padding-top:12px; display:flex; gap:8px;">
+            <button class="btn-open-hub-drive-file" data-file-id="${file.id}" style="background:${meta.color}; color:#ffffff; border:none; border-radius:6px; padding:6px 12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; flex:1; transition:opacity 0.15s ease;">
+              <span>▶ Open in ${file.tool.toUpperCase()}</span>
+            </button>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    grid.querySelectorAll('.btn-open-hub-drive-file, .hub-drive-file-title').forEach(el => {
+      el.addEventListener('click', () => {
+        driveSyncManager.openDriveFile(el.dataset.fileId);
+      });
+    });
+  }
+
+  /**
    * Browser Sync & Storage Manager Initializer
    */
   initSyncSystem() {
@@ -964,6 +1073,7 @@ class GiriOrbitPlatform {
         const landing = this.workspace.querySelector('.zoho-suite-landing');
         if (landing) {
           this.renderRecentDocsGrid(landing);
+          this.renderHubDriveFilesGrid(landing);
         }
       }
     });
