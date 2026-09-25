@@ -1891,6 +1891,18 @@ class GiriOrbitPlatform {
     // Cross-Frame Message Bridge: Receive 1-click import events from Girionix AI
     window.addEventListener('message', (e) => {
       if (!e.data || typeof e.data !== 'object') return;
+
+      // Handle station mounted or active tool request from Copilot iframe
+      if (
+        e.data.type === 'GIRIONIX_ORBIT_STATION_MOUNTED' || 
+        e.data.type === 'GIRIONIX_REQUEST_ACTIVE_TOOL' || 
+        e.data.type === 'GIRI_ORBIT_GET_STATE'
+      ) {
+        const activeTool = this.currentView || 'drift';
+        this.syncToolToGirionixCopilot(activeTool);
+        return;
+      }
+
       if (e.data.type === 'GIRIONIX_IMPORT_TO_WORKPLACE' || e.data.type === 'GIRIONIX_LATEST_MESSAGE_RESPONSE') {
         const rawText = e.data.payload?.text || '';
         if (rawText) {
