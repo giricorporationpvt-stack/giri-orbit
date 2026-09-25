@@ -12,15 +12,15 @@
  * - Universal Import/Export, Command Palette (Ctrl+K), and AI Copilot (Ctrl+J)
  */
 
-import { renderDriftApp } from './modules/drift.js?v=9.0';
-import { renderAxisApp } from './modules/axis.js?v=9.0';
-import { renderKineticApp } from './modules/kinetic.js?v=9.0';
-import { renderPdfStudioApp } from './modules/pdfStudio.js?v=9.0';
-import { LauncherPhysicsEngine } from './physics.js?v=9.0';
-import { PrintStudioManager } from './components/printManager.js?v=9.0';
-import { syncManager } from './modules/syncManager.js?v=9.0';
-import { localSync } from './components/localFileDirectSync.js?v=9.0';
-import { driveSyncManager } from './modules/driveSyncManager.js?v=9.0';
+import { renderDriftApp } from './modules/drift.js?v=10.0';
+import { renderAxisApp } from './modules/axis.js?v=10.0';
+import { renderKineticApp } from './modules/kinetic.js?v=10.0';
+import { renderPdfStudioApp } from './modules/pdfStudio.js?v=10.0';
+import { LauncherPhysicsEngine } from './physics.js?v=10.0';
+import { PrintStudioManager } from './components/printManager.js?v=10.0';
+import { syncManager } from './modules/syncManager.js?v=10.0';
+import { localSync } from './components/localFileDirectSync.js?v=10.0';
+import { driveSyncManager } from './modules/driveSyncManager.js?v=10.0';
 
 class GiriOrbitPlatform {
   constructor() {
@@ -127,26 +127,92 @@ class GiriOrbitPlatform {
    */
   copyToolLink(tool) {
     const url = this.getToolUrl(tool);
-    const toolNames = {
-      launcher: 'Orbit Hub',
-      hub: 'Orbit Hub',
-      drift: 'Giri Drift (Docs)',
-      axis: 'Giri Axis (Sheets)',
-      kinetic: 'Giri Kinetic (Presentation)',
-      pdf: 'Giri Aegis (PDF Studio)',
-      girionix: 'Girionix AI Polymath Studio'
-    };
-    const name = toolNames[tool] || tool;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(() => {
-        this.showToast(`Copied direct link for ${name}: ${url}`, 'blue');
-      }).catch(() => {
-        this.showToast(`Direct Link: ${url}`, 'blue');
-      });
-    } else {
-      this.showToast(`Direct Link: ${url}`, 'blue');
-    }
+    this.openShareModal(url, tool);
   }
+
+  openShareModal(url, tool) {
+    const toolNames = {
+      launcher: 'Orbit Hub', hub: 'Orbit Hub',
+      drift: 'Drift Document', axis: 'Axis Spreadsheet',
+      kinetic: 'Kinetic Presentation', pdf: 'Aegis PDF Studio',
+      girionix: 'Girionix AI Studio'
+    };
+    const toolName = toolNames[tool] || 'Giri Orbit Workspace';
+
+    document.getElementById('giri-share-modal-backdrop')?.remove();
+
+    const html = `
+      <div id="giri-share-modal-backdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeInShare 0.15s ease;">
+        <style>@keyframes fadeInShare{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}} .share-opt-row{transition:background 0.15s;} .share-opt-row:hover{background:rgba(255,255,255,0.05)!important;}</style>
+        <div style="background:#18181b;border:1px solid #3f3f46;border-radius:16px;width:460px;max-width:92vw;overflow:hidden;box-shadow:0 28px 80px rgba(0,0,0,0.7);">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #27272a;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+              <strong style="font-size:15px;color:#f1f5f9;">Share ${toolName}</strong>
+            </div>
+            <button id="btn-close-share-modal" style="background:transparent;border:none;color:#64748b;font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;">✕</button>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Direct Link</label>
+              <div style="display:flex;gap:8px;">
+                <input id="share-link-input" type="text" value="${url}" readonly style="flex:1;background:#09090b;border:1px solid #3f3f46;color:#94a3b8;border-radius:7px;padding:9px 12px;font-size:12px;font-family:monospace;outline:none;">
+                <button id="btn-copy-share-link" style="background:#2563eb;border:none;color:#fff;border-radius:7px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Copy</button>
+              </div>
+            </div>
+            <div style="border:1px solid #27272a;border-radius:10px;overflow:hidden;">
+              <button class="share-opt-row" id="btn-share-email" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;background:transparent;border:none;border-bottom:1px solid #27272a;cursor:pointer;text-align:left;">
+                <span style="width:34px;height:34px;border-radius:8px;background:#1e293b;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;">✉️</span>
+                <div><div style="font-size:13px;font-weight:600;color:#f1f5f9;">Share via Email</div><div style="font-size:11.5px;color:#64748b;margin-top:2px;">Open email client with this link</div></div>
+              </button>
+              <button class="share-opt-row" id="btn-share-twitter" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;background:transparent;border:none;border-bottom:1px solid #27272a;cursor:pointer;text-align:left;">
+                <span style="width:34px;height:34px;border-radius:8px;background:#09090b;border:1px solid #27272a;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#f1f5f9;font-weight:900;font-size:16px;">𝕏</span>
+                <div><div style="font-size:13px;font-weight:600;color:#f1f5f9;">Share on X (Twitter)</div><div style="font-size:11.5px;color:#64748b;margin-top:2px;">Post to your timeline</div></div>
+              </button>
+              <button class="share-opt-row" id="btn-share-linkedin" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;background:transparent;border:none;cursor:pointer;text-align:left;">
+                <span style="width:34px;height:34px;border-radius:8px;background:#0077b5;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:900;font-size:14px;">in</span>
+                <div><div style="font-size:13px;font-weight:600;color:#f1f5f9;">Share on LinkedIn</div><div style="font-size:11.5px;color:#64748b;margin-top:2px;">Post to your professional network</div></div>
+              </button>
+            </div>
+            <p style="margin:0;font-size:11px;color:#475569;text-align:center;">🔒 Your document content stays private — only the link is shared</p>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', html);
+
+    const backdrop = document.getElementById('giri-share-modal-backdrop');
+    const close = () => backdrop?.remove();
+    document.getElementById('btn-close-share-modal')?.addEventListener('click', close);
+    backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
+    document.addEventListener('keydown', function escClose(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', escClose); } });
+
+    document.getElementById('btn-copy-share-link')?.addEventListener('click', () => {
+      const btn = document.getElementById('btn-copy-share-link');
+      navigator.clipboard.writeText(url).then(() => {
+        if (btn) btn.textContent = 'Copied!';
+        this.showToast('✅ Link copied to clipboard!', 'green');
+        setTimeout(() => { if (btn) btn.textContent = 'Copy'; }, 2000);
+      }).catch(() => {
+        document.getElementById('share-link-input')?.select();
+        this.showToast('✅ Link copied!', 'green');
+      });
+    });
+
+    document.getElementById('btn-share-email')?.addEventListener('click', () => {
+      window.open(`mailto:?subject=${encodeURIComponent('Check out my ' + toolName + ' on Giri Orbit')}&body=${encodeURIComponent('Hi,\n\nI\'d like to share my ' + toolName + ' with you:\n\n' + url + '\n\nMade with Giri Orbit — the world\'s sovereign office suite.')}`, '_blank');
+    });
+
+    document.getElementById('btn-share-twitter')?.addEventListener('click', () => {
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent('Just created this with @GiriOrbit 🚀')}&url=${encodeURIComponent(url)}`, '_blank');
+    });
+
+    document.getElementById('btn-share-linkedin')?.addEventListener('click', () => {
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+    });
+  }
+
+
 
   /**
    * Main View Routing & State Transitions with URL Synchronization
@@ -184,12 +250,15 @@ class GiriOrbitPlatform {
 
     // Toggle compact header mode when in any tool
     const suiteHeader = document.querySelector('.tier2-suite-header');
+    const pillBar = document.querySelector('.suite-switcher-pill-bar');
     if (view === 'launcher') {
       document.body.classList.remove('in-tool');
       suiteHeader?.classList.remove('in-tool');
+      if (pillBar) { pillBar.style.display = ''; pillBar.style.opacity = '1'; }
     } else {
       document.body.classList.add('in-tool');
       suiteHeader?.classList.add('in-tool');
+      if (pillBar) { pillBar.style.display = 'none'; }
     }
 
     if (view === 'launcher') {
@@ -214,6 +283,9 @@ class GiriOrbitPlatform {
     if (typeof this.updateGirionixQuickCards === 'function') {
       this.updateGirionixQuickCards();
     }
+    if (typeof this.syncToolToGirionixCopilot === 'function') {
+      this.syncToolToGirionixCopilot(view);
+    }
   }
 
   /**
@@ -221,95 +293,19 @@ class GiriOrbitPlatform {
    */
   mountGirionixAiStudio() {
     this.workspace.innerHTML = `
-      <div class="girionix-workspace-container">
-        <!-- Top Companion Control Bar -->
-        <div class="girionix-workspace-topbar">
-          <div class="girionix-topbar-left">
-            <div class="girionix-topbar-brand">
-              <div class="girionix-topbar-brand-mark" style="display:flex; align-items:center; justify-content:center;">
-                <img src="assets/girionix-logo.png" style="width:22px; height:22px; object-fit:contain; border-radius:4px;" alt="Girionix AI">
-              </div>
-              <div>
-                <span class="girionix-topbar-title">Girionix AI Office Copilot</span>
-                <span class="girionix-status-badge" style="margin-left:6px;">🟢 Office Connected</span>
-              </div>
-            </div>
-            <div class="girionix-quick-jumps">
-              <span class="girionix-jump-pill" data-mode="drift" title="Open Giri Drift Docs">✍️ Drift Docs</span>
-              <span class="girionix-jump-pill" data-mode="axis" title="Open Giri Axis Sheets">📊 Axis Sheets</span>
-              <span class="girionix-jump-pill" data-mode="kinetic" title="Open Giri Kinetic Presentation">🎞️ Kinetic Slides</span>
-              <span class="girionix-jump-pill" data-mode="pdf" title="Open Giri Aegis PDF Studio">🔒 Aegis PDF</span>
-            </div>
-          </div>
-          <div class="girionix-topbar-right">
-            <button class="girionix-import-badge-btn" id="btn-girionix-workspace-import" title="Import latest AI content directly into active workplace">📥 Import to Workplace</button>
-            <button class="girionix-mini-btn" id="btn-girionix-full-reload" title="Reload Studio Engine">🔄 Reload</button>
-            <a href="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Orbit%20User" target="_blank" rel="noopener" class="girionix-mini-btn" style="text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="Open in External Tab">
-              <span>↗ Popout</span>
-            </a>
-            <button class="girionix-mini-btn" id="btn-girionix-copilot-toggle" title="Toggle Assistant Side-Panel">💬 Assistant</button>
-            <button class="girionix-mini-btn" id="btn-girionix-copy-link" title="Copy Direct Link">🔗 Share</button>
-          </div>
-        </div>
-
-        <!-- Full-Viewport Iframe Wrapper -->
-        <div class="girionix-full-iframe-wrapper">
+      <div class="girionix-workspace-container" style="width:100%; height:100%; position:relative;">
+        <div class="girionix-full-iframe-wrapper" style="width:100%; height:100%;">
           <iframe 
             id="girionix-main-workspace-frame" 
             class="girionix-full-iframe" 
-            src="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Orbit%20User" 
+            src="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;embed=true&amp;name=Orbit%20User&amp;model=girionix-pro" 
             title="Girionix AI Sovereign Office Workspace"
+            style="width:100%; height:100%; border:none;"
             allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen">
           </iframe>
         </div>
       </div>
     `;
-
-    // Wire action buttons
-    const frame = this.workspace.querySelector('#girionix-main-workspace-frame');
-    this.workspace.querySelector('#btn-girionix-full-reload')?.addEventListener('click', () => {
-      if (frame) {
-        frame.src = 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Orbit%20User';
-        this.showToast('Reloaded Girionix AI Workspace', 'blue');
-      }
-    });
-
-    this.workspace.querySelector('#btn-girionix-copilot-toggle')?.addEventListener('click', () => {
-      this.toggleGirionixAiDrawer();
-    });
-
-    this.workspace.querySelector('#btn-girionix-copy-link')?.addEventListener('click', () => {
-      this.copyToolLink('girionix');
-    });
-
-    // 1-Click Import button in workspace topbar
-    this.workspace.querySelector('#btn-girionix-workspace-import')?.addEventListener('click', () => {
-      if (frame && frame.contentWindow) {
-        try {
-          frame.contentWindow.postMessage({ type: 'GIRIONIX_REQUEST_LATEST_MESSAGE' }, '*');
-        } catch (_) {}
-      }
-      if (navigator.clipboard?.readText) {
-        navigator.clipboard.readText().then(clipText => {
-          if (clipText && clipText.trim()) {
-            this.importAiDataToActiveTool(clipText, { source: 'clipboard' });
-          }
-        }).catch(() => {});
-      } else {
-        this.showToast('Requesting latest AI content...', 'blue');
-      }
-    });
-
-    this.workspace.querySelectorAll('.girionix-jump-pill').forEach(pill => {
-      pill.addEventListener('click', () => {
-        const mode = pill.dataset.mode;
-        if (mode && ['drift', 'axis', 'kinetic', 'pdf'].includes(mode)) {
-          this.navigateTo(mode);
-        } else {
-          this.showToast(`Switched focus to Girionix ${pill.textContent.trim()}`, 'blue');
-        }
-      });
-    });
   }
 
   /**
@@ -1578,7 +1574,7 @@ class GiriOrbitPlatform {
         }
 
         if (promptType === 'executive-summary') {
-          const summaryMarkdown = `# Executive Briefing // Strategic Architecture\n\n> Comprehensive operational evaluation confirms that transitioning enterprise workflows to zero-database local client models achieves an **88% reduction in latency** and eliminates third-party telemetry exposure.\n\n### Strategic Pillars\n- **Continuous Ambient Physics:** 60 FPS fluid rendering with sub-millisecond document discovery.\n- **Sovereign Privacy:** Client-side cryptographic execution with Zero Outbound Leaks.\n- **Universal Interoperability:** Complete parity with standard Office formats (.docx, .xlsx, .pptx, .pdf).\n\n### Quantitative Milestones\n| Operational Vector | Baseline | Giri Orbit | Net Advantage |\n| Latency to First Render | 240 ms | 0.4 ms | 99.8% Faster |\n| Network Telemetry | 450 KB/req | 0 KB | 100% Sealed |\n| Cross-Tool Context Switch | 18 sec | < 1 sec | 18x Velocity |\n\n*Document certified by Girionix AI Office Copilot.*`;
+          const summaryMarkdown = `# Executive Briefing // Strategic Architecture\n\nComprehensive operational evaluation confirms that transitioning enterprise workflows to zero-database local client models achieves an **88% reduction in latency** and eliminates third-party telemetry exposure.\n\n### Strategic Pillars\n- **Continuous Ambient Physics:** 60 FPS fluid rendering with sub-millisecond document discovery.\n- **Sovereign Privacy:** Client-side cryptographic execution with Zero Outbound Leaks.\n- **Universal Interoperability:** Complete parity with standard Office formats (.docx, .xlsx, .pptx, .pdf).\n\n### Quantitative Milestones\n| Operational Vector | Baseline | Giri Orbit | Net Advantage |\n| Latency to First Render | 240 ms | 0.4 ms | 99.8% Faster |\n| Network Telemetry | 450 KB/req | 0 KB | 100% Sealed |\n| Cross-Tool Context Switch | 18 sec | < 1 sec | 18x Velocity |`;
           this.importContentToDrift(summaryMarkdown);
           this.showToast('✅ Injected Executive Briefing into Drift Docs!', 'blue');
 
@@ -1639,9 +1635,9 @@ class GiriOrbitPlatform {
 
         } else if (promptType === 'enhance-tone') {
           const quoteHtml = `
-            <blockquote style="border-left:3.5px solid #7c3aed; background:#faf5ff; padding:12px 18px; margin:18px 0; border-radius:4px; font-style:italic; color:#581c87;">
+            <p style="margin:14px 0 14px 20px; font-style:italic; color:#334155; font-size:11.5pt; line-height:1.65;">
               "By orchestrating high-velocity digital assets through in-memory client vectors, GIRI Corporation establishes an unassailable standard for sovereign productivity, decoupled from legacy cloud overhead."
-            </blockquote>
+            </p>
             <p></p>
           `;
           paper.focus();
@@ -1650,9 +1646,9 @@ class GiriOrbitPlatform {
           this.showToast('✅ Enhanced Prose Tone in Drift Docs!', 'blue');
 
         } else {
-          const customDoc = `# Girionix AI Strategic Directive: "${customQuery}"\n\n> Based on enterprise operational intelligence, executing on **"${customQuery}"** enhances strategic velocity and aligns production nodes across the organization.\n\n### Operational Assessment\n- **Target Vector:** ${(this.currentView || 'DRIFT').toUpperCase()}\n- **Validation Status:** Zero telemetry leaks detected.\n- **Recommended Action:** Review formatted content, apply localized refinements, and export final revisions across required enterprise formats.`;
+          const customDoc = `# Strategic Directive: "${customQuery}"\n\nBased on enterprise operational intelligence, executing on **"${customQuery}"** enhances strategic velocity and aligns production nodes across the organization.\n\n### Operational Assessment\n- **Target Vector:** ${(this.currentView || 'DRIFT').toUpperCase()}\n- **Recommended Action:** Review formatted content, apply localized refinements, and export final revisions across required enterprise formats.`;
           this.importContentToDrift(customDoc);
-          this.showToast('✅ Injected AI Directive into Drift Docs!', 'blue');
+          this.showToast('✅ Injected Directive into Drift Docs!', 'blue');
         }
       }
     };
@@ -1692,23 +1688,85 @@ class GiriOrbitPlatform {
 
     this.isGirionixDrawerOpen = false;
 
-    // Open Drawer
+    // Safe no-op tab switcher to prevent errors
+    this.switchGirionixDrawerTab = () => {};
+
+    // Helper to get auto-selected copilot URL locked strictly to active office tool and Girionix Pro
+    this.getGirionixCopilotUrl = (tool = null) => {
+      const active = tool || this.currentView || 'drift';
+      return `https://girionix-ai.pages.dev/?direct=chat&app=true&embed=true&model=girionix-pro&tool=${active}&lockTool=${active}&lock=true&name=Orbit%20User`;
+    };
+
+    // Auto-select and lock tool state in Copilot iframe
+    this.syncToolToGirionixCopilot = (tool = null) => {
+      const active = tool || this.currentView || 'drift';
+      const targetUrl = this.getGirionixCopilotUrl(active);
+      const popoutLink = document.getElementById('btn-girionix-popout-link');
+      if (popoutLink) popoutLink.href = targetUrl;
+
+      // Update drawer tool lock pill badge
+      const toolLabels = {
+        drift: 'Drift Copilot',
+        axis: 'Axis Copilot',
+        kinetic: 'Kinetic Copilot',
+        pdf: 'Aegis PDF Copilot',
+        launcher: 'Orbit Copilot'
+      };
+      const toolBadge = document.getElementById('girionix-tool-lock-badge');
+      if (toolBadge) {
+        toolBadge.textContent = toolLabels[active] || 'Drift Copilot';
+      }
+
+      if (!iframe) return;
+
+      const currentSrc = iframe.src || '';
+      const hasCorrectTool = currentSrc.includes(`tool=${active}`) && currentSrc.includes('model=girionix-pro');
+      if (!currentSrc || currentSrc === 'about:blank' || (!hasCorrectTool && this.isGirionixDrawerOpen)) {
+        iframe.src = targetUrl;
+      }
+
+      if (iframe.contentWindow) {
+        try {
+          const payload = {
+            tool: active,
+            lockTool: active,
+            lock: true,
+            model: 'girionix-pro',
+            mode: active,
+            officeTool: active,
+            module: active,
+            activeTool: active,
+            currentView: active
+          };
+          iframe.contentWindow.postMessage({ type: 'SET_ACTIVE_TOOL', ...payload }, '*');
+          iframe.contentWindow.postMessage({ type: 'LOCK_TOOL', ...payload }, '*');
+          iframe.contentWindow.postMessage({ type: 'ORBIT_TOOL_CHANGE', ...payload }, '*');
+          iframe.contentWindow.postMessage({ type: 'GIRIONIX_SET_TOOL', ...payload }, '*');
+          iframe.contentWindow.postMessage({ type: 'SET_OFFICE_TOOL', ...payload }, '*');
+          iframe.contentWindow.postMessage({ type: 'SELECT_TOOL', ...payload }, '*');
+        } catch (_) {}
+      }
+    };
+
+    // Open Drawer with auto-selected tool context
     this.openGirionixAiDrawer = (initialTab = 'live') => {
       drawer.classList.add('open');
       drawer.setAttribute('aria-hidden', 'false');
       this.isGirionixDrawerOpen = true;
 
-      // Lazy-load iframe source on first open
-      if (iframe && (!iframe.src || iframe.src === 'about:blank')) {
-        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Orbit%20User';
-      }
+      const activeTool = this.currentView || 'drift';
+      const targetUrl = this.getGirionixCopilotUrl(activeTool);
 
-      // Switch tab if requested
-      if (initialTab) {
-        this.switchGirionixDrawerTab(initialTab);
+      // Lazy-load iframe source or update with auto-selected tool
+      if (iframe) {
+        const currentSrc = iframe.src || '';
+        const hasCorrectTool = currentSrc.includes(`tool=${activeTool}`) || currentSrc.includes(`activeTool=${activeTool}`);
+        if (!currentSrc || currentSrc === 'about:blank' || !hasCorrectTool) {
+          iframe.src = targetUrl;
+        } else {
+          this.syncToolToGirionixCopilot(activeTool);
+        }
       }
-
-      this.updateGirionixQuickCards();
     };
 
     // Close Drawer
@@ -1727,65 +1785,108 @@ class GiriOrbitPlatform {
       }
     };
 
-    // Switch Tabs inside Drawer
-    this.switchGirionixDrawerTab = (tabName) => {
-      tabBtns.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.drawerTab === tabName);
-      });
-      const livePane = document.getElementById('girionix-pane-live');
-      const quickPane = document.getElementById('girionix-pane-quick');
-      if (livePane && quickPane) {
-        livePane.classList.toggle('active', tabName === 'live');
-        quickPane.classList.toggle('active', tabName === 'quick');
-      }
-    };
-
-    tabBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        this.switchGirionixDrawerTab(btn.dataset.drawerTab);
-      });
+    // When iframe finishes loading, immediately auto-select the active tool
+    iframe?.addEventListener('load', () => {
+      const activeTool = this.currentView || 'drift';
+      this.syncToolToGirionixCopilot(activeTool);
     });
 
-    // Expand / Dock Toggle
+    // Expand / Dock & Step Width Toggle
+    const widthSteps = [380, 520, 720];
+    let currentStepIdx = 1;
     expandBtn?.addEventListener('click', () => {
-      drawer.classList.toggle('expanded');
-      expandBtn.textContent = drawer.classList.contains('expanded') ? '⤡' : '⛶';
-      expandBtn.title = drawer.classList.contains('expanded') ? 'Dock to standard width' : 'Expand width';
+      currentStepIdx = (currentStepIdx + 1) % widthSteps.length;
+      const targetW = widthSteps[currentStepIdx];
+      drawer.style.width = `${targetW}px`;
+      localStorage.setItem('girionix_drawer_width', targetW);
+      expandBtn.title = `Current width: ${targetW}px (Click to cycle width)`;
+      this.showToast(`Assistant width: ${targetW}px`, 'blue');
+    });
+
+    // Draggable Left Edge Resizing
+    const resizeHandle = document.getElementById('girionix-resize-handle');
+    const savedWidth = localStorage.getItem('girionix_drawer_width');
+    if (savedWidth) {
+      const parsedW = parseInt(savedWidth, 10);
+      if (!isNaN(parsedW)) {
+        drawer.style.width = `${Math.min(window.innerWidth * 0.95, Math.max(340, parsedW))}px`;
+      }
+    }
+
+    let isResizing = false;
+    resizeHandle?.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      resizeHandle.classList.add('active');
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      const newWidth = Math.min(window.innerWidth * 0.95, Math.max(340, window.innerWidth - e.clientX));
+      drawer.style.width = `${newWidth}px`;
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isResizing) {
+        isResizing = false;
+        resizeHandle?.classList.remove('active');
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        localStorage.setItem('girionix_drawer_width', parseInt(drawer.style.width, 10));
+      }
+    });
+
+    // File Attachment & Document Context Loader
+    const attachBtn = document.getElementById('btn-girionix-attach-file');
+    const fileInput = document.getElementById('girionix-file-input');
+    const chipRow = document.getElementById('girionix-attached-file-chip');
+    const chipLabel = document.getElementById('girionix-attached-chip-label');
+    const removeChipBtn = document.getElementById('btn-girionix-remove-chip');
+    let attachedFileData = null;
+
+    attachBtn?.addEventListener('click', () => {
+      fileInput?.click();
+    });
+
+    fileInput?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const text = String(evt.target.result || '');
+        attachedFileData = {
+          name: file.name,
+          size: file.size,
+          content: text.slice(0, 120000) // first 120KB of document text
+        };
+        if (chipRow && chipLabel) {
+          chipLabel.textContent = `📄 ${file.name} (${Math.round(file.size / 1024)} KB)`;
+          chipRow.style.display = 'flex';
+        }
+        this.showToast(`Attached "${file.name}" for AI analysis`, 'green');
+      };
+      reader.readAsText(file);
+    });
+
+    removeChipBtn?.addEventListener('click', () => {
+      attachedFileData = null;
+      if (fileInput) fileInput.value = '';
+      if (chipRow) chipRow.style.display = 'none';
     });
 
     // Reload iframe
     reloadBtn?.addEventListener('click', () => {
       if (iframe) {
-        iframe.src = iframe.dataset.src || 'https://girionix-ai.pages.dev/?direct=chat&app=true&mode=office&name=Orbit%20User';
+        iframe.src = this.getGirionixCopilotUrl();
         this.showToast('Reloading Girionix AI Assistant...', 'blue');
       }
     });
 
     // Close on button click
     closeBtn?.addEventListener('click', () => this.closeGirionixAiDrawer());
-
-    // 1-Click Import to Workplace Button in Drawer Header
-    const drawerImportBtn = document.getElementById('btn-girionix-drawer-import');
-    drawerImportBtn?.addEventListener('click', () => {
-      // 1. Request latest response from iframe via postMessage
-      const frameEl = document.getElementById('girionix-drawer-iframe') || document.getElementById('girionix-main-workspace-frame');
-      if (frameEl && frameEl.contentWindow) {
-        try {
-          frameEl.contentWindow.postMessage({ type: 'GIRIONIX_REQUEST_LATEST_MESSAGE' }, '*');
-        } catch (_) {}
-      }
-
-      // 2. Clipboard bridge fallback
-      if (navigator.clipboard?.readText) {
-        navigator.clipboard.readText().then(clipText => {
-          if (clipText && clipText.trim()) {
-            this.importAiDataToActiveTool(clipText, { source: 'clipboard' });
-          }
-        }).catch(() => {});
-      } else {
-        this.showToast('Requesting latest AI content...', 'blue');
-      }
-    });
 
     // Cross-Frame Message Bridge: Receive 1-click import events from Girionix AI
     window.addEventListener('message', (e) => {
@@ -1809,11 +1910,20 @@ class GiriOrbitPlatform {
       }
     });
 
-    // Custom prompt handler: Forward to real Girionix AI LLM & switch to live view
+    // Custom prompt handler: Forward to real Girionix AI LLM with optional attached document
     const handleCustomPrompt = () => {
       const q = promptInput?.value.trim();
-      if (!q) return;
+      if (!q && !attachedFileData) return;
       promptInput.value = '';
+
+      let finalQuery = q || 'Please analyze this document in detail and extract key actionable insights.';
+      if (attachedFileData) {
+        finalQuery = `[Attached Document Context from "${attachedFileData.name}"]:\n${attachedFileData.content}\n\n[User Directive]:\n${finalQuery}`;
+        // Clear attachment after sending
+        attachedFileData = null;
+        if (fileInput) fileInput.value = '';
+        if (chipRow) chipRow.style.display = 'none';
+      }
 
       // 1. Post prompt to Girionix AI iframe for real LLM streaming response
       const frameEl = document.getElementById('girionix-drawer-iframe') || document.getElementById('girionix-main-workspace-frame');
@@ -1821,18 +1931,18 @@ class GiriOrbitPlatform {
         try {
           frameEl.contentWindow.postMessage({
             type: 'GIRIONIX_EXECUTE_PROMPT',
-            payload: { prompt: q }
+            payload: { prompt: finalQuery }
           }, '*');
         } catch (_) {}
       }
 
       // 2. Automatically switch to Live AI Chat tab so user watches the AI generate
       this.switchGirionixDrawerTab('live');
-      this.showToast(`⚡ Asking Girionix AI: "${q}"...`, 'blue');
+      this.showToast(`⚡ Asking Girionix AI: "${(q || 'Document Analysis').slice(0, 40)}..."`, 'blue');
 
       // 3. Simultaneously inject starter structure into active canvas
       if (this.executeAiAction) {
-        this.executeAiAction('custom', q);
+        this.executeAiAction('custom', finalQuery);
       }
     };
 
@@ -2035,6 +2145,117 @@ class GiriOrbitPlatform {
   }
 
   /**
+   * Cleanses raw text from AI or Copilot: strips metadata banners, timestamps,
+   * leading blockquote markers, and blue margin wrappers so content is 100% natural.
+   */
+  cleanseAiImportText(text) {
+    if (!text) return '';
+    let cleaned = String(text);
+
+    // 1. Strip metadata banners, headers, timestamps, and model tags
+    cleaned = cleaned.replace(/^[> \t]*[^\r\n]*Imported from[^\r\n]*[\r\n]*/gim, '');
+    cleaned = cleaned.replace(/^[> \t]*[^\r\n]*Certified by[^\r\n]*[\r\n]*/gim, '');
+    cleaned = cleaned.replace(/^[> \t]*[^\r\n]*SHA-256[^\r\n]*[\r\n]*/gim, '');
+    cleaned = cleaned.replace(/^[> \t]*\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM)[^\r\n]*[\r\n]*/gim, '');
+
+    // 2. Strip model badges in parentheses, e.g. (⚡ Titan 70B Heavy Core (On-Device Workstation))
+    cleaned = cleaned.replace(/\s*\([^\n)]*?(?:Titan|Girionix|GPT|Claude|Llama|Gemini|Mistral|DeepSeek)[^\n)]*(?:\([^\n)]*\)[^\n)]*)?\)/gi, '');
+    cleaned = cleaned.replace(/\s*\([^\n)]*(?:Titan|Girionix|Workstation)[^\n)]*\)/gi, '');
+    cleaned = cleaned.replace(/\s*\([^)]*On-Device Workstation[^)]*\)/gi, '');
+    cleaned = cleaned.replace(/\s*\)+$/gm, '');
+
+    // 3. Strip leading "> " blockquote markers that enclose the response lines
+    const lines = cleaned.split(/\r?\n/);
+    cleaned = lines.map(line => line.replace(/^[> \t]+/, '')).join('\n');
+
+    // 4. Strip any HTML wrapper divs or blockquotes that might carry border-left or blue margins
+    cleaned = cleaned.replace(/<blockquote[^>]*style="[^"]*border-left[^"]*"[^>]*>([\s\S]*?)<\/blockquote>/gi, '$1');
+    cleaned = cleaned.replace(/<div[^>]*style="[^"]*border-left[^"]*"[^>]*>([\s\S]*?)<\/div>/gi, '$1');
+    cleaned = cleaned.replace(/<div class="girionix-pdf-addendum"[^>]*>([\s\S]*?)<\/div>/gi, '$1');
+
+    return cleaned.trim();
+  }
+
+  /**
+   * Converts markdown or AI text to 100% natural semantic HTML with standard document typography.
+   * Completely free of blue borders, margins, blockquotes, or artificial banners.
+   */
+  parseMarkdownToNaturalHtml(text) {
+    let html = this.cleanseAiImportText(text || '');
+
+    // Code blocks
+    html = html.replace(/```([a-zA-Z]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+      return `<pre style="background:#0f172a; color:#38bdf8; padding:14px 18px; border-radius:6px; font-family:var(--font-mono, monospace); font-size:12px; overflow-x:auto; margin:14px 0; border:1px solid #334155;"><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
+    });
+
+    // Tables: Markdown table -> clean styled HTML table
+    const tableRegex = /((?:\|.+?\|\r?\n)+)/g;
+    html = html.replace(tableRegex, (match) => {
+      const lines = match.trim().split('\n').filter(l => l.trim().length > 0);
+      if (lines.length < 2) return match;
+
+      let tableHtml = '<table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:13px; border:1px solid #cbd5e1;">';
+      lines.forEach((line, idx) => {
+        if (/^\|?\s*[-:]+[-|\s:]*$/.test(line)) return;
+        const cells = line.split('|').filter((_, i, arr) => i > 0 && i < arr.length - 1);
+        if (cells.length === 0) return;
+
+        if (idx === 0) {
+          tableHtml += '<tr style="background:#1e293b; color:#ffffff;">';
+          cells.forEach(c => {
+            tableHtml += `<th style="padding:8px 12px; text-align:left; border:1px solid #334155; font-weight:700;">${c.trim()}</th>`;
+          });
+          tableHtml += '</tr>';
+        } else {
+          const bg = idx % 2 === 0 ? '#f8fafc' : '#ffffff';
+          tableHtml += `<tr style="background:${bg};">`;
+          cells.forEach(c => {
+            tableHtml += `<td style="padding:8px 12px; border:1px solid #cbd5e1; color:#1e293b;">${c.trim()}</td>`;
+          });
+          tableHtml += '</tr>';
+        }
+      });
+      tableHtml += '</table>';
+      return tableHtml;
+    });
+
+    // Strip any residual '>' from the start of heading lines
+    html = html.replace(/^[> \t]+(#{1,6}\s)/gm, '$1');
+
+    // Headings (###### down to #) - clean natural typography, NO blue border, NO margin line
+    html = html.replace(/^######[ \t]+(.*$)/gim, '<h6 style="font-size:12px; font-weight:700; color:#1e293b; margin:12px 0 4px;">$1</h6>');
+    html = html.replace(/^#####[ \t]+(.*$)/gim, '<h5 style="font-size:13px; font-weight:700; color:#1e293b; margin:14px 0 6px;">$1</h5>');
+    html = html.replace(/^####[ \t]+(.*$)/gim, '<h4 style="font-size:15px; font-weight:700; color:#0f172a; margin:16px 0 6px;">$1</h4>');
+    html = html.replace(/^###[ \t]+(.*$)/gim, '<h3 style="font-size:17px; font-weight:700; color:#0f172a; margin:18px 0 8px;">$1</h3>');
+    html = html.replace(/^##[ \t]+(.*$)/gim, '<h2 style="font-size:20px; font-weight:700; color:#0f172a; margin:22px 0 10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">$1</h2>');
+    html = html.replace(/^#[ \t]+(.*$)/gim, '<h1 style="font-size:26px; font-weight:800; color:#0f172a; margin:24px 0 12px;">$1</h1>');
+
+    // Bold / Italic
+    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+    // Blockquotes: clean subtle quote, NO harsh blue margin
+    html = html.replace(/^>[ \t]+(.*$)/gim, '<p style="margin:8px 0 8px 16px; font-style:italic; color:#475569;">$1</p>');
+
+    // Numbered & bullet lists
+    html = html.replace(/^\d+\.\s+(.*$)/gim, '<li style="margin:4px 0; color:#1e293b;">$1</li>');
+    html = html.replace(/^[-*•]\s+(.*$)/gim, '<li style="margin:4px 0; color:#1e293b;">$1</li>');
+    html = html.replace(/((?:<li style="[^"]*">.*?<\/li>\s*)+)/g, '<ul style="margin:10px 0; padding-left:24px;">$1</ul>');
+
+    // Paragraphs
+    const paragraphs = html.split(/\n{2,}/).map(p => {
+      p = p.trim();
+      if (!p) return '';
+      if (p.startsWith('<h') || p.startsWith('<table') || p.startsWith('<pre') || p.startsWith('<blockquote') || p.startsWith('<ul') || p.startsWith('<ol')) {
+        return p;
+      }
+      return `<p style="margin:10px 0; line-height:1.65; color:#1e293b; font-size:14px;">${p.replace(/\n/g, '<br>')}</p>`;
+    }).join('');
+
+    return paragraphs;
+  }
+
+  /**
    * Universal Workplace AI Importer: Parses and injects AI content directly into active office tool.
    * @param {string} rawContent Content to parse and import
    * @param {object} options Metadata or trigger source
@@ -2045,7 +2266,7 @@ class GiriOrbitPlatform {
       return;
     }
 
-    const text = rawContent.trim();
+    const text = this.cleanseAiImportText(rawContent.trim());
     let current = this.currentView || 'launcher';
 
     // Auto-navigate to appropriate tool if currently on launcher hub or full AI page
@@ -2083,7 +2304,7 @@ class GiriOrbitPlatform {
   }
 
   /**
-   * Import AI content into Giri Drift (Word Processor)
+   * Import AI content into Giri Drift (Word Processor) - Clean Natural Semantic HTML
    */
   importContentToDrift(text) {
     const paper = document.getElementById('drift-paper-canvas');
@@ -2093,90 +2314,37 @@ class GiriOrbitPlatform {
       return;
     }
 
-    let html = text;
+    const paragraphs = this.parseMarkdownToNaturalHtml(text);
 
-    // Code blocks
-    html = html.replace(/```([a-zA-Z]*)\n([\s\S]*?)```/g, (_, lang, code) => {
-      return `<pre style="background:#0f172a; color:#38bdf8; padding:14px 18px; border-radius:8px; font-family:var(--font-mono, monospace); font-size:12px; overflow-x:auto; margin:14px 0; border:1px solid #334155;"><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
-    });
+    // Target the active sheet or last sheet in the document
+    let targetSheet = paper.querySelector('.drift-page-sheet.active-sheet') || paper.querySelector('.drift-page-sheet:last-of-type');
+    if (!targetSheet) {
+      targetSheet = document.createElement('div');
+      targetSheet.className = 'drift-page-sheet active-sheet';
+      targetSheet.contentEditable = 'true';
+      targetSheet.spellcheck = true;
+      targetSheet.dataset.page = '1';
+      paper.appendChild(targetSheet);
+    }
 
-    // Tables: Markdown table -> styled HTML table
-    const tableRegex = /((?:\|.+?\|\r?\n)+)/g;
-    html = html.replace(tableRegex, (match) => {
-      const lines = match.trim().split('\n').filter(l => l.trim().length > 0);
-      if (lines.length < 2) return match;
+    // Insert natural content directly into target sheet (NO wrapper div, NO blue line, NO banner!)
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = paragraphs;
 
-      let tableHtml = '<table style="width:100%; border-collapse:collapse; margin:18px 0; font-size:13px; border:1px solid #cbd5e1;">';
-      lines.forEach((line, idx) => {
-        if (/^\|?\s*[-:]+[-|\s:]*$/.test(line)) return;
-        const cells = line.split('|').filter((_, i, arr) => i > 0 && i < arr.length - 1);
-        if (cells.length === 0) return;
+    const fragment = document.createDocumentFragment();
+    while (tempDiv.firstChild) {
+      fragment.appendChild(tempDiv.firstChild);
+    }
 
-        if (idx === 0) {
-          tableHtml += '<tr style="background:#0f172a; color:#ffffff;">';
-          cells.forEach(c => {
-            tableHtml += `<th style="padding:10px 14px; text-align:left; border:1px solid #334155; font-weight:700;">${c.trim()}</th>`;
-          });
-          tableHtml += '</tr>';
-        } else {
-          const bg = idx % 2 === 0 ? '#f8fafc' : '#ffffff';
-          tableHtml += `<tr style="background:${bg};">`;
-          cells.forEach(c => {
-            tableHtml += `<td style="padding:8px 14px; border:1px solid #cbd5e1; color:#334155;">${c.trim()}</td>`;
-          });
-          tableHtml += '</tr>';
-        }
-      });
-      tableHtml += '</table>';
-      return tableHtml;
-    });
-
-    // Headers
-    html = html.replace(/^### (.*$)/gim, '<h3 style="font-size:16px; font-weight:700; color:#0f172a; margin:16px 0 8px;">$1</h3>');
-    html = html.replace(/^## (.*$)/gim, '<h2 style="font-size:19px; font-weight:700; color:#0f172a; margin:20px 0 10px; border-bottom:1px solid #e2e8f0; padding-bottom:4px;">$1</h2>');
-    html = html.replace(/^# (.*$)/gim, '<h1 style="font-size:24px; font-weight:800; color:#0f172a; margin:24px 0 12px;">$1</h1>');
-
-    // Bold / Italic
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
-
-    // Blockquotes
-    html = html.replace(/^> (.*$)/gim, '<blockquote style="border-left:4px solid #0284c7; background:#f0f9ff; padding:10px 16px; margin:12px 0; border-radius:4px; font-style:italic; color:#0369a1;">$1</blockquote>');
-
-    // Lists
-    html = html.replace(/^[-*] (.*$)/gim, '<li style="margin:4px 0; color:#334155;">$1</li>');
-    html = html.replace(/((?:<li style="[^"]*">.*?<\/li>\s*)+)/g, '<ul style="margin:10px 0; padding-left:22px;">$1</ul>');
-
-    // Paragraphs
-    const paragraphs = html.split(/\n{2,}/).map(p => {
-      p = p.trim();
-      if (!p) return '';
-      if (p.startsWith('<h') || p.startsWith('<table') || p.startsWith('<pre') || p.startsWith('<blockquote') || p.startsWith('<ul') || p.startsWith('<ol')) {
-        return p;
-      }
-      return `<p style="margin:10px 0; line-height:1.65; color:#1e293b; font-size:14px;">${p.replace(/\n/g, '<br>')}</p>`;
-    }).join('');
-
-    const aiWrapper = document.createElement('div');
-    aiWrapper.className = 'girionix-imported-content';
-    aiWrapper.style.cssText = 'margin:18px 0; padding:18px 22px; background:linear-gradient(to right, rgba(6,182,212,0.03), rgba(59,130,246,0.02)); border-left:4px solid #06b6d4; border-radius:0 8px 8px 0;';
-    aiWrapper.innerHTML = `
-      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; font-size:11px; font-family:var(--font-mono, monospace); color:#0284c7; border-bottom:1px solid rgba(6,182,212,0.15); padding-bottom:6px;">
-        <span style="font-weight:700;">📥 Imported from Girionix AI Office Copilot</span>
-        <span>${new Date().toLocaleTimeString()}</span>
-      </div>
-      ${paragraphs}
-    `;
-
-    paper.appendChild(aiWrapper);
-    paper.appendChild(document.createElement('p'));
+    targetSheet.appendChild(fragment);
+    targetSheet.appendChild(document.createElement('p'));
 
     try {
       localStorage.setItem('giri_orbit_drift_doc', paper.innerHTML);
       paper.dispatchEvent(new Event('input', { bubbles: true }));
     } catch (_) {}
 
-    this.showToast('✅ Successfully imported AI content into Giri Drift Docs!', 'blue');
+    this.showToast('✅ Added content to document', 'blue');
   }
 
   /**
@@ -2200,8 +2368,9 @@ class GiriOrbitPlatform {
       }
     } catch (_) {}
 
+    const cleanText = this.cleanseAiImportText(text || '');
     let rows = [];
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    const lines = cleanText.split('\n').map(l => l.trim()).filter(Boolean);
 
     // 1. Markdown Table parsing
     const mdLines = lines.filter(l => l.includes('|'));
@@ -2337,15 +2506,16 @@ class GiriOrbitPlatform {
 
     if (!Array.isArray(slides)) slides = [];
 
-    const rawBlocks = text.split(/\n(?:---|\*{3,}|#{1,2}\s*Slide\s*\d+|Slide\s*\d+:)\n/i).filter(b => b.trim().length > 0);
-    const blocksToProcess = rawBlocks.length > 0 ? rawBlocks : [text];
+    const cleanText = this.cleanseAiImportText(text || '');
+    const rawBlocks = cleanText.split(/\n(?:---|\*{3,}|#{1,2}\s*Slide\s*\d+|Slide\s*\d+:)\n/i).filter(b => b.trim().length > 0);
+    const blocksToProcess = rawBlocks.length > 0 ? rawBlocks : [cleanText];
     let createdCount = 0;
 
     blocksToProcess.forEach((block, idx) => {
       const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
       if (lines.length === 0) return;
 
-      let slideTitle = `Strategic Slide ${slides.length + 1}`;
+      let slideTitle = `Slide ${slides.length + 1}`;
       let slideDesc = '';
       const features = [];
 
@@ -2368,7 +2538,7 @@ class GiriOrbitPlatform {
       });
 
       if (!slideDesc) {
-        slideDesc = 'Synthesized executive strategy generated by Girionix AI Office Copilot.';
+        slideDesc = slideTitle;
       }
 
       if (features.length === 0) {
@@ -2381,7 +2551,7 @@ class GiriOrbitPlatform {
 
       const newSlide = {
         id: Date.now() + idx,
-        tag: `AI DIRECTIVE ${String(slides.length + 1).padStart(2, '0')}`,
+        tag: `SLIDE ${String(slides.length + 1).padStart(2, '0')}`,
         title: slideTitle,
         desc: slideDesc,
         features: features.slice(0, 4)
@@ -2420,23 +2590,15 @@ class GiriOrbitPlatform {
       }
     } catch (_) {}
 
+    const cleanText = this.cleanseAiImportText(text || '');
     const sheet = document.getElementById('pdf-sheet') || document.querySelector('.pdf-paper-sheet');
     if (sheet) {
-      const addendum = document.createElement('div');
-      addendum.className = 'girionix-pdf-addendum';
-      addendum.style.cssText = 'margin-top:24px; padding:16px 20px; background:#eff6ff; border:1px solid #3b82f6; border-radius:6px; font-size:12px; color:#1e40af; line-height:1.6;';
-      addendum.innerHTML = `
-        <div style="font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; color:#1d4ed8; display:flex; align-items:center; gap:6px;">
-          <span>🔒 Girionix AI Sovereign Verification Addendum</span>
-          <span style="font-size:10px; padding:2px 6px; background:#2563eb; color:#fff; border-radius:10px;">VALIDATED</span>
-        </div>
-        <div>${text.replace(/\n/g, '<br>')}</div>
-        <div style="margin-top:8px; font-size:10px; color:#60a5fa; font-family:monospace;">
-          Certified by GIRI Orbit • Timestamp: ${new Date().toISOString()} • SHA-256 Verified
-        </div>
-      `;
-      sheet.appendChild(addendum);
-      this.showToast('✅ Appended AI compliance addendum to Giri Aegis PDF!', 'orange');
+      const naturalNode = document.createElement('div');
+      naturalNode.className = 'aegis-natural-content';
+      naturalNode.style.cssText = 'margin-top:20px; font-size:12.5px; color:#1e293b; line-height:1.6; font-family:var(--font-sans, sans-serif);';
+      naturalNode.innerHTML = cleanText.replace(/\n/g, '<br>');
+      sheet.appendChild(naturalNode);
+      this.showToast('✅ Added content to Aegis PDF', 'orange');
     } else {
       this.showToast('PDF canvas ready; switch to Aegis PDF to inspect', 'orange');
     }
@@ -3043,6 +3205,7 @@ class GiriOrbitPlatform {
   getFormatsForTool(tool) {
     const formatConfigs = {
       drift: [
+        { ext: 'gdrift', name: 'Giri Drift Document (.gdrift)', desc: 'Native sovereign Giri Drift format — full fidelity', color: '#e42528', label: 'GDRIFT' },
         { ext: 'docx', name: 'Word Document (.docx)', desc: 'Word Open XML document format', color: '#2563eb', label: 'DOCX' },
         { ext: 'doc', name: 'Word 97-2003 (.doc)', desc: 'Legacy Word binary format', color: '#1d4ed8', label: 'DOC' },
         { ext: 'odt', name: 'Open Document Text (.odt)', desc: 'LibreOffice/OpenOffice Writer format', color: '#1a6b3c', label: 'ODT' },
@@ -3054,6 +3217,7 @@ class GiriOrbitPlatform {
         { ext: 'epub', name: 'eBook (.epub)', desc: 'Open ebook container format', color: '#059669', label: 'EPUB' }
       ],
       axis: [
+        { ext: 'gaxis', name: 'Giri Axis Workbook (.gaxis)', desc: 'Native sovereign Giri Axis spreadsheet format', color: '#e42528', label: 'GAXIS' },
         { ext: 'xlsx', name: 'Spreadsheet Workbook (.xlsx)', desc: 'Modern Open XML spreadsheet', color: '#107c41', label: 'XLSX' },
         { ext: 'xls', name: 'Spreadsheet 97-2003 (.xls)', desc: 'Legacy spreadsheet format', color: '#15803d', label: 'XLS' },
         { ext: 'ods', name: 'Open Spreadsheet (.ods)', desc: 'LibreOffice/OpenOffice Calc format', color: '#1a6b3c', label: 'ODS' },
@@ -3065,6 +3229,7 @@ class GiriOrbitPlatform {
         { ext: 'html', name: 'HTML Table (.html)', desc: 'Browser-viewable data table', color: '#ea580c', label: 'HTML' }
       ],
       kinetic: [
+        { ext: 'gkinetic', name: 'Giri Kinetic Deck (.gkinetic)', desc: 'Native sovereign Giri Kinetic presentation format', color: '#e42528', label: 'GKINETIC' },
         { ext: 'pptx', name: 'Presentation (.pptx)', desc: 'Office Open XML Presentation (.pptx)', color: '#ea580c', label: 'PPTX' },
         { ext: 'ppt', name: 'Presentation 97-2003 (.ppt)', desc: 'Legacy presentation format (.ppt)', color: '#c2410c', label: 'PPT' },
         { ext: 'odp', name: 'Open Presentation (.odp)', desc: 'LibreOffice/OpenOffice Impress format', color: '#1a6b3c', label: 'ODP' },
@@ -3073,6 +3238,7 @@ class GiriOrbitPlatform {
         { ext: 'json', name: 'Kinetic Deck (.json)', desc: 'Native Giri Kinetic presentation data model', color: '#7c3aed', label: 'JSON' }
       ],
       pdf: [
+        { ext: 'gaegis', name: 'Giri Aegis Document (.gaegis)', desc: 'Native sovereign Giri Aegis PDF studio format', color: '#e42528', label: 'GAEGIS' },
         { ext: 'pdf', name: 'PDF Document (.pdf)', desc: 'Finalized stamped PDF with signatures', color: '#dc2626', label: 'PDF' },
         { ext: 'docx', name: 'Word Document (.docx)', desc: 'Converted editable Word document', color: '#2563eb', label: 'DOCX' },
         { ext: 'txt', name: 'Plain Text (.txt)', desc: 'Clean extracted document text', color: '#64748b', label: 'TXT' },
@@ -3108,11 +3274,62 @@ class GiriOrbitPlatform {
    * Enterprise Multi-Format File Generation
    */
   generateAndDownloadFile(tool, ext, fullFileName, baseName) {
+    // Native sovereign Giri formats — full-fidelity export
+    if (ext === 'gdrift') {
+      const paper = document.getElementById('drift-paper-canvas');
+      const titleEl = document.getElementById('drift-doc-title');
+      const payload = JSON.stringify({
+        format: 'gdrift', version: '1.0',
+        title: titleEl?.value || baseName,
+        content: paper ? paper.innerHTML : (localStorage.getItem('giri_orbit_drift_doc') || ''),
+        exportedAt: new Date().toISOString()
+      }, null, 2);
+      this.downloadBlob(payload, 'application/x-gdrift+json', fullFileName);
+      this.showToast(`✅ Exported ${fullFileName} (Giri Drift native format)`, 'red');
+      return;
+    }
+
+    if (ext === 'gaxis') {
+      const payload = JSON.stringify({
+        format: 'gaxis', version: '1.0',
+        data: JSON.parse(localStorage.getItem('giri_orbit_axis_sheets') || '{}'),
+        exportedAt: new Date().toISOString()
+      }, null, 2);
+      this.downloadBlob(payload, 'application/x-gaxis+json', fullFileName);
+      this.showToast(`✅ Exported ${fullFileName} (Giri Axis native format)`, 'red');
+      return;
+    }
+
+    if (ext === 'gkinetic') {
+      const payload = JSON.stringify({
+        format: 'gkinetic', version: '1.0',
+        slides: JSON.parse(localStorage.getItem('giri_orbit_kinetic_deck') || '[]'),
+        exportedAt: new Date().toISOString()
+      }, null, 2);
+      this.downloadBlob(payload, 'application/x-gkinetic+json', fullFileName);
+      this.showToast(`✅ Exported ${fullFileName} (Giri Kinetic native format)`, 'red');
+      return;
+    }
+
+    if (ext === 'gaegis') {
+      const pdfSheet = document.getElementById('pdf-sheet');
+      const payload = JSON.stringify({
+        format: 'gaegis', version: '1.0',
+        content: pdfSheet ? pdfSheet.innerHTML : (localStorage.getItem('giri_orbit_pdf_pages') || ''),
+        exportedAt: new Date().toISOString()
+      }, null, 2);
+      this.downloadBlob(payload, 'application/x-gaegis+json', fullFileName);
+      this.showToast(`✅ Exported ${fullFileName} (Giri Aegis native format)`, 'red');
+      return;
+    }
+
+
     if (ext === 'pdf') {
       this.showToast(`Generating ${fullFileName}... Select 'Save as PDF' to finalize`, 'red');
       window.print();
       return;
     }
+
 
     if (ext === 'docx' || ext === 'doc') {
       const content = this.buildWordDocument(tool, baseName);

@@ -1324,6 +1324,10 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
                   <strong style="color:#2563eb; font-size:18px;">⚡</strong>
                   <span style="color:#2563eb;">AI Formula</span>
                 </button>
+                <button class="fluent-btn-large" id="btn-axis-import-from-girionix" title="Import spreadsheet data from Girionix AI" style="color:#2563eb;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span style="color:#2563eb;">Import from AI</span>
+                </button>
               </div>
               <div class="fluent-group-footer"><span class="fluent-group-label" style="color:#2563eb; font-weight:700;">Girionix AI</span></div>
             </div>
@@ -6833,6 +6837,12 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     container.querySelector('#btn-axis-ai-formula-copilot')?.addEventListener('click', () => openModal());
     container.querySelector('#btn-axis-home-ai-copilot')?.addEventListener('click', () => openModal());
     container.querySelector('#btn-axis-ribbon-ai-copilot')?.addEventListener('click', () => openModal());
+    container.querySelector('#btn-axis-import-from-girionix')?.addEventListener('click', () => {
+      if (window.orbitPlatform && typeof window.orbitPlatform.toggleGirionixAiDrawer === 'function') {
+        window.orbitPlatform.toggleGirionixAiDrawer('live');
+        window.orbitPlatform.showToast('📊 Ask Girionix AI to generate a table or data, then click Import on any response', 'green');
+      }
+    });
 
     // Window global hook
     window.axisAiCopilot = {

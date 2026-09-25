@@ -38,12 +38,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="assets/giri-logo-symbol.png">
   <link rel="apple-touch-icon" href="assets/giri-logo-symbol.png">
-  <link rel="stylesheet" href="css/styles.css?v=10.0">
+  <link rel="stylesheet" href="css/styles.css?v=10.8">
   <link rel="stylesheet" href="css/hub.css?v=10.0">
   <link rel="stylesheet" href="css/fontsAndSelection.css?v=10.0">
-  <link rel="stylesheet" href="css/sync.css?v=10.0">
+  <link rel="stylesheet" href="css/sync.css?v=10.8">
   <link rel="stylesheet" href="css/mobile.css?v=10.0">
   <link rel="manifest" href="manifest.json">
+  <!-- Official Google Identity Services SDK -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -316,62 +318,30 @@
 
   <!-- Girionix AI Office Suite Copilot Side-Panel Drawer -->
   <aside class="girionix-ai-drawer" id="girionix-ai-drawer" aria-hidden="true" role="complementary" aria-label="Girionix AI Office Copilot">
-    <div class="girionix-drawer-header">
-      <div class="girionix-drawer-title-wrap">
-        <div class="girionix-drawer-logo" style="display:flex; align-items:center; justify-content:center;">
-          <img src="assets/girionix-logo.png" alt="Girionix AI Logo" style="width:28px; height:28px; object-fit:contain; border-radius:6px;">
+    <!-- Draggable Resize Handle -->
+    <div class="girionix-resize-handle" id="girionix-resize-handle" title="Drag to adjust assistant width"></div>
+
+    <div class="girionix-drawer-header" style="padding:10px 14px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #27272a; background:#11141c;">
+      <div class="girionix-drawer-title-wrap" style="display:flex; align-items:center; gap:8px;">
+        <div class="girionix-drawer-logo" style="display:flex; align-items:center; justify-content:center; background:transparent; box-shadow:none; width:auto; height:auto;">
+          <img src="assets/giri-logo-symbol.png" alt="Giri Orbit Logo" style="width:26px; height:26px; object-fit:contain;">
         </div>
-        <div>
-          <div class="girionix-drawer-title">
-            <span>Girionix AI Copilot</span>
-            <span class="girionix-status-badge">🟢 Office Connected</span>
-          </div>
-          <div class="girionix-drawer-sub">Sovereign Office Suite Copilot • for Orbit User</div>
+        <div style="display:flex; align-items:center; gap:6px;">
+          <span style="font-size:13.5px; font-weight:800; color:#f1f5f9; letter-spacing:-0.2px;">Girionix AI</span>
+          <span style="background:rgba(168,85,247,0.18); border:1px solid rgba(168,85,247,0.4); color:#c084fc; font-size:10px; font-weight:800; padding:1.5px 6px; border-radius:10px; letter-spacing:0.5px;">PRO</span>
         </div>
+        <span id="girionix-tool-lock-badge" style="background:rgba(37,99,235,0.15); border:1px solid rgba(37,99,235,0.35); color:#60a5fa; font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; margin-left:2px;">Drift Copilot</span>
       </div>
-      <div class="girionix-drawer-actions">
-        <button class="girionix-import-badge-btn" id="btn-girionix-drawer-import" title="Import latest AI content directly into active workplace (Drift, Axis, Kinetic, Aegis)">📥 Import to Workplace</button>
-        <button class="girionix-icon-btn" id="btn-girionix-expand" title="Expand / Dock Toggle">⛶</button>
-        <a href="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Orbit%20User" target="_blank" rel="noopener" class="girionix-icon-btn" title="Open in External Tab">↗</a>
-        <button class="girionix-icon-btn" id="btn-girionix-drawer-close" title="Close Assistant (ESC)">✕</button>
+      <div class="girionix-drawer-actions" style="display:flex; align-items:center; gap:6px;">
+        <button class="girionix-icon-btn" id="btn-girionix-expand" title="Adjust Width (Compact / Wide / Full)" style="background:transparent; border:1px solid #27272a; color:#94a3b8; border-radius:6px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px;">⛶</button>
+        <button class="girionix-icon-btn" id="btn-girionix-drawer-close" title="Close Copilot (ESC)" style="background:transparent; border:1px solid #27272a; color:#94a3b8; border-radius:6px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px;">✕</button>
       </div>
     </div>
 
-    <!-- Mode Tabs: Live Office AI Chat vs Contextual Direct Copilot -->
-    <div class="girionix-drawer-tabs">
-      <button class="girionix-tab-btn active" data-drawer-tab="live">💬 Office AI Chat</button>
-      <button class="girionix-tab-btn" data-drawer-tab="quick">⚡ Office Quick Assist</button>
-    </div>
-
-    <!-- Tab 1: Live Office AI Chat Iframe -->
-    <div class="girionix-drawer-pane active" id="girionix-pane-live">
-      <div class="girionix-frame-controls">
-        <span class="girionix-frame-url">https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Orbit%20User</span>
-        <button class="girionix-mini-btn" id="btn-girionix-frame-reload" title="Reload AI Engine">🔄 Reload</button>
-      </div>
-      <div class="girionix-iframe-wrap">
-        <iframe id="girionix-drawer-iframe" src="about:blank" data-src="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;mode=office&amp;name=Orbit%20User" title="Girionix AI Office Copilot" allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen"></iframe>
-      </div>
-    </div>
-
-    <!-- Tab 2: Contextual Office Quick Assist -->
-    <div class="girionix-drawer-pane" id="girionix-pane-quick">
-      <div class="girionix-quick-header">
-        <div class="girionix-active-tool-badge" id="girionix-active-tool-indicator">
-          <span>Active Context:</span>
-          <strong id="girionix-active-tool-name">Drift Document</strong>
-        </div>
-        <p class="girionix-quick-hint">Execute instant AI directives with 1-click injection directly into your active canvas.</p>
-      </div>
-
-      <!-- Custom Prompt Bar -->
-      <div class="girionix-custom-prompt-wrap">
-        <input type="text" id="girionix-drawer-prompt-input" placeholder="Ask Girionix AI anything (e.g. 'Build 4-quarter revenue model', 'Draft strategic pitch')..." spellcheck="false">
-        <button id="btn-girionix-drawer-send" title="Send to AI">⚡ Run</button>
-      </div>
-
-      <div class="girionix-quick-cards" id="girionix-quick-cards-container">
-        <!-- Dynamically injected based on current tool -->
+    <!-- Direct Full-Height Copilot Workspace with Auto-Selected Office Tool -->
+    <div class="girionix-drawer-content" style="flex:1; display:flex; flex-direction:column; min-height:0; position:relative; overflow:hidden;">
+      <div class="girionix-iframe-wrap" style="flex:1; width:100%; height:100%; position:relative;">
+        <iframe id="girionix-drawer-iframe" src="about:blank" data-src="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;embed=true&amp;model=girionix-pro&amp;tool=drift&amp;lockTool=drift&amp;lock=true&amp;name=Orbit%20User" title="Girionix AI Office Copilot" allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen" style="width:100%; height:100%; border:none; display:block;"></iframe>
       </div>
     </div>
   </aside>
@@ -380,7 +350,7 @@
   <div class="orbit-toast-wrap" id="orbit-toast-wrap" aria-live="polite"></div>
 
   <!-- Main Orchestrator -->
-  <script type="module" src="js/app.js?v=9.0"></script>
+  <script type="module" src="js/app.js?v=10.0"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

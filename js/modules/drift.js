@@ -1345,6 +1345,12 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
               <span>Info</span>
               <span class="file-menu-arrow">›</span>
             </div>
+            <div class="file-menu-sep"></div>
+            <div class="file-menu-item" data-action="shortcuts-settings" id="file-menu-shortcuts-settings">
+              <span class="file-menu-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
+              <span>Settings & Shortcuts</span>
+              <span class="file-menu-arrow">›</span>
+            </div>
           </div>
 
           <!-- Fluent Grouped Ribbon Panes -->
@@ -2212,13 +2218,18 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
               <button id="btn-close-drift-sidebar-drawer" style="background:#27272a; border:1px solid #3f3f46; color:#cbd5e1; border-radius:4px; padding:3px 8px; font-size:12px; cursor:pointer;">✕</button>
             </div>
 
-            <!-- Navigation Tab Switcher -->
-            <div class="drift-sidebar-nav-tabs" style="display:flex; gap:4px; margin-bottom:4px; background:#1e293b; padding:3px; border-radius:6px; border:1px solid #334155; flex-shrink:0;">
-              <button class="drift-sidebar-nav-tab active" id="tab-drift-pages" style="flex:1; background:#2563eb; color:#fff; border:none; border-radius:4px; padding:6px 4px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px;">
-                <span>📄</span> Pages
-              </button>
-              <button class="drift-sidebar-nav-tab" id="tab-drift-headings" style="flex:1; background:transparent; color:#94a3b8; border:none; border-radius:4px; padding:6px 4px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px;">
-                <span>📑</span> Headings
+            <!-- Navigation Tab Switcher & Collapse Button -->
+            <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px; flex-shrink:0;">
+              <div class="drift-sidebar-nav-tabs" style="display:flex; gap:4px; flex:1; background:#1e293b; padding:3px; border-radius:6px; border:1px solid #334155;">
+                <button class="drift-sidebar-nav-tab active" id="tab-drift-pages" style="flex:1; background:#2563eb; color:#fff; border:none; border-radius:4px; padding:6px 4px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px;">
+                  <span>📄</span> Pages
+                </button>
+                <button class="drift-sidebar-nav-tab" id="tab-drift-headings" style="flex:1; background:transparent; color:#94a3b8; border:none; border-radius:4px; padding:6px 4px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px;">
+                  <span>📑</span> Headings
+                </button>
+              </div>
+              <button id="btn-drift-collapse-sidebar" title="Close / Hide Navigation Sidebar (Ctrl+Alt+N)" style="background:#18181b; border:1px solid #334155; color:#94a3b8; border-radius:6px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; flex-shrink:0; transition:all 0.15s;">
+                ⮜
               </button>
             </div>
 
@@ -2300,14 +2311,26 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
           <!-- Centered Paper Canvas Viewport -->
           <div class="drift-center-viewport" id="drift-center-viewport" style="position:relative;">
+            <!-- Floating Button to Re-open Sidebar when Closed -->
+            <button id="btn-drift-expand-sidebar-floating" title="Open Pages & Headings Sidebar (Ctrl+Alt+N)" style="display:none; position:absolute; top:12px; left:16px; z-index:40; background:#1e293b; border:1px solid #38bdf8; color:#38bdf8; border-radius:20px; padding:5px 12px; font-size:11px; font-weight:700; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,0.4); align-items:center; gap:6px;">
+              <span>📄</span><span>Pages & Headings</span>
+            </button>
             <!-- Document Ruler Bar -->
             <div id="drift-top-ruler" style="width:816px; min-width:816px; max-width:816px; height:18px; background:#f1f5f9; border:1px solid #cbd5e1; border-bottom:none; display:flex; align-items:center; justify-content:space-between; padding:0 10px; font-size:9px; font-family:var(--font-mono); color:#64748b; margin:12px auto 0 auto; border-radius:4px 4px 0 0; user-select:none; box-sizing:border-box;">
               <span>| 1"</span><span>| 2"</span><span>| 3"</span><span>| 4"</span><span>| 5"</span><span>| 6"</span><span>| 7"</span><span>| 8"</span>
             </div>
 
-            <article class="paper-sheet-container" contenteditable="true" spellcheck="true" id="drift-paper-canvas" style="border-radius:0 0 4px 4px;">
+            <article class="paper-sheet-container" id="drift-paper-canvas" style="border-radius:0 0 4px 4px;">
               ${savedDoc}
             </article>
+
+            <!-- Bottom of Document Add Page Action Bar -->
+            <div class="drift-bottom-add-page-bar" style="width:816px; margin:24px auto 60px auto; display:flex; justify-content:center;">
+              <button id="btn-drift-canvas-add-page" type="button" title="Add New Physical Page (Ctrl+Enter)" style="display:inline-flex; align-items:center; gap:8px; background:#ffffff; border:1px solid #cbd5e1; color:#2563eb; font-weight:700; font-size:13px; padding:9px 24px; border-radius:24px; box-shadow:0 2px 10px rgba(0,0,0,0.06); cursor:pointer; transition:all 0.18s ease;">
+                <span style="font-size:16px; line-height:1;">＋</span>
+                <span>Add Page</span>
+              </button>
+            </div>
           </div>
 
           <!-- Right Slide-Over Comments Panel -->
@@ -2492,6 +2515,96 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           </div>
           <div class="office-dialog-footer">
             <button class="btn-giri-primary" id="btn-ok-stats" style="padding:7px 16px; font-size:12px;">Close</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Keyboard Shortcuts & Settings Dialog -->
+      <div class="office-modal-backdrop" id="drift-shortcuts-modal">
+        <div class="office-dialog-card" role="dialog" aria-modal="true" style="width:580px; max-width:92vw;">
+          <div class="office-dialog-header">
+            <span class="office-dialog-title">⌨️ Keyboard Shortcuts & Settings</span>
+            <button class="esc-kbd" id="btn-close-shortcuts-modal">ESC</button>
+          </div>
+          <div class="office-dialog-body" style="max-height:60vh; overflow-y:auto; padding:16px 20px;">
+            <div style="margin-bottom:14px;">
+              <input type="text" id="shortcuts-search-input" class="dialog-input-field" placeholder="Search shortcut or command (e.g. thesaurus, bold, page, ai)..." style="width:100%;">
+            </div>
+            
+            <div class="shortcuts-list-container" id="shortcuts-list-container">
+              <!-- Navigation & Tools -->
+              <div class="shortcut-group-section" style="margin-bottom:16px;">
+                <h5 style="margin:0 0 8px 0; font-size:12px; text-transform:uppercase; color:#38bdf8; letter-spacing:0.5px;">Navigation & Workspaces</h5>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Toggle Pages & Headings Sidebar</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Ctrl</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Alt</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">N</kbd></span>
+                  </div>
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Thesaurus & Synonym Lookup</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Shift</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">F7</kbd> <span style="color:#64748b; font-size:11px; margin:0 2px;">or</span> <kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Alt</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">T</kbd></span>
+                  </div>
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Girionix AI Office Copilot</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Alt</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">J</kbd></span>
+                  </div>
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Find & Replace</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Ctrl</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">F</kbd></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Editing & Formatting -->
+              <div class="shortcut-group-section" style="margin-bottom:16px;">
+                <h5 style="margin:0 0 8px 0; font-size:12px; text-transform:uppercase; color:#38bdf8; letter-spacing:0.5px;">Editing & Document Formatting</h5>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Insert Page Break</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Ctrl</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Enter</kbd></span>
+                  </div>
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Bold Text</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Ctrl</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">B</kbd></span>
+                  </div>
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Italic Text</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Ctrl</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">I</kbd></span>
+                  </div>
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Underline Text</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Ctrl</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">U</kbd></span>
+                  </div>
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Undo / Redo</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Ctrl</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Z</kbd> / <kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Y</kbd></span>
+                  </div>
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Insert Hyperlink</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Ctrl</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">K</kbd></span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- File & Output -->
+              <div class="shortcut-group-section">
+                <h5 style="margin:0 0 8px 0; font-size:12px; text-transform:uppercase; color:#38bdf8; letter-spacing:0.5px;">File & Output</h5>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Save Document to Cloud / Memory</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Ctrl</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">S</kbd></span>
+                  </div>
+                  <div class="shortcut-item-row" style="display:flex; justify-content:space-between; align-items:center; padding:6px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid rgba(255,255,255,0.06);">
+                    <span style="font-size:12.5px; color:#f1f5f9;">Print / Export PDF</span>
+                    <span style="display:flex; gap:4px;"><kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">Ctrl</kbd>+<kbd class="shortcut-key-badge" style="background:#1e293b; border:1px solid #475569; padding:2px 7px; border-radius:4px; font-size:11px; font-family:monospace; color:#38bdf8;">P</kbd></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="office-dialog-footer" style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11.5px; color:#64748b;">Shortcuts work globally inside Giri Drift Docs</span>
+            <button class="btn-giri-primary" id="btn-ok-shortcuts" style="padding:7px 16px; font-size:12px;">Close</button>
           </div>
         </div>
       </div>
@@ -3144,8 +3257,30 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         if (e.key === 'Escape') {
           fileMenuDropdown?.classList.remove('open');
           emojiPickerDropdown?.classList.remove('open');
+          container.querySelector('#drift-shortcuts-modal')?.classList.remove('open');
           if (miniToolbar) miniToolbar.style.display = 'none';
           if (typeof closeDriftAiAssistant === 'function') closeDriftAiAssistant();
+        }
+
+        // Thesaurus Shortcut (Shift+F7 or Alt+T)
+        if ((e.shiftKey && e.key === 'F7') || (e.altKey && e.key.toLowerCase() === 't')) {
+          e.preventDefault();
+          if (typeof window._driftOpenThesaurus === 'function') window._driftOpenThesaurus();
+          return;
+        }
+
+        // Navigation & Outline Sidebar Toggle (Ctrl+Alt+N or Alt+F1)
+        if ((e.ctrlKey && e.altKey && e.key.toLowerCase() === 'n') || (e.altKey && e.key === 'F1')) {
+          e.preventDefault();
+          if (typeof window._driftToggleSidebar === 'function') window._driftToggleSidebar();
+          return;
+        }
+
+        // Insert Page Break Shortcut (Ctrl+Enter or Cmd+Enter)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+          e.preventDefault();
+          if (typeof window._driftInsertPageBreak === 'function') window._driftInsertPageBreak();
+          return;
         }
 
         // Girionix AI Assistant Shortcut (Alt+J or Ctrl+Shift+J)
@@ -3349,6 +3484,17 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
               infoModal?.classList.add('open');
               break;
             }
+            case 'shortcuts-settings': {
+              const scModal = container.querySelector('#drift-shortcuts-modal');
+              scModal?.classList.add('open');
+              const searchInput = scModal?.querySelector('#shortcuts-search-input');
+              if (searchInput) {
+                searchInput.value = '';
+                searchInput.focus();
+                filterDriftShortcuts('');
+              }
+              break;
+            }
           }
         });
       });
@@ -3358,6 +3504,22 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       container.querySelector('#btn-ok-history')?.addEventListener('click', () => container.querySelector('#drift-version-history-modal')?.classList.remove('open'));
       container.querySelector('#btn-close-info-modal')?.addEventListener('click', () => container.querySelector('#drift-info-modal')?.classList.remove('open'));
       container.querySelector('#btn-ok-info')?.addEventListener('click', () => container.querySelector('#drift-info-modal')?.classList.remove('open'));
+      const driftShortcutsModal = container.querySelector('#drift-shortcuts-modal');
+      container.querySelector('#btn-close-shortcuts-modal')?.addEventListener('click', () => driftShortcutsModal?.classList.remove('open'));
+      container.querySelector('#btn-ok-shortcuts')?.addEventListener('click', () => driftShortcutsModal?.classList.remove('open'));
+
+      function filterDriftShortcuts(query) {
+        const q = (query || '').toLowerCase().trim();
+        const rows = driftShortcutsModal?.querySelectorAll('.shortcut-item-row');
+        rows?.forEach(r => {
+          const text = r.textContent.toLowerCase();
+          r.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
+        });
+      }
+
+      container.querySelector('#shortcuts-search-input')?.addEventListener('input', (e) => {
+        filterDriftShortcuts(e.target.value);
+      });
 
       function renderVersionHistory() {
         const list = container.querySelector('#version-history-list');
@@ -3858,6 +4020,336 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         editorImportTplInput.value = '';
       });
 
+      // =====================================================================
+      // MULTI-PAGE MS WORD ARCHITECTURE ENGINE
+      // =====================================================================
+      function createPageSeparator(pageNum) {
+        const sep = document.createElement('div');
+        sep.className = 'drift-page-separator';
+        sep.contentEditable = 'false';
+        sep.dataset.page = String(pageNum);
+        sep.innerHTML = `
+          <span class="drift-page-sep-badge">
+            <span>Page ${pageNum}</span>
+            <button class="drift-page-delete-btn" type="button" title="Delete Page ${pageNum}">✕</button>
+          </span>
+        `;
+        sep.querySelector('.drift-page-delete-btn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          window._driftDeletePage(pageNum);
+        });
+        return sep;
+      }
+
+      function renumberDocPages() {
+        const sheets = paper.querySelectorAll('.drift-page-sheet');
+        sheets.forEach((sheet, idx) => {
+          const pageNum = idx + 1;
+          sheet.dataset.page = String(pageNum);
+          sheet.setAttribute('contenteditable', 'true');
+          sheet.setAttribute('spellcheck', 'true');
+          if (!sheet._hasSheetFocusListener) {
+            sheet._hasSheetFocusListener = true;
+            sheet.addEventListener('focus', () => {
+              paper.querySelectorAll('.drift-page-sheet').forEach(s => s.classList.remove('active-sheet'));
+              sheet.classList.add('active-sheet');
+              const counterBadge = container.querySelector('#drift-page-counter-badge');
+              if (counterBadge) counterBadge.textContent = `Page ${pageNum} of ${sheets.length}`;
+              container.querySelectorAll('.drift-page-thumb-card').forEach(c => {
+                const isMatch = parseInt(c.dataset.page, 10) === pageNum;
+                c.classList.toggle('active', isMatch);
+                c.style.borderColor = isMatch ? '#2563eb' : '#27272a';
+                c.style.background = isMatch ? '#1e293b' : '#18181b';
+              });
+            });
+          }
+        });
+
+        const separators = paper.querySelectorAll('.drift-page-separator');
+        separators.forEach((sep, idx) => {
+          const pageNum = idx + 2;
+          sep.dataset.page = String(pageNum);
+          const badge = sep.querySelector('.drift-page-sep-badge');
+          if (badge) {
+            badge.innerHTML = `
+              <span>Page ${pageNum}</span>
+              <button class="drift-page-delete-btn" type="button" title="Delete Page ${pageNum}">✕</button>
+            `;
+            badge.querySelector('.drift-page-delete-btn')?.addEventListener('click', (e) => {
+              e.stopPropagation();
+              window._driftDeletePage(pageNum);
+            });
+          }
+        });
+      }
+
+      // High-performance Auto-Pagination Engine (Natural MS Word Multi-Page Flow)
+      let isDriftPaginating = false;
+      function autoPaginateDriftPages(paperEl) {
+        if (!paperEl || isDriftPaginating) return;
+        isDriftPaginating = true;
+
+        try {
+          // In a 1056px page with 72px top and 72px bottom padding,
+          // content area maximum allowed bottom is 984px (use 960px safety threshold)
+          const PAGE_MAX_BOTTOM = 960;
+
+          let sheets = Array.from(paperEl.querySelectorAll('.drift-page-sheet'));
+          if (sheets.length === 0) return;
+
+          // If the editor is temporarily hidden during view switch, retry shortly
+          if (sheets[0].offsetHeight === 0) {
+            setTimeout(() => autoPaginateDriftPages(paperEl), 100);
+            return;
+          }
+
+          // Preserve active user selection so caret is never lost during pagination
+          const sel = window.getSelection();
+          let savedSelection = null;
+          if (sel && sel.rangeCount > 0 && paperEl.contains(sel.anchorNode)) {
+            const range = sel.getRangeAt(0);
+            savedSelection = {
+              startContainer: range.startContainer,
+              startOffset: range.startOffset,
+              endContainer: range.endContainer,
+              endOffset: range.endOffset
+            };
+          }
+
+          let didChange = false;
+
+          // Forward overflow distribution (Page N -> Page N+1)
+          for (let i = 0; i < sheets.length; i++) {
+            const sheet = sheets[i];
+
+            // Normalize orphan text nodes directly inside sheet into <p>
+            Array.from(sheet.childNodes).forEach(node => {
+              if (node.nodeType === 3 && node.textContent.trim().length > 0) {
+                const p = document.createElement('p');
+                p.textContent = node.textContent;
+                sheet.replaceChild(p, node);
+              }
+            });
+
+            // Ensure sheet at least contains one editable paragraph if empty
+            if (sheet.children.length === 0) {
+              sheet.innerHTML = '<p><br></p>';
+            }
+
+            // Check if this sheet is overflowing
+            let isOverflowing = (sheet.scrollHeight > 1056);
+            const children = Array.from(sheet.children);
+            let firstOverflowIdx = -1;
+
+            for (let c = 0; c < children.length; c++) {
+              const child = children[c];
+              const bottom = child.offsetTop + child.offsetHeight;
+              if (bottom > PAGE_MAX_BOTTOM) {
+                firstOverflowIdx = c;
+                isOverflowing = true;
+                break;
+              }
+            }
+
+            if (!isOverflowing && firstOverflowIdx === -1) {
+              continue;
+            }
+
+            // If overall scrollHeight > 1056 but no specific child was tagged, target from end
+            if (firstOverflowIdx === -1 && children.length > 1) {
+              firstOverflowIdx = children.length - 1;
+            }
+
+            // Ensure next sheet exists
+            let nextSheet = sheets[i + 1];
+            if (!nextSheet) {
+              const nextPageNum = sheets.length + 1;
+              const sep = createPageSeparator(nextPageNum);
+              nextSheet = document.createElement('div');
+              nextSheet.className = 'drift-page-sheet';
+              nextSheet.contentEditable = 'true';
+              nextSheet.spellcheck = true;
+              nextSheet.dataset.page = String(nextPageNum);
+              nextSheet.innerHTML = '<p><br></p>';
+
+              // Insert right after current sheet's separator or current sheet
+              if (sheet.nextSibling) {
+                paperEl.insertBefore(sep, sheet.nextSibling);
+                paperEl.insertBefore(nextSheet, sep.nextSibling);
+              } else {
+                paperEl.appendChild(sep);
+                paperEl.appendChild(nextSheet);
+              }
+              sheets.splice(i + 1, 0, nextSheet);
+              didChange = true;
+            }
+
+            // Clear empty placeholder in nextSheet if only <p><br></p> exists
+            const hasOnlyEmptyPlaceholder = (
+              nextSheet.children.length === 1 &&
+              (!nextSheet.firstElementChild?.textContent?.trim() || nextSheet.firstElementChild?.innerHTML === '<br>')
+            );
+            if (hasOnlyEmptyPlaceholder) {
+              nextSheet.innerHTML = '';
+            }
+
+            // Case A: Single massive child that overflows on its own
+            if ((firstOverflowIdx === 0 || firstOverflowIdx === -1) && sheet.children.length === 1) {
+              const singleChild = sheet.firstElementChild;
+              const text = (singleChild.innerText || '').trim();
+              const words = text.split(/\s+/).filter(Boolean);
+              if (words.length > 10) {
+                let low = 4, high = words.length - 4, bestCut = Math.floor(words.length / 2);
+                while (low <= high) {
+                  const mid = Math.floor((low + high) / 2);
+                  singleChild.innerText = words.slice(0, mid).join(' ');
+                  if (singleChild.offsetTop + singleChild.offsetHeight <= PAGE_MAX_BOTTOM) {
+                    bestCut = mid;
+                    low = mid + 1;
+                  } else {
+                    high = mid - 1;
+                  }
+                }
+                singleChild.innerText = words.slice(0, bestCut).join(' ');
+                const remainderP = document.createElement('p');
+                remainderP.innerText = words.slice(bestCut).join(' ');
+                nextSheet.insertBefore(remainderP, nextSheet.firstChild);
+                didChange = true;
+                continue;
+              }
+            }
+
+            // Case B: Move overflowing elements from sheet to nextSheet
+            const moveStart = (firstOverflowIdx >= 0) ? firstOverflowIdx : Math.max(1, children.length - 1);
+            const elementsToMove = children.slice(moveStart);
+            if (elementsToMove.length > 0) {
+              for (let m = elementsToMove.length - 1; m >= 0; m--) {
+                const el = elementsToMove[m];
+                nextSheet.insertBefore(el, nextSheet.firstChild);
+              }
+              didChange = true;
+            }
+
+            // Case C: While sheet still overflows 1056px and has > 1 child, move last child
+            let loopSafety = 0;
+            while (sheet.scrollHeight > 1056 && sheet.children.length > 1 && loopSafety < 50) {
+              loopSafety++;
+              const lastChild = sheet.lastElementChild;
+              if (lastChild) {
+                nextSheet.insertBefore(lastChild, nextSheet.firstChild);
+                didChange = true;
+              }
+            }
+
+            // Ensure current sheet still has at least one paragraph
+            if (sheet.children.length === 0) {
+              sheet.innerHTML = '<p><br></p>';
+            }
+            // Ensure nextSheet still has at least one paragraph
+            if (nextSheet.children.length === 0) {
+              nextSheet.innerHTML = '<p><br></p>';
+            }
+          }
+
+          // Restore selection safely
+          if (savedSelection && document.contains(savedSelection.startContainer)) {
+            try {
+              const newRange = document.createRange();
+              newRange.setStart(savedSelection.startContainer, Math.min(savedSelection.startOffset, savedSelection.startContainer.length || 0));
+              newRange.setEnd(savedSelection.endContainer, Math.min(savedSelection.endOffset, savedSelection.endContainer.length || 0));
+              sel.removeAllRanges();
+              sel.addRange(newRange);
+            } catch (_) {}
+          }
+
+          if (didChange) {
+            renumberDocPages();
+            renderPageThumbnails();
+            saveDocument();
+          }
+        } catch (err) {
+          console.warn('[Drift Pagination] Error:', err);
+        } finally {
+          isDriftPaginating = false;
+        }
+      }
+
+      function ensurePagesStructure(paperEl) {
+        if (!paperEl) return;
+        paperEl.removeAttribute('contenteditable');
+
+        const existingSheets = paperEl.querySelectorAll('.drift-page-sheet');
+        if (existingSheets.length > 0) {
+          renumberDocPages();
+          setTimeout(() => autoPaginateDriftPages(paperEl), 50);
+          setTimeout(() => autoPaginateDriftPages(paperEl), 250);
+          return;
+        }
+
+        // Migrate legacy .drift-page-break elements if present
+        const legacyBreaks = paperEl.querySelectorAll('.drift-page-break, .drift-visual-page-break');
+        if (legacyBreaks.length > 0) {
+          const rawHtml = paperEl.innerHTML;
+          const parts = rawHtml.split(/<div class="drift-(?:visual-)?page-break"[^>]*>[\s\S]*?<\/div>/gi);
+          paperEl.innerHTML = '';
+          parts.forEach((part, idx) => {
+            const pageNum = idx + 1;
+            if (idx > 0) {
+              paperEl.appendChild(createPageSeparator(pageNum));
+            }
+            const sheet = document.createElement('div');
+            sheet.className = `drift-page-sheet ${idx === 0 ? 'active-sheet' : ''}`;
+            sheet.contentEditable = 'true';
+            sheet.spellcheck = true;
+            sheet.dataset.page = String(pageNum);
+            sheet.innerHTML = part.trim() || '<p><br></p>';
+            paperEl.appendChild(sheet);
+          });
+          renumberDocPages();
+          setTimeout(() => autoPaginateDriftPages(paperEl), 50);
+          setTimeout(() => autoPaginateDriftPages(paperEl), 250);
+          return;
+        }
+
+        // Default: Wrap all existing content in Page 1 sheet
+        const existingContent = paperEl.innerHTML.trim();
+        paperEl.innerHTML = '';
+        const sheet = document.createElement('div');
+        sheet.className = 'drift-page-sheet active-sheet';
+        sheet.contentEditable = 'true';
+        sheet.spellcheck = true;
+        sheet.dataset.page = '1';
+        sheet.innerHTML = existingContent || '<p><br></p>';
+        paperEl.appendChild(sheet);
+        renumberDocPages();
+        // Automatically paginate into Page 2, Page 3, etc. if content overflows
+        setTimeout(() => autoPaginateDriftPages(paperEl), 50);
+        setTimeout(() => autoPaginateDriftPages(paperEl), 250);
+      }
+
+      // Ensure pages structure on initialization
+      ensurePagesStructure(paper);
+
+      // Auto-recheck pagination on viewport/paper resize (e.g. view switch from launcher to Drift)
+      if (typeof ResizeObserver !== 'undefined' && paper) {
+        let _roTimer = null;
+        const ro = new ResizeObserver(() => {
+          if (_roTimer) clearTimeout(_roTimer);
+          _roTimer = setTimeout(() => {
+            if (paper.offsetHeight > 0) {
+              autoPaginateDriftPages(paper);
+            }
+          }, 60);
+        });
+        ro.observe(paper);
+      }
+
+      // Document Pagination Calculator - returns exact count of physical sheets
+      function calculateDocPages() {
+        const sheets = paper.querySelectorAll('.drift-page-sheet');
+        return Math.max(1, sheets.length);
+      }
+
       // Auto-Save Document Content
       function saveDocument() {
         const html = paper.innerHTML;
@@ -3885,41 +4377,170 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         if (onUpdate) onUpdate();
       }
 
-      paper.addEventListener('input', saveDocument);
+      // High-performance debounced save on rapid typing
+      let saveDebounceTimer = null;
+      function debouncedSaveDocument() {
+        if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
+        saveDebounceTimer = setTimeout(() => {
+          saveDocument();
+        }, 220);
+      }
+
+      // Real-time pagination on typing
+      let _driftPaginateRaf = null;
+      paper.addEventListener('input', () => {
+        debouncedSaveDocument();
+        if (_driftPaginateRaf) cancelAnimationFrame(_driftPaginateRaf);
+        _driftPaginateRaf = requestAnimationFrame(() => {
+          autoPaginateDriftPages(paper);
+        });
+      });
+
+      // Natural Backspace handling across physical page sheets
+      paper.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace') {
+          const sel = window.getSelection();
+          if (!sel || !sel.rangeCount) return;
+          const range = sel.getRangeAt(0);
+          if (!range.collapsed) return;
+
+          const currentSheet = sel.anchorNode?.nodeType === 1 
+            ? sel.anchorNode.closest('.drift-page-sheet') 
+            : sel.anchorNode?.parentElement?.closest('.drift-page-sheet');
+
+          if (!currentSheet) return;
+          const pageNum = parseInt(currentSheet.dataset.page, 10);
+          if (pageNum <= 1) return;
+
+          const sheets = Array.from(paper.querySelectorAll('.drift-page-sheet'));
+          const currentIdx = sheets.indexOf(currentSheet);
+          if (currentIdx <= 0) return;
+          const prevSheet = sheets[currentIdx - 1];
+
+          const isAtStart = (range.startOffset === 0 && (
+            range.startContainer === currentSheet.firstElementChild ||
+            range.startContainer === currentSheet.firstElementChild?.firstChild ||
+            range.startContainer === currentSheet
+          ));
+
+          const sheetText = (currentSheet.innerText || '').trim();
+          const hasMedia = currentSheet.querySelectorAll('img, table, svg').length > 0;
+
+          if (!sheetText && !hasMedia) {
+            e.preventDefault();
+            const prevSep = currentSheet.previousElementSibling;
+            if (prevSep && prevSep.classList.contains('drift-page-separator')) {
+              prevSep.remove();
+            }
+            currentSheet.remove();
+            renumberDocPages();
+            renderPageThumbnails();
+            saveDocument();
+
+            const lastChild = prevSheet.lastElementChild || prevSheet;
+            const newRange = document.createRange();
+            newRange.selectNodeContents(lastChild);
+            newRange.collapse(false);
+            sel.removeAllRanges();
+            sel.addRange(newRange);
+            lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          } else if (isAtStart) {
+            e.preventDefault();
+            const firstChild = currentSheet.firstElementChild;
+            const lastPrevChild = prevSheet.lastElementChild;
+            if (firstChild && lastPrevChild) {
+              lastPrevChild.innerHTML += firstChild.innerHTML;
+              firstChild.remove();
+
+              const newRange = document.createRange();
+              newRange.selectNodeContents(lastPrevChild);
+              newRange.collapse(false);
+              sel.removeAllRanges();
+              sel.addRange(newRange);
+            }
+            requestAnimationFrame(() => autoPaginateDriftPages(paper));
+          }
+        }
+      });
+
+      // Smart Natural Paste Handler: Strips AI banners, timestamps, and model tags, and formats headings naturally
+      paper.addEventListener('paste', (e) => {
+        const clipboardData = e.clipboardData || window.clipboardData;
+        if (!clipboardData) return;
+
+        const rawText = clipboardData.getData('text/plain') || '';
+        const rawHtml = clipboardData.getData('text/html') || '';
+
+        const isAiContent = rawText.includes('Imported from') ||
+                            rawText.includes('Titan') ||
+                            rawText.includes('Girionix') ||
+                            rawHtml.includes('border-left') ||
+                            /^[> \t]*[🕹️✨🚀🔒\s]*Imported/m.test(rawText) ||
+                            /^[> \t]*#{1,6}\s/m.test(rawText) ||
+                            (rawText.startsWith('>') && rawText.includes('\n>'));
+
+        if (isAiContent) {
+          e.preventDefault();
+          const platform = window.orbitPlatform;
+          const cleanHtml = platform && typeof platform.parseMarkdownToNaturalHtml === 'function'
+            ? platform.parseMarkdownToNaturalHtml(rawText)
+            : rawText.replace(/\n/g, '<br>');
+          document.execCommand('insertHTML', false, cleanHtml);
+          debouncedSaveDocument();
+          if (platform && typeof platform.showToast === 'function') {
+            platform.showToast('✅ Pasted as clean natural document text', 'blue');
+          }
+        }
+        setTimeout(() => autoPaginateDriftPages(paper), 60);
+      });
 
       container.querySelector('#btn-drift-drive-sync')?.addEventListener('click', () => {
         window.orbitDriveSync?.openDriveModal('browser', 'drift');
       });
 
-      // Telemetry updates
-      // Page Thumbnails & Navigation Engine
+      // Navigation state lock to prevent scroll listener from fighting page clicks
+      let isNavigatingToPage = false;
+      let navLockTimeout = null;
+
+      // Page Thumbnails & Navigation Engine (MS Word Multi-Sheet)
       function renderPageThumbnails() {
         const pagesList = container.querySelector('#drift-pages-list');
         const counterBadge = container.querySelector('#drift-page-counter-badge');
+        const sbPageCount = container.querySelector('#drift-sidebar-page-count');
+        const sbPageInfo = container.querySelector('#drift-sidebar-page-info');
         const viewport = container.querySelector('#drift-center-viewport');
         if (!pagesList) return;
 
-        const pageBreakEls = paper.querySelectorAll('.drift-page-break');
-        const calculatedPages = Math.max(1, Math.ceil(paper.scrollHeight / 1056));
-        const totalPages = Math.max(calculatedPages, pageBreakEls.length + 1);
+        const sheets = Array.from(paper.querySelectorAll('.drift-page-sheet'));
+        const totalPages = Math.max(1, sheets.length);
 
-        const scrollY = viewport ? viewport.scrollTop : 0;
-        const activePage = Math.min(totalPages, Math.max(1, Math.floor(scrollY / 1056) + 1));
+        let activePage = 1;
+        if (viewport) {
+          const vpRect = viewport.getBoundingClientRect();
+          sheets.forEach((sh, idx) => {
+            const r = sh.getBoundingClientRect();
+            if (r.top <= vpRect.top + 280) {
+              activePage = idx + 1;
+            }
+          });
+        }
+        activePage = Math.min(totalPages, Math.max(1, activePage));
 
         if (counterBadge) counterBadge.textContent = `Page ${activePage} of ${totalPages}`;
-
-        const fullText = paper.innerText || '';
-        const words = fullText.split(/\s+/).filter(Boolean);
-        const wordsPerPage = Math.max(1, Math.ceil(words.length / totalPages));
+        if (sbPageCount) sbPageCount.textContent = `${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'}`;
+        if (sbPageInfo) sbPageInfo.textContent = `${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'} • Standard A4`;
 
         pagesList.innerHTML = '';
-        for (let i = 1; i <= totalPages; i++) {
+        sheets.forEach((sheet, idx) => {
+          const i = idx + 1;
           const isCurrent = i === activePage;
-          const startW = (i - 1) * wordsPerPage;
-          const pageWords = words.slice(startW, startW + 12).join(' ');
+          const pageText = (sheet.innerText || '').trim();
+          const words = pageText.split(/\s+/).filter(Boolean);
+          const snippet = words.length > 0 ? words.slice(0, 10).join(' ') + '...' : 'Empty page';
+
           const card = document.createElement('div');
           card.className = `drift-page-thumb-card ${isCurrent ? 'active' : ''}`;
-          card.dataset.page = i;
+          card.dataset.page = String(i);
           card.style.cssText = `
             display: flex; gap: 8px; align-items: flex-start;
             padding: 7px 8px; border-radius: 6px;
@@ -3939,29 +4560,139 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
               <div style="font-size:6px; color:#64748b; line-height:1; position:absolute; bottom:2px; right:3px; font-weight:700;">${i}</div>
             </div>
             <div style="flex:1; min-width:0;">
-              <div style="font-size:11px; font-weight:600; color:${isCurrent ? '#f8fafc' : '#cbd5e1'};">Page ${i}</div>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:11px; font-weight:600; color:${isCurrent ? '#f8fafc' : '#cbd5e1'};">Page ${i}</span>
+                ${totalPages > 1 ? `<button class="btn-drift-del-thumb" type="button" title="Delete Page ${i}" style="background:none; border:none; color:#ef4444; font-size:10px; cursor:pointer; padding:0 3px;">✕</button>` : ''}
+              </div>
               <div style="font-size:9.5px; color:#64748b; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; line-height:1.3; margin-top:2px;">
-                ${pageWords ? pageWords + '...' : 'Empty page'}
+                ${snippet}
               </div>
             </div>
           `;
 
-          card.addEventListener('click', () => {
-            if (viewport) {
-              const targetY = (i - 1) * 1056;
-              viewport.scrollTo({ top: targetY, behavior: 'smooth' });
+          card.addEventListener('click', (e) => {
+            if (e.target.closest('.btn-drift-del-thumb')) {
+              e.stopPropagation();
+              window._driftDeletePage(i);
+              return;
             }
+            isNavigatingToPage = true;
+            if (navLockTimeout) clearTimeout(navLockTimeout);
+            navLockTimeout = setTimeout(() => { isNavigatingToPage = false; }, 800);
+
+            sheet.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            sheet.focus();
+
+            sheets.forEach(s => s.classList.remove('active-sheet'));
+            sheet.classList.add('active-sheet');
+
+            if (counterBadge) counterBadge.textContent = `Page ${i} of ${totalPages}`;
             container.querySelectorAll('.drift-page-thumb-card').forEach(c => {
-              c.style.borderColor = '#27272a';
-              c.style.background = '#18181b';
+              const isMatch = parseInt(c.dataset.page, 10) === i;
+              c.classList.toggle('active', isMatch);
+              c.style.borderColor = isMatch ? '#2563eb' : '#27272a';
+              c.style.background = isMatch ? '#1e293b' : '#18181b';
             });
-            card.style.borderColor = '#2563eb';
-            card.style.background = '#1e293b';
           });
 
           pagesList.appendChild(card);
-        }
+        });
       }
+
+      // Delete a page and its separator cleanly
+      window._driftDeletePage = function deletePage(pageNum) {
+        const sheets = Array.from(paper.querySelectorAll('.drift-page-sheet'));
+        if (sheets.length <= 1) {
+          if (window.orbitPlatform) window.orbitPlatform.showToast('Cannot delete the only page in the document', 'red');
+          return;
+        }
+        const targetSheet = sheets.find(s => parseInt(s.dataset.page, 10) === pageNum) || sheets[pageNum - 1];
+        if (!targetSheet) return;
+
+        const sheetText = (targetSheet.innerText || '').trim();
+        if (sheetText.length > 0) {
+          const ok = confirm(`Delete Page ${pageNum}? All content on Page ${pageNum} will be permanently removed.`);
+          if (!ok) return;
+        }
+
+        const prevEl = targetSheet.previousElementSibling;
+        if (prevEl && prevEl.classList.contains('drift-page-separator')) {
+          prevEl.remove();
+        } else {
+          const nextEl = targetSheet.nextElementSibling;
+          if (nextEl && nextEl.classList.contains('drift-page-separator')) {
+            nextEl.remove();
+          }
+        }
+
+        targetSheet.remove();
+        renumberDocPages();
+        saveDocument();
+        renderPageThumbnails();
+
+        const remaining = paper.querySelectorAll('.drift-page-sheet');
+        const nextFocus = remaining[Math.min(pageNum - 1, remaining.length - 1)];
+        if (nextFocus) {
+          nextFocus.focus();
+          nextFocus.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Page ${pageNum} removed`);
+      };
+
+      // Named insertPageBreak function — creates an authentic physical sheet like MS Word
+      window._driftInsertPageBreak = function insertPageBreak() {
+        const sel = window.getSelection();
+        let activeSheet = null;
+        if (sel && sel.anchorNode) {
+          const node = sel.anchorNode;
+          activeSheet = node.nodeType === 1 ? node.closest('.drift-page-sheet') : node.parentElement?.closest('.drift-page-sheet');
+        }
+
+        const sheets = Array.from(paper.querySelectorAll('.drift-page-sheet'));
+        const refSheet = activeSheet || (sheets.length > 0 ? sheets[sheets.length - 1] : paper);
+
+        const nextPageNum = sheets.length + 1;
+        const sep = createPageSeparator(nextPageNum);
+        const newSheet = document.createElement('div');
+        newSheet.className = 'drift-page-sheet';
+        newSheet.contentEditable = 'true';
+        newSheet.spellcheck = true;
+        newSheet.dataset.page = String(nextPageNum);
+        newSheet.innerHTML = '<p><br></p>';
+
+        if (refSheet && refSheet.nextSibling) {
+          paper.insertBefore(sep, refSheet.nextSibling);
+          paper.insertBefore(newSheet, sep.nextSibling);
+        } else {
+          paper.appendChild(sep);
+          paper.appendChild(newSheet);
+        }
+
+        renumberDocPages();
+        saveDocument();
+        renderPageThumbnails();
+
+        // Focus inside new sheet
+        newSheet.focus();
+        const p = newSheet.querySelector('p');
+        if (p) {
+          try {
+            const range = document.createRange();
+            range.setStart(p, 0);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          } catch (_) {}
+        }
+
+        // Smoothly scroll center viewport to the newly created page sheet
+        newSheet.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        if (window.orbitPlatform) {
+          window.orbitPlatform.triggerToast(`Page ${newSheet.dataset.page} created!`);
+        }
+      };
 
       // Telemetry & Sidebar Stats updates
       function updateTelemetry() {
@@ -3975,17 +4706,16 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         if (charCountEl) charCountEl.textContent = chars.toLocaleString();
         if (readTimeEl) readTimeEl.textContent = `~${readMin}m read • ~${speakMin}m speak`;
 
+        const totalPages = calculateDocPages();
+        const sbPageCount = container.querySelector('#drift-sidebar-page-count');
+        const sbPageInfo = container.querySelector('#drift-sidebar-page-info');
+        if (sbPageCount) sbPageCount.textContent = `${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'}`;
+        if (sbPageInfo) sbPageInfo.textContent = `${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'} • Standard A4`;
+
         const sbWordText = container.querySelector('#drift-sidebar-wordcount-text');
         const sbCharText = container.querySelector('#drift-sidebar-charcount-text');
         if (sbWordText) sbWordText.textContent = `${words.toLocaleString()} words`;
         if (sbCharText) sbCharText.textContent = `${chars.toLocaleString()} chars • ~${readMin}m read • ~${speakMin}m speak`;
-
-        const pageBreaks = paper.querySelectorAll('.drift-page-break').length;
-        const totalPages = Math.max(1, pageBreaks + 1);
-        const sbPageCount = container.querySelector('#drift-sidebar-page-count');
-        const sbPageBadge = container.querySelector('#drift-page-counter-badge');
-        if (sbPageCount) sbPageCount.textContent = `${totalPages} ${totalPages === 1 ? 'Page' : 'Pages'}`;
-        if (sbPageBadge) sbPageBadge.textContent = `Page 1 of ${totalPages}`;
 
         renderPageThumbnails();
       }
@@ -4056,18 +4786,24 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       const toggleSidebarBtn = container.querySelector('#btn-drift-toggle-sidebar');
       const closeSidebarDrawerBtn = container.querySelector('#btn-close-drift-sidebar-drawer');
       const leftSidebar = container.querySelector('#drift-left-sidebar');
+      const floatingSidebarBtn = container.querySelector('#btn-drift-expand-sidebar-floating');
+      const collapseSidebarBtn = container.querySelector('#btn-drift-collapse-sidebar');
 
-      toggleSidebarBtn?.addEventListener('click', () => {
+      // Unified toggleSidebar function — hoisted to window so keydown shortcut can call it
+      window._driftToggleSidebar = function toggleSidebar() {
+        if (!leftSidebar) return;
         if (window.innerWidth <= 768) {
-          leftSidebar?.classList.toggle('mobile-open');
+          leftSidebar.classList.toggle('mobile-open');
         } else {
-          if (leftSidebar.style.display === 'none') {
-            leftSidebar.style.display = 'flex';
-          } else {
-            leftSidebar.style.display = 'none';
-          }
+          const isHidden = leftSidebar.style.display === 'none';
+          leftSidebar.style.display = isHidden ? 'flex' : 'none';
+          if (floatingSidebarBtn) floatingSidebarBtn.style.display = isHidden ? 'none' : 'flex';
         }
-      });
+      };
+
+      toggleSidebarBtn?.addEventListener('click', window._driftToggleSidebar);
+      collapseSidebarBtn?.addEventListener('click', window._driftToggleSidebar);
+      floatingSidebarBtn?.addEventListener('click', window._driftToggleSidebar);
       closeSidebarDrawerBtn?.addEventListener('click', () => {
         leftSidebar?.classList.remove('mobile-open');
       });
@@ -4141,11 +4877,10 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
       // Page Break Action
       container.querySelector('#btn-drift-insert-pagebreak')?.addEventListener('click', () => {
-        const breakHtml = `<div class="drift-page-break" contenteditable="false" style="border-top:2px dashed #94a3b8; margin:36px -40px; text-align:center; color:#64748b; font-size:10px; font-weight:700; letter-spacing:0.1em; user-select:none; padding:6px 0; background:#f8fafc; border-radius:4px;"><span style="background:#e2e8f0; padding:2px 8px; border-radius:3px;">--- PAGE BREAK ---</span></div><p><br></p>`;
-        document.execCommand('insertHTML', false, breakHtml);
-        saveDocument();
-        renderPageThumbnails();
-        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Page break inserted');
+        window._driftInsertPageBreak();
+      });
+      container.querySelector('#btn-drift-canvas-add-page')?.addEventListener('click', () => {
+        window._driftInsertPageBreak();
       });
 
       // Table of Contents Generator
@@ -4178,20 +4913,35 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         if (window.orbitPlatform) window.orbitPlatform.triggerToast('Table of Contents generated');
       });
 
-      // Viewport scroll listener for active page tracking
+      // Viewport scroll listener for active page tracking (RAF-throttled for performance)
       const centerViewport = container.querySelector('#drift-center-viewport');
+      let _scrollRafId = null;
       centerViewport?.addEventListener('scroll', () => {
-        const calculatedPages = Math.max(1, Math.ceil(paper.scrollHeight / 1056));
-        const pageBreakEls = paper.querySelectorAll('.drift-page-break');
-        const totalPages = Math.max(calculatedPages, pageBreakEls.length + 1);
-        const activePage = Math.min(totalPages, Math.max(1, Math.floor(centerViewport.scrollTop / 1056) + 1));
-        const counterBadge = container.querySelector('#drift-page-counter-badge');
-        if (counterBadge) counterBadge.textContent = `Page ${activePage} of ${totalPages}`;
+        if (isNavigatingToPage) return;
+        if (_scrollRafId) return;
+        _scrollRafId = requestAnimationFrame(() => {
+          _scrollRafId = null;
+          if (isNavigatingToPage) return;
+          const sheets = Array.from(paper.querySelectorAll('.drift-page-sheet'));
+          const totalPages = Math.max(1, sheets.length);
+          const vpRect = centerViewport.getBoundingClientRect();
+          let activePage = 1;
+          sheets.forEach((sh, idx) => {
+            const r = sh.getBoundingClientRect();
+            if (r.top <= vpRect.top + 280) {
+              activePage = idx + 1;
+            }
+          });
+          activePage = Math.min(totalPages, Math.max(1, activePage));
+          const counterBadge = container.querySelector('#drift-page-counter-badge');
+          if (counterBadge) counterBadge.textContent = `Page ${activePage} of ${totalPages}`;
 
-        container.querySelectorAll('.drift-page-thumb-card').forEach(c => {
-          const isMatch = parseInt(c.dataset.page, 10) === activePage;
-          c.style.borderColor = isMatch ? '#2563eb' : '#27272a';
-          c.style.background = isMatch ? '#1e293b' : '#18181b';
+          container.querySelectorAll('.drift-page-thumb-card').forEach(c => {
+            const isMatch = parseInt(c.dataset.page, 10) === activePage;
+            c.classList.toggle('active', isMatch);
+            c.style.borderColor = isMatch ? '#2563eb' : '#27272a';
+            c.style.background = isMatch ? '#1e293b' : '#18181b';
+          });
         });
       });
 
@@ -4496,6 +5246,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           }
         });
       };
+      window._driftOpenThesaurus = openThesaurusModal;
 
       container.querySelector('#btn-insert-thesaurus')?.addEventListener('click', openThesaurusModal);
       container.querySelector('#btn-review-thesaurus')?.addEventListener('click', openThesaurusModal);
@@ -4791,14 +5542,10 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
       // Blank Page / Page Break
       container.querySelector('#btn-insert-blank-page')?.addEventListener('click', () => {
-        const hr = document.createElement('div');
-        hr.style.cssText = 'page-break-after:always; height:24px; border-bottom:1px dashed #cbd5e1; margin:24px 0; text-align:center; font-size:10px; color:#94a3b8;';
-        hr.textContent = '--- Page Break ---';
-        insertNodeAtSelection(hr);
-        saveDocument();
+        if (typeof window._driftInsertPageBreak === 'function') window._driftInsertPageBreak();
       });
       container.querySelector('#btn-insert-page-break')?.addEventListener('click', () => {
-        container.querySelector('#btn-insert-blank-page')?.click();
+        if (typeof window._driftInsertPageBreak === 'function') window._driftInsertPageBreak();
       });
 
       // Voice Dictation
@@ -4871,7 +5618,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       // Rich Content Handlers
       container.querySelector('#btn-insert-callout-menu')?.addEventListener('click', () => {
         const calloutHtml = `
-          <div style="padding: 14px 18px; margin: 16px 0; background: #eff6ff; border-left: 4px solid #2563eb; border-radius: 0 6px 6px 0; font-size: 13px; color: #1e3a8a; line-height: 1.6;">
+          <div style="padding: 12px 16px; margin: 16px 0; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 13px; color: #334155; line-height: 1.6;">
             <strong>ℹ️ Key Insight:</strong> Enter executive note, advisory directive, or callout summary text here...
           </div><p></p>
         `;
@@ -5525,7 +6272,7 @@ function calculateMetrics(records) {
           if (type === 'wikipedia') {
             const topic = prompt('Enter Wikipedia research query to cite:', 'Zero Database Architecture');
             if (topic) {
-              const citeHtml = `<blockquote style="border-left:3px solid #0284c7; padding:8px 14px; background:#f0f9ff; color:#0369a1; font-size:12px; margin:12px 0;"><strong>Wikipedia Reference:</strong> "${topic}" &bull; Retrieved from Sovereign Knowledge Repository, 2026.</blockquote><p></p>`;
+              const citeHtml = `<blockquote style="border:1px solid #e2e8f0; padding:10px 16px; background:#f8fafc; color:#334155; font-size:12px; margin:12px 0; border-radius:6px;"><strong>Wikipedia Reference:</strong> "${topic}" &bull; Retrieved from Sovereign Knowledge Repository, 2026.</blockquote><p></p>`;
               document.execCommand('insertHTML', false, citeHtml);
               saveDocument();
               if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Inserted citation for "${topic}"`);
@@ -6809,12 +7556,10 @@ function calculateMetrics(records) {
           `;
         }
         return `
-          <div style="margin:16px 0; padding:16px 20px; background:#eff6ff; border-left:4px solid #2563eb; border-radius:0 6px 6px 0;">
-            <h4 style="margin:0 0 6px 0; color:#1e40af; font-size:14px;">⚡ Girionix AI: "${escapeHtml(prompt)}"</h4>
-            <p style="margin:0; font-size:11pt; line-height:1.6; color:#1e3a8a;">
-              ${context ? polishToExecutive(context) : `Executing on <strong>${escapeHtml(prompt)}</strong> establishes a robust operational baseline, harmonizing cross-functional deliverables with sovereign precision and zero cloud dependency.`}
-            </p>
-          </div><p></p>
+          <h3 style="margin:16px 0 8px 0; color:#0f172a; font-size:15px; font-weight:700;">Strategic Analysis: ${escapeHtml(prompt)}</h3>
+          <p style="margin:0 0 10px 0; font-size:11pt; line-height:1.65; color:#1e293b;">
+            ${context ? polishToExecutive(context) : `Executing on <strong>${escapeHtml(prompt)}</strong> establishes a robust operational baseline, harmonizing cross-functional deliverables with sovereign precision and zero cloud dependency.`}
+          </p><p></p>
         `;
       }
 
