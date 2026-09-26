@@ -83,6 +83,14 @@ export class GiriDriveSyncManager {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
+      if (this.googleUser && this.googleUser.email) {
+        return [{
+          name: this.googleUser.name || this.googleUser.email.split('@')[0],
+          email: this.googleUser.email,
+          picture: this.googleUser.picture || '',
+          lastUsed: Date.now()
+        }];
+      }
     } catch (_) {}
     return [];
   }
@@ -559,22 +567,12 @@ export class GiriDriveSyncManager {
    * Google OAuth 2.0 Integration & Direct Login
    */
   promptGoogleDirectLogin() {
-    // 1. If we have a Google Client ID, trigger native Google accounts popup directly!
-    if (this.googleClientId) {
-      if (!this.tokenClient && window.google?.accounts?.oauth2) {
-        this.initGoogleTokenClient(this.googleClientId);
-      }
-      if (this.tokenClient) {
-        try {
-          this.tokenClient.requestAccessToken({ prompt: 'select_account' });
-          return;
-        } catch (err) {
-          console.warn('[Google OAuth] Direct token request error, falling back to account chooser:', err);
-        }
-      }
+    // Pre-initialize token client in background if GIS is loaded
+    if (this.googleClientId && !this.tokenClient && window.google?.accounts?.oauth2) {
+      this.initGoogleTokenClient(this.googleClientId);
     }
 
-    // 2. Seamless Google Account Chooser & Fast Sign-In Dialog
+    // Seamless Google Account Chooser sheet (Exact match to Image 2)
     this.showGoogleAccountChooserModal();
   }
 
@@ -582,108 +580,119 @@ export class GiriDriveSyncManager {
     let modal = document.getElementById('google-account-chooser-modal');
     if (modal) modal.remove();
 
-    const savedAccounts = this.getSavedGoogleAccounts();
-    const currentEmail = this.googleUser?.email || '';
+    let savedAccounts = this.getSavedGoogleAccounts();
+    if (!savedAccounts || savedAccounts.length === 0) {
+      if (this.googleUser?.email) {
+        savedAccounts = [{
+          name: this.googleUser.name || 'Orbit User',
+          email: this.googleUser.email,
+          picture: this.googleUser.picture || ''
+        }];
+      } else {
+        savedAccounts = [{
+          name: 'Personal Account',
+          email: 'Connect your Google Drive',
+          isDefault: true
+        }];
+      }
+    }
 
     const modalHtml = `
-      <div id="google-account-chooser-modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.68); z-index:999999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(6px); font-family:'Google Sans',Roboto,Segoe UI,Arial,sans-serif;">
-        <div style="background:#ffffff; border-radius:18px; width:440px; max-width:92vw; padding:30px 26px; box-shadow:0 24px 60px rgba(0,0,0,0.35); color:#202124; position:relative; overflow:hidden;">
+      <div id="google-account-chooser-modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:999999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); font-family:'Google Sans',Roboto,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
+        <div style="background:#ffffff; border-radius:22px; width:380px; max-width:92vw; padding:32px 24px 28px 24px; box-shadow:0 12px 48px rgba(0,0,0,0.3); color:#1f1f1f; position:relative; overflow:hidden;">
           
-          <!-- Top bar with Google Logo & Close -->
-          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <svg width="28" height="28" viewBox="0 0 24 24">
+          <!-- Close button -->
+          <button id="btn-close-google-chooser" style="position:absolute; top:16px; right:16px; background:transparent; border:none; color:#5f6368; font-size:18px; cursor:pointer; width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; line-height:1;" title="Close">✕</button>
+
+          <!-- VIEW 1: Account Chooser List View (Matching Native Google Sheet) -->
+          <div id="google-chooser-list-view">
+            <!-- App Logo Badge at Top Center -->
+            <div style="display:flex; justify-content:center; margin-bottom:18px;">
+              <div style="width:48px; height:48px; border-radius:50%; background:#2563eb; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(37,99,235,0.3); overflow:hidden;">
+                <img src="assets/giri-logo-symbol.png" alt="Giri Orbit" style="width:34px; height:34px; object-fit:contain;">
+              </div>
+            </div>
+
+            <!-- Title & Subtitle -->
+            <h2 style="font-size:22px; font-weight:400; color:#1f1f1f; text-align:center; margin:0 0 6px 0;">Choose an account</h2>
+            <p style="font-size:14px; color:#444746; text-align:center; margin:0 0 24px 0;">to continue to Giri Orbit</p>
+
+            <!-- Accounts List -->
+            <div id="google-accounts-rows-wrap" style="display:flex; flex-direction:column;">
+              ${savedAccounts.map(acc => {
+                const initial = (acc.name || acc.email || 'G').charAt(0).toUpperCase();
+                return `
+                  <div class="google-account-select-row" data-email="${acc.email}" data-name="${acc.name || ''}" data-is-default="${acc.isDefault ? '1' : '0'}" style="display:flex; align-items:center; gap:16px; padding:12px 8px; cursor:pointer; border-radius:8px; transition:background 0.15s ease;">
+                    <div style="width:36px; height:36px; border-radius:50%; background:#0b57d0; color:#ffffff; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:500; flex-shrink:0;">
+                      ${initial}
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                      <div style="font-size:14px; font-weight:500; color:#1f1f1f; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${acc.name}</div>
+                      ${acc.email && !acc.isDefault ? `<div style="font-size:12px; color:#444746; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${acc.email}</div>` : `<div style="font-size:12px; color:#444746; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${acc.email}</div>`}
+                    </div>
+                  </div>
+                  <div style="height:1px; background:#e0e2ec; margin:2px 0;"></div>
+                `;
+              }).join('')}
+
+              <!-- Use another account row -->
+              <div id="btn-use-another-account-row" style="display:flex; align-items:center; gap:16px; padding:14px 8px; cursor:pointer; border-radius:8px; transition:background 0.15s ease;">
+                <div style="width:36px; height:36px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="#444746">
+                    <path d="M15 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2H6zm9 4c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+                <div style="font-size:14px; font-weight:500; color:#1f1f1f;">Use another account</div>
+              </div>
+              <div style="height:1px; background:#e0e2ec; margin:2px 0;"></div>
+            </div>
+
+            <!-- Disclaimer text (Exact from native Google Account Chooser) -->
+            <p style="font-size:12px; color:#444746; line-height:1.55; margin:24px 0 0 0; padding:0 4px; text-align:left;">
+              To continue, Google will share your name, email address, and profile picture with Giri Orbit.
+            </p>
+          </div>
+
+          <!-- VIEW 2: Google Sign In / Enter Email View -->
+          <div id="google-chooser-input-view" style="display:none;">
+            <!-- App Logo Badge at Top Center -->
+            <div style="display:flex; justify-content:center; margin-bottom:18px;">
+              <div style="width:48px; height:48px; border-radius:50%; background:#2563eb; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(37,99,235,0.3); overflow:hidden;">
+                <img src="assets/giri-logo-symbol.png" alt="Giri Orbit" style="width:34px; height:34px; object-fit:contain;">
+              </div>
+            </div>
+
+            <h2 style="font-size:22px; font-weight:400; color:#1f1f1f; text-align:center; margin:0 0 6px 0;">Sign in</h2>
+            <p style="font-size:14px; color:#444746; text-align:center; margin:0 0 20px 0;">to continue to Giri Orbit</p>
+
+            <!-- Quick OAuth Popup Button -->
+            <button id="btn-input-view-oauth-popup" type="button" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:10px 16px; border:1px solid #dadce0; border-radius:100px; background:#ffffff; color:#3c4043; font-size:13.5px; font-weight:500; cursor:pointer; margin-bottom:16px; transition:background 0.15s ease;">
+              <svg width="18" height="18" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
               </svg>
-              <span style="font-size:16px; font-weight:700; color:#1f2937;">Google Account</span>
-            </div>
-            <button id="btn-close-google-chooser" style="background:transparent; border:none; color:#5f6368; font-size:20px; cursor:pointer; padding:4px 8px; border-radius:50%; line-height:1;" title="Close">✕</button>
-          </div>
+              <span>Continue with Google Sign-In</span>
+            </button>
 
-          <h2 style="font-size:22px; font-weight:700; margin:0 0 6px 0; color:#111827;">Choose an account</h2>
-          <p style="font-size:13px; color:#5f6368; margin:0 0 16px 0; line-height:1.5;">
-            to continue to <strong>Giri Orbit Google Drive</strong>. Your login and workspace files will be saved in this browser.
-          </p>
-
-          <!-- Authentic Google OAuth Button -->
-          <button id="btn-trigger-real-google-oauth" type="button" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:11px 16px; border:1px solid #dadce0; border-radius:12px; background:#ffffff; color:#3c4043; font-size:13.5px; font-weight:600; cursor:pointer; box-shadow:0 1px 3px rgba(60,64,67,0.12); margin-bottom:14px; transition:all .15s ease;">
-            <svg width="20" height="20" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            <span>Sign in with Google (OAuth)</span>
-          </button>
-
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
-            <div style="flex:1; height:1px; background:#e5e7eb;"></div>
-            <span style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px;">Or saved browser account</span>
-            <div style="flex:1; height:1px; background:#e5e7eb;"></div>
-          </div>
-
-          <!-- List of Saved Accounts (if any) -->
-          ${savedAccounts.length > 0 ? `
-            <div id="google-accounts-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
-              ${savedAccounts.map(acc => `
-                <div class="google-acc-card-item" data-email="${acc.email}" data-name="${acc.name || ''}" style="display:flex; align-items:center; justify-content:space-between; padding:11px 14px; border:1px solid #e5e7eb; border-radius:12px; cursor:pointer; transition:all 0.15s; background:#ffffff;">
-                  <div style="display:flex; align-items:center; gap:12px;">
-                    <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #1a73e8, #1557b0); color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700;">
-                      ${(acc.name || acc.email).charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <div style="font-size:13.5px; font-weight:600; color:#111827;">${acc.name || acc.email.split('@')[0]}</div>
-                      <div style="font-size:12px; color:#5f6368;">${acc.email}</div>
-                    </div>
-                  </div>
-                  ${acc.email === currentEmail ? '<span style="font-size:11px; color:#16a34a; font-weight:600; background:#dcfce7; padding:2px 8px; border-radius:999px;">Active</span>' : '<span style="font-size:14px; color:#9ca3af;">➔</span>'}
-                </div>
-              `).join('')}
-            </div>
-          ` : ''}
-
-          <!-- New / Custom Account Form Toggle -->
-          ${savedAccounts.length > 0 ? `
-            <div id="google-new-account-toggle-wrap">
-              <button id="btn-toggle-new-google-acc" style="width:100%; display:flex; align-items:center; gap:12px; padding:11px 14px; border:1px dashed #cbd5e1; border-radius:12px; background:#f8fafc; color:#1e293b; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s;">
-                <span style="width:34px; height:34px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:17px; color:#475569;">+</span>
-                <span>Use another Google account</span>
-              </button>
-            </div>
-          ` : ''}
-
-          <!-- Form to enter Gmail / Google account -->
-          <form id="google-custom-acc-form" style="${savedAccounts.length > 0 ? 'display:none;' : 'display:flex;'} flex-direction:column; gap:12px; margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; padding:16px; border-radius:12px;">
-            <div>
-              <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Google Account / Gmail</label>
-              <input type="text" id="input-google-login-email" placeholder="e.g. yourname@gmail.com" required style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13.5px; outline:none; background:#ffffff; color:#111827;">
-              <span style="font-size:11px; color:#64748b; margin-top:4px; display:block;">Enter your Gmail address to connect your Google Drive files.</span>
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+              <div style="flex:1; height:1px; background:#e0e2ec;"></div>
+              <span style="font-size:12px; color:#747775;">or enter email</span>
+              <div style="flex:1; height:1px; background:#e0e2ec;"></div>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:4px;">
-              ${savedAccounts.length > 0 ? '<button type="button" id="btn-cancel-custom-acc" style="padding:8px 14px; font-size:12px; color:#475569; background:transparent; border:none; cursor:pointer; font-weight:500;">Back</button>' : ''}
-              <button type="submit" style="background:#1a73e8; color:#ffffff; border:none; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(26,115,232,0.3); display:inline-flex; align-items:center; gap:6px;">
-                <span>Continue &amp; Sync Drive</span>
-                <span>➔</span>
-              </button>
-            </div>
-          </form>
+            <form id="google-email-direct-form" style="display:flex; flex-direction:column; gap:20px;">
+              <div>
+                <input type="text" id="input-clean-google-email" placeholder="Email or phone" required style="width:100%; box-sizing:border-box; padding:13px 14px; border:1px solid #747775; border-radius:4px; font-size:15px; outline:none; font-family:'Google Sans',Roboto,sans-serif; color:#1f1f1f; transition:all 0.15s ease;">
+                <div style="font-size:12px; color:#444746; margin-top:6px;">Your account will be saved in this browser for 1-click access.</div>
+              </div>
 
-          <div style="margin-top:18px; padding-top:12px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#6b7280;">
-            <span>🔒 Session saved in browser</span>
-            <a href="#" id="link-google-oauth-config" style="color:#6b7280; text-decoration:underline;">Advanced OAuth (Optional)</a>
-          </div>
-
-          <!-- Hidden Advanced OAuth Client ID panel (only if user explicitly clicks Advanced OAuth) -->
-          <div id="google-advanced-oauth-panel" style="display:none; margin-top:10px; padding:10px 12px; background:#f1f5f9; border-radius:8px; font-size:11.5px; color:#334155;">
-            <label style="display:block; font-weight:600; margin-bottom:4px; font-size:11px;">Optional Google Cloud OAuth Client ID</label>
-            <div style="display:flex; gap:6px;">
-              <input type="text" id="input-adv-client-id" placeholder="123456789.apps.googleusercontent.com" value="${this.googleClientId || ''}" style="flex:1; padding:6px 8px; font-size:11px; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace; outline:none;">
-              <button type="button" id="btn-save-adv-client-id" style="background:#0f172a; color:#fff; border:none; border-radius:4px; padding:6px 12px; font-size:11px; font-weight:600; cursor:pointer;">Save</button>
-            </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <button type="button" id="btn-back-to-chooser" style="background:transparent; border:none; color:#0b57d0; font-size:14px; font-weight:500; cursor:pointer; padding:8px 0; font-family:'Google Sans',Roboto,sans-serif;">Back</button>
+                <button type="submit" style="background:#0b57d0; color:#ffffff; border:none; border-radius:100px; padding:10px 26px; font-size:14px; font-weight:500; cursor:pointer; font-family:'Google Sans',Roboto,sans-serif; box-shadow:0 1px 3px rgba(11,87,208,0.25);">Next</button>
+              </div>
+            </form>
           </div>
 
         </div>
@@ -693,15 +702,62 @@ export class GiriDriveSyncManager {
     document.body.insertAdjacentHTML('beforeend', modalHtml);
     modal = document.getElementById('google-account-chooser-modal');
 
-    // Close button
+    const listView = modal.querySelector('#google-chooser-list-view');
+    const inputView = modal.querySelector('#google-chooser-input-view');
+
+    const showInputView = () => {
+      if (listView && inputView) {
+        listView.style.display = 'none';
+        inputView.style.display = 'block';
+        modal.querySelector('#input-clean-google-email')?.focus();
+      }
+    };
+
+    const showListView = () => {
+      if (listView && inputView) {
+        inputView.style.display = 'none';
+        listView.style.display = 'block';
+      }
+    };
+
+    // Close button & outside click
     modal.querySelector('#btn-close-google-chooser')?.addEventListener('click', () => modal.remove());
     modal.addEventListener('click', (e) => {
       if (e.target === modal) modal.remove();
     });
 
-    // Real Google OAuth button click
-    const realOAuthBtn = modal.querySelector('#btn-trigger-real-google-oauth');
-    realOAuthBtn?.addEventListener('click', () => {
+    // Account rows click
+    modal.querySelectorAll('.google-account-select-row').forEach(row => {
+      row.addEventListener('mouseenter', () => row.style.background = '#f8f9fa');
+      row.addEventListener('mouseleave', () => row.style.background = 'transparent');
+      row.addEventListener('click', () => {
+        const isDef = row.dataset.isDefault === '1';
+        const email = row.dataset.email;
+        const name = row.dataset.name;
+        if (isDef) {
+          showInputView();
+        } else {
+          modal.remove();
+          this.performGoogleLogin(name, email);
+        }
+      });
+    });
+
+    // Use another account click
+    const useAnotherBtn = modal.querySelector('#btn-use-another-account-row');
+    useAnotherBtn?.addEventListener('mouseenter', () => useAnotherBtn.style.background = '#f8f9fa');
+    useAnotherBtn?.addEventListener('mouseleave', () => useAnotherBtn.style.background = 'transparent');
+    useAnotherBtn?.addEventListener('click', () => {
+      showInputView();
+    });
+
+    // Back button in input view
+    modal.querySelector('#btn-back-to-chooser')?.addEventListener('click', () => {
+      showListView();
+    });
+
+    // Quick OAuth popup button
+    modal.querySelector('#btn-input-view-oauth-popup')?.addEventListener('click', () => {
       if (!this.tokenClient && window.google?.accounts?.oauth2) {
         this.initGoogleTokenClient(this.googleClientId);
       }
@@ -715,45 +771,15 @@ export class GiriDriveSyncManager {
         }
       } else {
         if (window.orbitPlatform) {
-          window.orbitPlatform.showToast('Connecting with Google Services...', 'blue');
+          window.orbitPlatform.showToast('Initializing Google Sign-In...', 'blue');
         }
       }
     });
 
-    // Saved accounts click
-    modal.querySelectorAll('.google-acc-card-item').forEach(item => {
-      item.addEventListener('mouseenter', () => item.style.background = '#f8fafc');
-      item.addEventListener('mouseleave', () => item.style.background = '#ffffff');
-      item.addEventListener('click', () => {
-        const email = item.dataset.email;
-        const name = item.dataset.name;
-        modal.remove();
-        this.performGoogleLogin(name, email);
-      });
-    });
-
-    // Toggle new account form
-    const toggleBtn = modal.querySelector('#btn-toggle-new-google-acc');
-    const customForm = modal.querySelector('#google-custom-acc-form');
-    const cancelCustomBtn = modal.querySelector('#btn-cancel-custom-acc');
-
-    toggleBtn?.addEventListener('click', () => {
-      if (toggleBtn.parentElement) toggleBtn.parentElement.style.display = 'none';
-      if (customForm) {
-        customForm.style.display = 'flex';
-        modal.querySelector('#input-google-login-email')?.focus();
-      }
-    });
-
-    cancelCustomBtn?.addEventListener('click', () => {
-      if (customForm) customForm.style.display = 'none';
-      if (toggleBtn?.parentElement) toggleBtn.parentElement.style.display = 'block';
-    });
-
-    // Submit custom account
-    customForm?.addEventListener('submit', (e) => {
+    // Submit direct email form
+    modal.querySelector('#google-email-direct-form')?.addEventListener('submit', (e) => {
       e.preventDefault();
-      let emailInput = modal.querySelector('#input-google-login-email')?.value.trim();
+      let emailInput = modal.querySelector('#input-clean-google-email')?.value.trim();
       if (!emailInput) return;
       if (!emailInput.includes('@')) {
         emailInput = `${emailInput}@gmail.com`;
@@ -762,22 +788,6 @@ export class GiriDriveSyncManager {
       const displayName = rawUser.charAt(0).toUpperCase() + rawUser.slice(1);
       modal.remove();
       this.performGoogleLogin(displayName, emailInput);
-    });
-
-    // Advanced OAuth panel toggle
-    const advLink = modal.querySelector('#link-google-oauth-config');
-    const advPanel = modal.querySelector('#google-advanced-oauth-panel');
-    advLink?.addEventListener('click', (e) => {
-      e.preventDefault();
-      if (advPanel) advPanel.style.display = advPanel.style.display === 'none' ? 'block' : 'none';
-    });
-
-    modal.querySelector('#btn-save-adv-client-id')?.addEventListener('click', () => {
-      const cid = modal.querySelector('#input-adv-client-id')?.value.trim();
-      this.googleClientId = cid || '';
-      this.saveSettings();
-      if (window.orbitPlatform) window.orbitPlatform.showToast('OAuth Client ID saved in browser', 'blue');
-      if (advPanel) advPanel.style.display = 'none';
     });
   }
 
