@@ -3166,6 +3166,121 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
   }
 
   /**
+   * Export content from the active or specified tool into Girionix AI
+   */
+  exportToGirionix(tool = null) {
+    const targetTool = tool || this.currentView || 'drift';
+    let textToExport = '';
+    let exportTitle = '';
+
+    if (targetTool === 'drift') {
+      const paper = document.getElementById('drift-paper-canvas');
+      const text = paper ? (paper.innerText || paper.textContent || '').trim() : '';
+      textToExport = text;
+      exportTitle = 'Drift Document';
+    } else if (targetTool === 'axis') {
+      try {
+        const raw = localStorage.getItem('giri_orbit_axis_sheets');
+        if (raw) {
+          const sheets = JSON.parse(raw);
+          const lines = [];
+          Object.entries(sheets).forEach(([sheetName, cells]) => {
+            lines.push(`## Sheet: ${sheetName}`);
+            if (Array.isArray(cells)) {
+              cells.forEach(c => {
+                lines.push(`${c.cell}: ${c.formula || c.val}`);
+              });
+            }
+          });
+          textToExport = lines.join('\n');
+        }
+      } catch (_) {}
+      if (!textToExport) {
+        const cells = document.querySelectorAll('#axis-grid-table .axis-cell');
+        const lines = [];
+        cells.forEach(c => {
+          const t = (c.textContent || '').trim();
+          if (t) lines.push(`${c.dataset.cellId}: ${t}`);
+        });
+        textToExport = lines.slice(0, 50).join('\n');
+      }
+      exportTitle = 'Axis Spreadsheet';
+    } else if (targetTool === 'kinetic') {
+      try {
+        const raw = localStorage.getItem('giri_orbit_kinetic_deck');
+        if (raw) {
+          const deck = JSON.parse(raw);
+          const slides = Array.isArray(deck) ? deck : (deck.slides || []);
+          const lines = [];
+          slides.forEach((s, idx) => {
+            lines.push(`### Slide ${idx + 1}: ${s.title || 'Untitled'}`);
+            if (s.desc) lines.push(s.desc);
+            if (s.features) {
+              s.features.forEach(f => lines.push(`- ${f.title || f.text || f}`));
+            }
+          });
+          textToExport = lines.join('\n\n');
+        }
+      } catch (_) {}
+      if (!textToExport) {
+        textToExport = document.getElementById('kinetic-slide-frame')?.innerText || '';
+      }
+      exportTitle = 'Kinetic Presentation';
+    } else if (targetTool === 'pdf') {
+      const viewer = document.getElementById('pdf-document-viewer') || document.querySelector('.pdf-workspace-area');
+      textToExport = viewer ? (viewer.innerText || viewer.textContent || '').trim() : '';
+      exportTitle = 'Aegis PDF Document';
+    }
+
+    // Open drawer on target tool
+    if (typeof this.openGirionixAiDrawer === 'function') {
+      this.openGirionixAiDrawer(targetTool);
+    }
+
+    // Populate prompt input or trigger analysis
+    const promptInput = document.getElementById('girionix-drawer-prompt-input');
+    const chipRow = document.getElementById('girionix-attached-chip-row');
+    const chipLabel = document.getElementById('girionix-attached-chip-label');
+
+    if (textToExport && promptInput) {
+      const snippet = textToExport.slice(0, 1500);
+      promptInput.value = `Analyze and provide executive insights on this ${exportTitle}:\n\n${snippet}${textToExport.length > 1500 ? '\n...[truncated]' : ''}`;
+      if (chipRow && chipLabel) {
+        chipRow.style.display = 'flex';
+        chipLabel.textContent = `📎 Attached: ${exportTitle} (${textToExport.split(/\s+/).filter(Boolean).length} words)`;
+      }
+      promptInput.focus();
+    }
+
+    this.showToast(`📤 Exported ${exportTitle} data to Girionix AI!`, 'blue');
+  }
+
+  /**
+   * Import latest AI response from Girionix AI into the active tool
+   */
+  importFromGirionix(tool = null) {
+    const targetTool = tool || this.currentView || 'drift';
+    try {
+      const raw = localStorage.getItem(`orbit_copilot_chat_${targetTool}`);
+      if (raw) {
+        const msgs = JSON.parse(raw);
+        const lastAiMsg = msgs.slice().reverse().find(m => m.sender === 'ai' || m.sender === 'assistant');
+        if (lastAiMsg && lastAiMsg.text) {
+          this.importAiDataToActiveTool(lastAiMsg.text, { source: 'ribbon-import' });
+          this.showToast(`✅ Imported Girionix AI response into ${targetTool}!`, 'green');
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Fallback: If no previous AI response in chat history, open drawer and prompt user
+    if (typeof this.openGirionixAiDrawer === 'function') {
+      this.openGirionixAiDrawer(targetTool);
+    }
+    this.showToast('⚡ Generate a response with Girionix AI, then click "Insert" or "Import from AI"', 'blue');
+  }
+
+  /**
    * Sovereign Modal Framework (Cloud, Security, Specs, Docs & API, Node Status)
    */
   initSovereignModal() {

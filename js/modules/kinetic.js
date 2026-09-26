@@ -2766,6 +2766,10 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   <span style="color:#a855f7;">Import from AI</span>
                 </button>
+                <button class="fluent-btn-large" id="btn-kinetic-export-to-girionix" title="Export presentation slides to Girionix AI for analysis & speaker notes" style="color:#a855f7;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span style="color:#a855f7;">Export to AI</span>
+                </button>
               </div>
               <div class="fluent-group-footer"><span class="fluent-group-label" style="color:#a855f7; font-weight:700;">Girionix AI</span></div>
             </div>
@@ -5326,9 +5330,17 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     container.querySelector('#btn-kinetic-ai-gen')?.addEventListener('click', () => openModal('slide'));
     container.querySelector('#btn-kinetic-home-ai-studio')?.addEventListener('click', () => openModal('deck'));
     container.querySelector('#btn-kinetic-import-from-girionix')?.addEventListener('click', () => {
-      if (window.orbitPlatform && typeof window.orbitPlatform.toggleGirionixAiDrawer === 'function') {
-        window.orbitPlatform.toggleGirionixAiDrawer('live');
-        window.orbitPlatform.showToast('📊 Ask Girionix AI to generate slides, then click Import on any response', 'blue');
+      if (window.orbitPlatform && typeof window.orbitPlatform.importFromGirionix === 'function') {
+        window.orbitPlatform.importFromGirionix('kinetic');
+      } else if (window.orbitPlatform && typeof window.orbitPlatform.toggleGirionixAiDrawer === 'function') {
+        window.orbitPlatform.toggleGirionixAiDrawer('kinetic');
+      }
+    });
+    container.querySelector('#btn-kinetic-export-to-girionix')?.addEventListener('click', () => {
+      if (window.orbitPlatform && typeof window.orbitPlatform.exportToGirionix === 'function') {
+        window.orbitPlatform.exportToGirionix('kinetic');
+      } else if (window.orbitPlatform && typeof window.orbitPlatform.toggleGirionixAiDrawer === 'function') {
+        window.orbitPlatform.toggleGirionixAiDrawer('kinetic');
       }
     });
 

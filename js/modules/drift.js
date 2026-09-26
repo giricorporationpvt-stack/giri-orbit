@@ -1597,6 +1597,14 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
                     <span style="color:#2563eb;">AI Assist ▾</span>
                   </button>
+                  <button class="fluent-btn-large" id="btn-drift-import-from-girionix" title="Import content from Girionix AI into Drift document" style="color:#2563eb;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span style="color:#2563eb;">Import from AI</span>
+                  </button>
+                  <button class="fluent-btn-large" id="btn-drift-export-to-girionix" title="Export document text to Girionix AI for analysis & polishing" style="color:#2563eb;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    <span style="color:#2563eb;">Export to AI</span>
+                  </button>
                 </div>
                 <div class="fluent-group-footer">
                   <div class="fluent-group-label" style="color:#2563eb; font-weight:700;">Girionix AI</div>
@@ -8170,6 +8178,20 @@ function calculateMetrics(records) {
       // Triggers across the app
       container.querySelector('#btn-drift-ai-copilot')?.addEventListener('click', () => openDriftAiAssistant());
       container.querySelector('#btn-drift-review-ai')?.addEventListener('click', () => openDriftAiAssistant('executive'));
+      container.querySelector('#btn-drift-import-from-girionix')?.addEventListener('click', () => {
+        if (window.orbitPlatform && typeof window.orbitPlatform.importFromGirionix === 'function') {
+          window.orbitPlatform.importFromGirionix('drift');
+        } else if (window.orbitPlatform && typeof window.orbitPlatform.toggleGirionixAiDrawer === 'function') {
+          window.orbitPlatform.toggleGirionixAiDrawer('drift');
+        }
+      });
+      container.querySelector('#btn-drift-export-to-girionix')?.addEventListener('click', () => {
+        if (window.orbitPlatform && typeof window.orbitPlatform.exportToGirionix === 'function') {
+          window.orbitPlatform.exportToGirionix('drift');
+        } else if (window.orbitPlatform && typeof window.orbitPlatform.toggleGirionixAiDrawer === 'function') {
+          window.orbitPlatform.toggleGirionixAiDrawer('drift');
+        }
+      });
 
       // Global window hook for universal drawer / palette
       window.driftAiCopilot = {

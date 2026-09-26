@@ -1199,6 +1199,25 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
                 <div class="fluent-group-label">Voice</div>
               </div>
             </div>
+
+            <!-- Girionix AI Studio Group -->
+            <div class="fluent-ribbon-group" style="background:rgba(220,38,38,0.06); border-radius:4px; border-right:none;">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-pdf-home-ai-audit" title="Girionix AI PDF Assistant & Document Intelligence (Alt+J / Ctrl+Shift+J)" style="color:#dc2626; font-weight:700;">
+                  <strong style="color:#dc2626; font-size:18px;">⚡</strong>
+                  <span style="color:#dc2626;">AI Studio</span>
+                </button>
+                <button class="fluent-btn-large" id="btn-pdf-import-from-girionix" title="Import content from Girionix AI into PDF document" style="color:#dc2626;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span style="color:#dc2626;">Import from AI</span>
+                </button>
+                <button class="fluent-btn-large" id="btn-pdf-export-to-girionix" title="Export PDF document text to Girionix AI for analysis & summarization" style="color:#dc2626;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span style="color:#dc2626;">Export to AI</span>
+                </button>
+              </div>
+              <div class="fluent-group-footer"><span class="fluent-group-label" style="color:#dc2626; font-weight:700;">Girionix AI</span></div>
+            </div>
           </div>
 
           <!-- 2. ANNOTATE TAB PANE -->
@@ -2853,6 +2872,27 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
     isSpeaking = true;
     readAloudBtn.style.background = 'rgba(56, 189, 248, 0.2)';
     if (window.orbitPlatform) window.orbitPlatform.triggerToast('🔊 Reading active page aloud...');
+  });
+
+  // Girionix AI Studio Triggers
+  container.querySelector('#btn-pdf-home-ai-audit')?.addEventListener('click', () => {
+    if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAiDrawer === 'function') {
+      window.orbitPlatform.openGirionixAiDrawer('pdf');
+    }
+  });
+  container.querySelector('#btn-pdf-import-from-girionix')?.addEventListener('click', () => {
+    if (window.orbitPlatform && typeof window.orbitPlatform.importFromGirionix === 'function') {
+      window.orbitPlatform.importFromGirionix('pdf');
+    } else if (window.orbitPlatform && typeof window.orbitPlatform.toggleGirionixAiDrawer === 'function') {
+      window.orbitPlatform.toggleGirionixAiDrawer('pdf');
+    }
+  });
+  container.querySelector('#btn-pdf-export-to-girionix')?.addEventListener('click', () => {
+    if (window.orbitPlatform && typeof window.orbitPlatform.exportToGirionix === 'function') {
+      window.orbitPlatform.exportToGirionix('pdf');
+    } else if (window.orbitPlatform && typeof window.orbitPlatform.toggleGirionixAiDrawer === 'function') {
+      window.orbitPlatform.toggleGirionixAiDrawer('pdf');
+    }
   });
 
   // Find & Replace Floating Search Bar

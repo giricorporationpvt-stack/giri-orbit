@@ -1328,6 +1328,10 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   <span style="color:#2563eb;">Import from AI</span>
                 </button>
+                <button class="fluent-btn-large" id="btn-axis-export-to-girionix" title="Export sheet data to Girionix AI for analysis & insights" style="color:#2563eb;">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                  <span style="color:#2563eb;">Export to AI</span>
+                </button>
               </div>
               <div class="fluent-group-footer"><span class="fluent-group-label" style="color:#2563eb; font-weight:700;">Girionix AI</span></div>
             </div>
@@ -2646,13 +2650,47 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     updateLiveStatusBar();
   }
 
+  function getCellDirectText(cell) {
+    if (!cell) return '';
+    let text = '';
+    for (let i = 0; i < cell.childNodes.length; i++) {
+      const node = cell.childNodes[i];
+      if (node.nodeType === Node.TEXT_NODE) {
+        text += node.textContent;
+      } else if (node.nodeType === Node.ELEMENT_NODE && !node.classList.contains('axis-autofill-handle')) {
+        text += node.textContent;
+      }
+    }
+    return text.trim();
+  }
+
+  function setCellDirectText(cell, val) {
+    if (!cell) return;
+    const handle = cell.querySelector('.axis-autofill-handle');
+    if (handle) handle.remove();
+    cell.textContent = val;
+    if (handle) cell.appendChild(handle);
+  }
+
+  let _saveSheetTimeout = null;
+  function debouncedSaveSheet() {
+    if (_saveSheetTimeout) clearTimeout(_saveSheetTimeout);
+    _saveSheetTimeout = setTimeout(() => {
+      saveCurrentSheet();
+    }, 200);
+  }
+
   function saveCurrentSheet() {
+    if (_saveSheetTimeout) {
+      clearTimeout(_saveSheetTimeout);
+      _saveSheetTimeout = null;
+    }
     const cells = gridTable.querySelectorAll('.axis-cell');
     const items = [];
     cells.forEach(c => {
-      const val = c.textContent.trim();
-      if (val || rawFormulas.has(c.dataset.cellId)) {
-        const id = c.dataset.cellId;
+      const id = c.dataset.cellId;
+      const val = getCellDirectText(c);
+      if (val || rawFormulas.has(id)) {
         items.push({
           cell: id,
           val: val.replace(/,/g, ''),
@@ -2660,7 +2698,7 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
           isNum: c.classList.contains('num-cell') || !isNaN(Number(val.replace(/,/g, ''))),
           bold: c.style.fontWeight === '700' || c.style.fontWeight === 'bold',
           italic: c.style.fontStyle === 'italic',
-          underline: c.style.textDecoration.includes('underline'),
+          underline: (c.style.textDecoration || '').includes('underline'),
           color: c.style.color || null,
           background: c.style.backgroundColor || null,
           align: c.style.textAlign || null
@@ -2673,7 +2711,7 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
   }
 
   function setActiveCell(cell) {
-    if (activeCell) {
+    if (activeCell && activeCell !== cell) {
       activeCell.classList.remove('active-cell');
       evaluateCell(activeCell);
     }
@@ -2725,22 +2763,27 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       activeCell.appendChild(handle);
     }
 
-    const raw = rawFormulas.get(cellId) || activeCell.textContent.trim();
+    const raw = rawFormulas.get(cellId) || getCellDirectText(activeCell);
     if (formulaInput) formulaInput.value = raw;
     updateLiveStatusBar();
+
+    // Ensure cell is focused so typing immediately works
+    if (document.activeElement !== activeCell && !formulaInput?.matches(':focus')) {
+      activeCell.focus();
+    }
   }
 
   function getCellValue(id) {
     const el = gridTable.querySelector(`[data-cell-id="${id}"]`);
     if (!el) return 0;
-    const clean = (el.textContent || '').replace(/[$,% ]/g, '');
+    const clean = getCellDirectText(el).replace(/[$,% ]/g, '');
     const num = parseFloat(clean);
     return isNaN(num) ? 0 : num;
   }
 
   function getCellText(id) {
     const el = gridTable.querySelector(`[data-cell-id="${id}"]`);
-    return el ? (el.textContent || '').trim() : '';
+    return el ? getCellDirectText(el) : '';
   }
 
   // =========================================================================
@@ -3245,20 +3288,21 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
   function evaluateCell(cell) {
     if (!cell) return;
     const cellId = cell.dataset.cellId;
-    const text = (cell.textContent || '').trim();
+    const text = getCellDirectText(cell);
 
     if (text.startsWith('=')) {
       rawFormulas.set(cellId, text);
       const computed = computeFormula(text);
-      cell.textContent = formatComputedResult(computed);
+      setCellDirectText(cell, formatComputedResult(computed));
       if (typeof computed === 'number') cell.classList.add('num-cell');
       else cell.classList.remove('num-cell');
-    } else if (rawFormulas.has(cellId)) {
-      const formula = rawFormulas.get(cellId);
-      const computed = computeFormula(formula);
-      cell.textContent = formatComputedResult(computed);
-      if (typeof computed === 'number') cell.classList.add('num-cell');
-      else cell.classList.remove('num-cell');
+    } else {
+      rawFormulas.delete(cellId);
+      if (text && !isNaN(Number(text.replace(/,/g, '')))) {
+        cell.classList.add('num-cell');
+      } else {
+        cell.classList.remove('num-cell');
+      }
     }
     saveCurrentSheet();
   }
@@ -4001,6 +4045,17 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
 
   btnFormulaCommit?.addEventListener('click', () => {
     if (!activeCell) return;
+    if (formulaInput) {
+      const val = formulaInput.value;
+      const cellId = activeCell.dataset.cellId;
+      if (val.startsWith('=')) {
+        rawFormulas.set(cellId, val);
+        setCellDirectText(activeCell, val);
+      } else {
+        rawFormulas.delete(cellId);
+        setCellDirectText(activeCell, val);
+      }
+    }
     evaluateCell(activeCell);
     saveCurrentSheet();
     updateLiveStatusBar();
@@ -4009,7 +4064,7 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
 
   btnFormulaCancel?.addEventListener('click', () => {
     if (!activeCell) return;
-    const orig = rawFormulas.get(activeCell.dataset.cellId) || activeCell.textContent.trim();
+    const orig = rawFormulas.get(activeCell.dataset.cellId) || getCellDirectText(activeCell);
     formulaInput.value = orig;
     if (suggestBox) suggestBox.style.display = 'none';
   });
@@ -5419,7 +5474,7 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     }
   });
 
-  // Formula Input Sync
+  // Formula Input Sync & Live Save
   formulaInput.addEventListener('input', () => {
     if (!activeCell) return;
     const val = formulaInput.value;
@@ -5427,19 +5482,73 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
 
     if (val.startsWith('=')) {
       rawFormulas.set(cellId, val);
-      activeCell.textContent = val;
+      setCellDirectText(activeCell, val);
     } else {
       rawFormulas.delete(cellId);
-      activeCell.textContent = val;
+      setCellDirectText(activeCell, val);
     }
+    debouncedSaveSheet();
+    updateLiveStatusBar();
+  });
+
+  formulaInput.addEventListener('blur', () => {
+    if (!activeCell) return;
+    evaluateCell(activeCell);
+    saveCurrentSheet();
+    updateLiveStatusBar();
   });
 
   formulaInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       evaluateCell(activeCell);
+      saveCurrentSheet();
       activeCell.focus();
     }
+  });
+
+  // Cell Direct Input & Focusout Sync (Guarantees every keystroke inside cells is saved!)
+  gridTable.addEventListener('input', (e) => {
+    const cell = e.target.closest('.axis-cell');
+    if (!cell) return;
+    const cellId = cell.dataset.cellId;
+    const text = getCellDirectText(cell);
+
+    if (formulaInput && activeCell === cell) {
+      formulaInput.value = text;
+    }
+
+    if (text.startsWith('=')) {
+      rawFormulas.set(cellId, text);
+    } else {
+      rawFormulas.delete(cellId);
+    }
+
+    debouncedSaveSheet();
+    updateLiveStatusBar();
+  });
+
+  gridTable.addEventListener('focusout', (e) => {
+    const cell = e.target.closest('.axis-cell');
+    if (!cell) return;
+    evaluateCell(cell);
+    saveCurrentSheet();
+    updateLiveStatusBar();
+  });
+
+  // Cell Double-Click to Instant Edit
+  gridTable.addEventListener('dblclick', (e) => {
+    const cell = e.target.closest('.axis-cell');
+    if (!cell) return;
+    setActiveCell(cell);
+    cell.focus();
+    try {
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } catch (_) {}
   });
 
   
@@ -6838,9 +6947,17 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     container.querySelector('#btn-axis-home-ai-copilot')?.addEventListener('click', () => openModal());
     container.querySelector('#btn-axis-ribbon-ai-copilot')?.addEventListener('click', () => openModal());
     container.querySelector('#btn-axis-import-from-girionix')?.addEventListener('click', () => {
-      if (window.orbitPlatform && typeof window.orbitPlatform.toggleGirionixAiDrawer === 'function') {
-        window.orbitPlatform.toggleGirionixAiDrawer('live');
-        window.orbitPlatform.showToast('📊 Ask Girionix AI to generate a table or data, then click Import on any response', 'green');
+      if (window.orbitPlatform && typeof window.orbitPlatform.importFromGirionix === 'function') {
+        window.orbitPlatform.importFromGirionix('axis');
+      } else if (window.orbitPlatform && typeof window.orbitPlatform.toggleGirionixAiDrawer === 'function') {
+        window.orbitPlatform.toggleGirionixAiDrawer('axis');
+      }
+    });
+    container.querySelector('#btn-axis-export-to-girionix')?.addEventListener('click', () => {
+      if (window.orbitPlatform && typeof window.orbitPlatform.exportToGirionix === 'function') {
+        window.orbitPlatform.exportToGirionix('axis');
+      } else if (window.orbitPlatform && typeof window.orbitPlatform.toggleGirionixAiDrawer === 'function') {
+        window.orbitPlatform.toggleGirionixAiDrawer('axis');
       }
     });
 
