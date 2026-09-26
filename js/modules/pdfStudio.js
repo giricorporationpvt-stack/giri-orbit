@@ -909,6 +909,14 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
 
           <!-- Top-Right Actions -->
           <div class="fluent-top-actions">
+            <button class="fluent-top-action-pill fluent-autosave-toggle-btn active" id="btn-pdf-autosave-toggle" title="Auto-Save is ON: All changes saved automatically (Click to toggle)">
+              <span class="autosave-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;"></span>
+              <span class="autosave-text" style="font-weight:600;font-size:11.5px;">Auto-Save: ON</span>
+            </button>
+            <button class="fluent-top-action-pill" id="btn-pdf-special-link" title="Special Document Link: Share & open instantly on any Phone or PC" style="background:linear-gradient(135deg,rgba(220,38,38,0.18),rgba(234,88,12,0.18));color:#f87171;border:1px solid rgba(248,113,113,0.4);font-weight:600;">
+              <span style="font-size:12px;">📱</span>
+              <span>Phone/PC Link</span>
+            </button>
             <button class="fluent-drive-action-pill" id="btn-pdf-drive-sync" title="Google Drive Sync: Direct editing & cloud auto-save">
               <span class="drive-dot-live"></span>
               <span id="txt-pdf-drive-status">☁️ Drive</span>
@@ -2406,10 +2414,27 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
     }
   });
 
+  container.querySelector('#btn-pdf-autosave-toggle')?.addEventListener('click', () => {
+    if (window.orbitPlatform && typeof window.orbitPlatform.toggleAutoSave === 'function') {
+      window.orbitPlatform.toggleAutoSave();
+    }
+  });
+
+  container.querySelector('#btn-pdf-special-link')?.addEventListener('click', () => {
+    if (window.orbitPlatform && typeof window.orbitPlatform.generateSpecialDocLink === 'function') {
+      const link = window.orbitPlatform.generateSpecialDocLink('pdf');
+      window.orbitPlatform.openShareModal(link, 'pdf');
+    }
+  });
+
   container.querySelector('#btn-pdf-share')?.addEventListener('click', () => {
-    const url = window.orbitPlatform ? window.orbitPlatform.getToolUrl('pdf') : `${window.location.origin}/#pdf`;
-    navigator.clipboard?.writeText(url);
-    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Copied link to clipboard: ${url}`);
+    if (window.orbitPlatform && typeof window.orbitPlatform.copyToolLink === 'function') {
+      window.orbitPlatform.copyToolLink('pdf');
+    } else {
+      const url = `${window.location.origin}${window.location.pathname}#pdf`;
+      navigator.clipboard?.writeText(url);
+      if (window.orbitPlatform) window.orbitPlatform.showToast('Copied link to clipboard', 'orange');
+    }
   });
 
   // Comments Sidebar Toggle & Comment Posting

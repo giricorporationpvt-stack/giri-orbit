@@ -2402,6 +2402,14 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
 
           <!-- Top-Right Actions -->
           <div class="fluent-top-actions">
+            <button class="fluent-top-action-pill fluent-autosave-toggle-btn active" id="btn-kinetic-autosave-toggle" title="Auto-Save is ON: All changes saved automatically (Click to toggle)">
+              <span class="autosave-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;"></span>
+              <span class="autosave-text" style="font-weight:600;font-size:11.5px;">Auto-Save: ON</span>
+            </button>
+            <button class="fluent-top-action-pill" id="btn-kinetic-special-link" title="Special Document Link: Share & open instantly on any Phone or PC" style="background:linear-gradient(135deg,rgba(234,88,12,0.18),rgba(220,38,38,0.18));color:#fb923c;border:1px solid rgba(251,146,60,0.4);font-weight:600;">
+              <span style="font-size:12px;">📱</span>
+              <span>Phone/PC Link</span>
+            </button>
             <button class="fluent-drive-action-pill" id="btn-kinetic-drive-sync" title="Google Drive Sync: Direct editing & cloud auto-save">
               <span class="drive-dot-live"></span>
               <span id="txt-kinetic-drive-status">☁️ Drive</span>
@@ -3618,10 +3626,27 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     });
   });
 
+  container.querySelector('#btn-kinetic-autosave-toggle')?.addEventListener('click', () => {
+    if (window.orbitPlatform && typeof window.orbitPlatform.toggleAutoSave === 'function') {
+      window.orbitPlatform.toggleAutoSave();
+    }
+  });
+
+  container.querySelector('#btn-kinetic-special-link')?.addEventListener('click', () => {
+    if (window.orbitPlatform && typeof window.orbitPlatform.generateSpecialDocLink === 'function') {
+      const link = window.orbitPlatform.generateSpecialDocLink('kinetic');
+      window.orbitPlatform.openShareModal(link, 'kinetic');
+    }
+  });
+
   container.querySelector('#btn-kinetic-share')?.addEventListener('click', () => {
-    const url = window.orbitPlatform ? window.orbitPlatform.getToolUrl('kinetic') : `${window.location.origin}/#kinetic`;
-    navigator.clipboard?.writeText(url);
-    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Copied direct link to Giri Kinetic: ${url}`);
+    if (window.orbitPlatform && typeof window.orbitPlatform.copyToolLink === 'function') {
+      window.orbitPlatform.copyToolLink('kinetic');
+    } else {
+      const url = `${window.location.origin}${window.location.pathname}#kinetic`;
+      navigator.clipboard?.writeText(url);
+      if (window.orbitPlatform) window.orbitPlatform.showToast('Copied link to clipboard', 'red');
+    }
   });
 
   // Direct Local Disk Save & Sync (FSA API)

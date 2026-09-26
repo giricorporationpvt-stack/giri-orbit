@@ -56,22 +56,28 @@ class GiriOrbitPlatform {
    * Universal URL Deep-Linking & Route Initializer
    */
   initRouting() {
-    // Parse target tool from URL hash (#axis), query param (?tool=axis), or pathname (/axis)
-    const initialView = this.parseCurrentRoute();
-    this.navigateTo(initialView, null, false);
+    // 1. Check if user opened a Special Portable Document Link on Phone or PC
+    const openedSpecialDoc = this.checkAndLoadSpecialDocLink();
 
-    // Ensure URL hash reflects the active tool
-    const canonicalHash = (initialView === 'launcher' || initialView === 'hub') ? '#hub' : `#${initialView}`;
-    if (window.location.hash !== canonicalHash) {
-      try {
-        history.replaceState({ view: initialView }, '', canonicalHash);
-      } catch (e) {
-        window.location.hash = canonicalHash;
+    if (!openedSpecialDoc) {
+      // Parse target tool from URL hash (#axis), query param (?tool=axis), or pathname (/axis)
+      const initialView = this.parseCurrentRoute();
+      this.navigateTo(initialView, null, false);
+
+      // Ensure URL hash reflects the active tool
+      const canonicalHash = (initialView === 'launcher' || initialView === 'hub') ? '#hub' : `#${initialView}`;
+      if (window.location.hash !== canonicalHash) {
+        try {
+          history.replaceState({ view: initialView }, '', canonicalHash);
+        } catch (e) {
+          window.location.hash = canonicalHash;
+        }
       }
     }
 
-    // Listen for hash changes (e.g. typing in address bar, clicking tool links)
+    // Listen for hash changes (e.g. typing in address bar, clicking tool links or opening special links)
     window.addEventListener('hashchange', () => {
+      if (this.checkAndLoadSpecialDocLink()) return;
       const view = this.parseCurrentRoute();
       if (view !== this.currentView) {
         this.navigateTo(view, null, false);
@@ -123,6 +129,176 @@ class GiriOrbitPlatform {
   }
 
   /**
+   * Auto-Save State Management
+   */
+  isAutoSaveEnabled() {
+    try {
+      return localStorage.getItem('giri_orbit_autosave_enabled') !== 'false';
+    } catch (_) {
+      return true;
+    }
+  }
+
+  toggleAutoSave() {
+    const next = !this.isAutoSaveEnabled();
+    try {
+      localStorage.setItem('giri_orbit_autosave_enabled', next ? 'true' : 'false');
+    } catch (_) {}
+    this.updateAllAutoSaveBadges();
+    if (next) {
+      this.showToast('🟢 Auto-Save is ON: Your work is continuously protected!', 'green');
+    } else {
+      this.showToast('⚪ Auto-Save is PAUSED: Remember to save manually (Ctrl+S)', 'yellow');
+    }
+    return next;
+  }
+
+  updateAllAutoSaveBadges() {
+    const enabled = this.isAutoSaveEnabled();
+    document.querySelectorAll('.fluent-autosave-toggle-btn').forEach(btn => {
+      const dot = btn.querySelector('.autosave-dot');
+      const text = btn.querySelector('.autosave-text');
+      if (enabled) {
+        btn.classList.add('active');
+        btn.classList.remove('paused');
+        if (dot) {
+          dot.style.background = '#22c55e';
+          dot.style.boxShadow = '0 0 6px #22c55e';
+        }
+        if (text) text.textContent = 'Auto-Save: ON';
+        btn.title = 'Auto-Save is ON: All changes saved automatically (Click to pause)';
+      } else {
+        btn.classList.remove('active');
+        btn.classList.add('paused');
+        if (dot) {
+          dot.style.background = '#94a3b8';
+          dot.style.boxShadow = 'none';
+        }
+        if (text) text.textContent = 'Auto-Save: OFF';
+        btn.title = 'Auto-Save is PAUSED (Click to turn ON)';
+      }
+    });
+  }
+
+  /**
+   * Generates a Special Portable Link for the current document.
+   * When opened on ANY phone or PC, it automatically loads and saves the document locally!
+   */
+  generateSpecialDocLink(tool = null) {
+    const currentTool = tool || this.currentView || 'drift';
+    let docTitle = 'Document';
+    let content = '';
+
+    if (currentTool === 'drift') {
+      const titleInput = document.getElementById('drift-title-input');
+      docTitle = titleInput?.value?.trim() || 'Drift Document';
+      const paper = document.getElementById('drift-paper-canvas');
+      content = paper ? paper.innerHTML : (localStorage.getItem('giri_orbit_drift_doc') || '');
+    } else if (currentTool === 'axis') {
+      const titleInput = document.getElementById('axis-doc-title-input');
+      docTitle = titleInput?.value?.trim() || 'Axis Spreadsheet';
+      content = localStorage.getItem('giri_orbit_axis_sheets') || '{}';
+    } else if (currentTool === 'kinetic') {
+      const titleInput = document.getElementById('kinetic-deck-title-input');
+      docTitle = titleInput?.value?.trim() || 'Kinetic Presentation';
+      content = localStorage.getItem('giri_orbit_kinetic_deck') || '[]';
+    } else if (currentTool === 'pdf') {
+      const titleInput = document.getElementById('pdf-title-input');
+      docTitle = titleInput?.value?.trim() || 'Aegis PDF Document';
+      content = localStorage.getItem('giri_orbit_pdf_pages') || '[]';
+    }
+
+    const payload = {
+      t: currentTool,
+      n: docTitle,
+      c: content,
+      ts: Date.now()
+    };
+
+    try {
+      const jsonStr = JSON.stringify(payload);
+      const utf8Bytes = encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (_, p1) => {
+        return String.fromCharCode(parseInt(p1, 16));
+      });
+      const b64 = btoa(utf8Bytes).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      const baseUrl = `${window.location.origin}${window.location.pathname}`;
+      return `${baseUrl}#orbit-doc=${b64}`;
+    } catch (err) {
+      console.warn('[Special Doc Link] Encoding failed:', err);
+      return this.getToolUrl(currentTool);
+    }
+  }
+
+  /**
+   * Decodes incoming special document link from URL hash and mounts document
+   */
+  checkAndLoadSpecialDocLink() {
+    const hash = window.location.hash || '';
+    if (!hash.startsWith('#orbit-doc=')) return false;
+
+    try {
+      let b64 = hash.replace('#orbit-doc=', '');
+      b64 = b64.replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) b64 += '=';
+
+      const decodedBytes = atob(b64);
+      const jsonStr = decodeURIComponent(Array.prototype.map.call(decodedBytes, c => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+
+      const data = JSON.parse(jsonStr);
+      if (!data || !data.t) return false;
+
+      const tool = data.t;
+      const title = data.n || 'Shared Document';
+      const content = data.c || '';
+
+      // Save document to local storage on this phone / PC
+      if (tool === 'drift') {
+        localStorage.setItem('giri_orbit_drift_doc', content);
+      } else if (tool === 'axis') {
+        localStorage.setItem('giri_orbit_axis_sheets', typeof content === 'string' ? content : JSON.stringify(content));
+      } else if (tool === 'kinetic') {
+        localStorage.setItem('giri_orbit_kinetic_deck', typeof content === 'string' ? content : JSON.stringify(content));
+      } else if (tool === 'pdf') {
+        localStorage.setItem('giri_orbit_pdf_pages', typeof content === 'string' ? content : JSON.stringify(content));
+      }
+
+      // Register in recent documents on this device
+      try {
+        const recentKey = 'giri_orbit_recent_docs';
+        let recents = JSON.parse(localStorage.getItem(recentKey) || '[]');
+        recents = recents.filter(r => r.name !== title);
+        recents.unshift({
+          name: title,
+          tool: tool,
+          time: 'Just now',
+          timestamp: Date.now(),
+          size: `${Math.max(1, Math.round((content.length || 100) / 1024))} KB`
+        });
+        localStorage.setItem(recentKey, JSON.stringify(recents.slice(0, 20)));
+      } catch (_) {}
+
+      // Open directly in editor mode
+      setTimeout(() => {
+        this.navigateTo(tool, title, true, true);
+        this.showToast(`📱 Special Link: Loaded "${title}" and saved to this device!`, 'green');
+      }, 100);
+
+      // Clean hash to canonical tool hash without refreshing
+      if (window.history && window.history.replaceState) {
+        window.history.replaceState({ view: tool }, '', `${window.location.pathname}#${tool}`);
+      }
+
+      return true;
+    } catch (err) {
+      console.warn('[Special Doc Link] Failed to decode incoming link:', err);
+      this.showToast('Could not load shared document link.', 'red');
+      return false;
+    }
+  }
+
+  /**
    * Copy direct shareable tool link to clipboard with toast notification
    */
   copyToolLink(tool) {
@@ -138,43 +314,87 @@ class GiriOrbitPlatform {
       girionix: 'Girionix AI Studio'
     };
     const toolName = toolNames[tool] || 'Giri Orbit Workspace';
+    const isDocumentTool = ['drift', 'axis', 'kinetic', 'pdf'].includes(tool);
+    const specialDocUrl = isDocumentTool ? this.generateSpecialDocLink(tool) : url;
 
     document.getElementById('giri-share-modal-backdrop')?.remove();
 
     const html = `
-      <div id="giri-share-modal-backdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeInShare 0.15s ease;">
+      <div id="giri-share-modal-backdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);animation:fadeInShare 0.15s ease;">
         <style>@keyframes fadeInShare{from{opacity:0;transform:scale(0.96)}to{opacity:1;transform:scale(1)}} .share-opt-row{transition:background 0.15s;} .share-opt-row:hover{background:rgba(255,255,255,0.05)!important;}</style>
-        <div style="background:#18181b;border:1px solid #3f3f46;border-radius:16px;width:460px;max-width:92vw;overflow:hidden;box-shadow:0 28px 80px rgba(0,0,0,0.7);">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #27272a;">
+        <div style="background:#18181b;border:1px solid #3f3f46;border-radius:18px;width:490px;max-width:92vw;overflow:hidden;box-shadow:0 28px 80px rgba(0,0,0,0.75);">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid #27272a;">
             <div style="display:flex;align-items:center;gap:10px;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-              <strong style="font-size:15px;color:#f1f5f9;">Share ${toolName}</strong>
+              <span style="font-size:20px;">📱</span>
+              <div>
+                <strong style="font-size:15px;color:#f1f5f9;">Share ${toolName}</strong>
+                <div style="font-size:11.5px;color:#94a3b8;margin-top:1px;">Self-loading portable document for Phone &amp; PC</div>
+              </div>
             </div>
             <button id="btn-close-share-modal" style="background:transparent;border:none;color:#64748b;font-size:20px;cursor:pointer;line-height:1;padding:2px 6px;">✕</button>
           </div>
-          <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div style="padding:20px 22px;display:flex;flex-direction:column;gap:15px;max-height:80vh;overflow-y:auto;">
+            ${isDocumentTool ? `
+              <!-- SPECIAL PORTABLE DOCUMENT LINK (PHONE & PC) -->
+              <div style="background:linear-gradient(135deg, rgba(37,99,235,0.12), rgba(16,185,129,0.08)); border:1.5px solid rgba(56,189,248,0.35); border-radius:12px; padding:14px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <strong style="font-size:12.5px; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px;">Special Link (Phone &amp; PC)</strong>
+                  </div>
+                  <span style="font-size:10.5px; background:rgba(34,197,94,0.18); color:#4ade80; border:1px solid rgba(34,197,94,0.3); padding:2px 8px; border-radius:999px; font-weight:600;">Saves to Device</span>
+                </div>
+                <p style="font-size:12px; color:#cbd5e1; margin:0 0 10px 0; line-height:1.45;">
+                  Contains your complete document. When opened on any phone, tablet, or PC, it automatically loads and saves this exact document in their portal!
+                </p>
+                <div style="display:flex; gap:8px;">
+                  <input id="special-doc-link-input" type="text" value="${specialDocUrl}" readonly style="flex:1; background:#09090b; border:1px solid #3f3f46; color:#e2e8f0; border-radius:7px; padding:8px 12px; font-size:11.5px; font-family:monospace; outline:none;">
+                  <button id="btn-copy-special-doc-link" style="background:#0284c7; border:none; color:#fff; border-radius:7px; padding:8px 16px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:6px;">
+                    <span>📋 Copy Link</span>
+                  </button>
+                </div>
+                <div style="margin-top:10px; display:flex; align-items:center; justify-content:space-between;">
+                  <button id="btn-toggle-qr-code" style="background:rgba(255,255,255,0.06); border:1px solid #334155; color:#cbd5e1; border-radius:6px; padding:5px 12px; font-size:11.5px; cursor:pointer; display:flex; align-items:center; gap:6px; font-weight:500;">
+                    <span>📲 Scan QR Code on Phone</span>
+                  </button>
+                  <span style="font-size:11px; color:#64748b;">Zero server dependency</span>
+                </div>
+                <!-- QR Code Box -->
+                <div id="special-doc-qr-wrap" style="display:none; margin-top:12px; text-align:center; padding:14px; background:#ffffff; border-radius:10px;">
+                  <img id="special-doc-qr-img" src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(specialDocUrl)}" alt="Scan with phone" style="width:180px; height:180px; display:block; margin:0 auto; border-radius:4px;">
+                  <div style="font-size:11.5px; color:#1e293b; margin-top:8px; font-weight:700;">Point smartphone camera to open document on mobile</div>
+                </div>
+              </div>
+            ` : ''}
+
+            <!-- Direct Portal URL -->
             <div>
-              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Direct Link</label>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Direct Portal URL</label>
               <div style="display:flex;gap:8px;">
-                <input id="share-link-input" type="text" value="${url}" readonly style="flex:1;background:#09090b;border:1px solid #3f3f46;color:#94a3b8;border-radius:7px;padding:9px 12px;font-size:12px;font-family:monospace;outline:none;">
-                <button id="btn-copy-share-link" style="background:#2563eb;border:none;color:#fff;border-radius:7px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;">Copy</button>
+                <input id="share-link-input" type="text" value="${url}" readonly style="flex:1;background:#09090b;border:1px solid #3f3f46;color:#94a3b8;border-radius:7px;padding:8px 12px;font-size:11.5px;font-family:monospace;outline:none;">
+                <button id="btn-copy-share-link" style="background:#27272a;border:1px solid #3f3f46;color:#e2e8f0;border-radius:7px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">Copy</button>
               </div>
             </div>
+
+            <!-- Share Channels -->
             <div style="border:1px solid #27272a;border-radius:10px;overflow:hidden;">
-              <button class="share-opt-row" id="btn-share-email" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;background:transparent;border:none;border-bottom:1px solid #27272a;cursor:pointer;text-align:left;">
+              <button class="share-opt-row" id="btn-share-whatsapp" style="width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;background:transparent;border:none;border-bottom:1px solid #27272a;cursor:pointer;text-align:left;">
+                <span style="width:34px;height:34px;border-radius:8px;background:#25D366;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:16px;">💬</span>
+                <div><div style="font-size:13px;font-weight:600;color:#f1f5f9;">Share via WhatsApp</div><div style="font-size:11.5px;color:#64748b;margin-top:2px;">Send document link to phone contacts</div></div>
+              </button>
+              <button class="share-opt-row" id="btn-share-email" style="width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;background:transparent;border:none;border-bottom:1px solid #27272a;cursor:pointer;text-align:left;">
                 <span style="width:34px;height:34px;border-radius:8px;background:#1e293b;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;">✉️</span>
                 <div><div style="font-size:13px;font-weight:600;color:#f1f5f9;">Share via Email</div><div style="font-size:11.5px;color:#64748b;margin-top:2px;">Open email client with this link</div></div>
               </button>
-              <button class="share-opt-row" id="btn-share-twitter" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;background:transparent;border:none;border-bottom:1px solid #27272a;cursor:pointer;text-align:left;">
+              <button class="share-opt-row" id="btn-share-twitter" style="width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;background:transparent;border:none;border-bottom:1px solid #27272a;cursor:pointer;text-align:left;">
                 <span style="width:34px;height:34px;border-radius:8px;background:#09090b;border:1px solid #27272a;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#f1f5f9;font-weight:900;font-size:16px;">𝕏</span>
                 <div><div style="font-size:13px;font-weight:600;color:#f1f5f9;">Share on X (Twitter)</div><div style="font-size:11.5px;color:#64748b;margin-top:2px;">Post to your timeline</div></div>
               </button>
-              <button class="share-opt-row" id="btn-share-linkedin" style="width:100%;display:flex;align-items:center;gap:12px;padding:13px 14px;background:transparent;border:none;cursor:pointer;text-align:left;">
+              <button class="share-opt-row" id="btn-share-linkedin" style="width:100%;display:flex;align-items:center;gap:12px;padding:12px 14px;background:transparent;border:none;cursor:pointer;text-align:left;">
                 <span style="width:34px;height:34px;border-radius:8px;background:#0077b5;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-weight:900;font-size:14px;">in</span>
                 <div><div style="font-size:13px;font-weight:600;color:#f1f5f9;">Share on LinkedIn</div><div style="font-size:11.5px;color:#64748b;margin-top:2px;">Post to your professional network</div></div>
               </button>
             </div>
-            <p style="margin:0;font-size:11px;color:#475569;text-align:center;">🔒 Your document content stays private — only the link is shared</p>
+            <p style="margin:0;font-size:11px;color:#475569;text-align:center;">🔒 Sovereign link execution: Content runs client-side on recipient's browser</p>
           </div>
         </div>
       </div>
@@ -186,6 +406,25 @@ class GiriOrbitPlatform {
     document.getElementById('btn-close-share-modal')?.addEventListener('click', close);
     backdrop.addEventListener('click', (e) => { if (e.target === backdrop) close(); });
     document.addEventListener('keydown', function escClose(e) { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', escClose); } });
+
+    document.getElementById('btn-copy-special-doc-link')?.addEventListener('click', () => {
+      const btn = document.getElementById('btn-copy-special-doc-link');
+      navigator.clipboard.writeText(specialDocUrl).then(() => {
+        if (btn) btn.innerHTML = '<span>✓ Copied!</span>';
+        this.showToast('✅ Special Document Link copied! Loads & saves on any Phone or PC.', 'green');
+        setTimeout(() => { if (btn) btn.innerHTML = '<span>📋 Copy Link</span>'; }, 2000);
+      }).catch(() => {
+        document.getElementById('special-doc-link-input')?.select();
+        this.showToast('✅ Link copied!', 'green');
+      });
+    });
+
+    document.getElementById('btn-toggle-qr-code')?.addEventListener('click', () => {
+      const qrWrap = document.getElementById('special-doc-qr-wrap');
+      if (qrWrap) {
+        qrWrap.style.display = qrWrap.style.display === 'none' ? 'block' : 'none';
+      }
+    });
 
     document.getElementById('btn-copy-share-link')?.addEventListener('click', () => {
       const btn = document.getElementById('btn-copy-share-link');
@@ -199,16 +438,20 @@ class GiriOrbitPlatform {
       });
     });
 
+    document.getElementById('btn-share-whatsapp')?.addEventListener('click', () => {
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('Check out this ' + toolName + ' on Giri Orbit:\n' + specialDocUrl)}`, '_blank');
+    });
+
     document.getElementById('btn-share-email')?.addEventListener('click', () => {
-      window.open(`mailto:?subject=${encodeURIComponent('Check out my ' + toolName + ' on Giri Orbit')}&body=${encodeURIComponent('Hi,\n\nI\'d like to share my ' + toolName + ' with you:\n\n' + url + '\n\nMade with Giri Orbit — the world\'s sovereign office suite.')}`, '_blank');
+      window.open(`mailto:?subject=${encodeURIComponent('Check out my ' + toolName + ' on Giri Orbit')}&body=${encodeURIComponent('Hi,\n\nI\'d like to share my ' + toolName + ' with you:\n\n' + specialDocUrl + '\n\nMade with Giri Orbit — sovereign office suite.')}`, '_blank');
     });
 
     document.getElementById('btn-share-twitter')?.addEventListener('click', () => {
-      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent('Just created this with @GiriOrbit 🚀')}&url=${encodeURIComponent(url)}`, '_blank');
+      window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent('Check out my ' + toolName + ' on @GiriOrbit 🚀')}&url=${encodeURIComponent(specialDocUrl)}`, '_blank');
     });
 
     document.getElementById('btn-share-linkedin')?.addEventListener('click', () => {
-      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+      window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(specialDocUrl)}`, '_blank');
     });
   }
 
@@ -217,8 +460,8 @@ class GiriOrbitPlatform {
   /**
    * Main View Routing & State Transitions with URL Synchronization
    */
-  navigateTo(view, docTitle = null, updateHistory = true) {
-    if (this.currentView === view && this.workspace.children.length > 0 && !docTitle) {
+  navigateTo(view, docTitle = null, updateHistory = true, forceEditor = false) {
+    if (this.currentView === view && this.workspace.children.length > 0 && !docTitle && !forceEditor) {
       return;
     }
 
@@ -261,24 +504,27 @@ class GiriOrbitPlatform {
       if (pillBar) { pillBar.style.display = 'none'; }
     }
 
+    const startEditor = forceEditor || !!docTitle;
     if (view === 'launcher') {
       this.mountZohoLandingHub();
     } else if (view === 'drift') {
-      renderDriftApp(this.workspace, null, docTitle, docTitle ? true : false);
+      renderDriftApp(this.workspace, null, docTitle, startEditor);
       this.showToast('Giri Drift Workspace Ready', 'blue');
     } else if (view === 'axis') {
-      renderAxisApp(this.workspace, null, docTitle ? true : false);
+      renderAxisApp(this.workspace, null, startEditor);
       this.showToast('Giri Axis Spreadsheet Ready', 'green');
     } else if (view === 'kinetic') {
-      renderKineticApp(this.workspace, null, docTitle ? true : false);
+      renderKineticApp(this.workspace, null, startEditor);
       this.showToast('Giri Kinetic Presentation Studio Ready', 'red');
     } else if (view === 'pdf') {
-      renderPdfStudioApp(this.workspace, null, docTitle ? true : false);
+      renderPdfStudioApp(this.workspace, null, startEditor);
       this.showToast('Giri Aegis PDF Studio Ready', 'orange');
     } else if (view === 'girionix') {
       this.mountGirionixAiStudio();
       this.showToast('Girionix AI Polymath Studio Connected', 'blue');
     }
+
+    this.updateAllAutoSaveBadges();
 
     if (typeof this.updateGirionixQuickCards === 'function') {
       this.updateGirionixQuickCards();
@@ -2014,7 +2260,7 @@ class GiriOrbitPlatform {
           const idx = parseInt(btn.dataset.insertIdx, 10);
           const msg = history[idx];
           if (msg && msg.text) {
-            this.importAiDataToActiveTool(msg.text, { source: 'copilot-drawer' });
+            this.importAiDataToActiveTool(msg.text, { source: 'copilot-drawer', targetTool: tool });
             btn.innerHTML = '<span>✓ Injected!</span>';
             setTimeout(() => { btn.innerHTML = `<span>✓ Insert into ${toolMeta[tool].name}</span>`; }, 2000);
           }
@@ -2695,7 +2941,7 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
       if (e.data.type === 'GIRIONIX_IMPORT_TO_WORKPLACE' || e.data.type === 'GIRIONIX_LATEST_MESSAGE_RESPONSE') {
         const rawText = e.data.payload?.text || '';
         if (rawText) {
-          this.importAiDataToActiveTool(rawText, { source: e.data.type });
+          this.importAiDataToActiveTool(rawText, { source: e.data.type, targetTool: e.data.payload?.tool || activeCopilotTool });
         }
       }
     });
@@ -2828,7 +3074,7 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
     }
 
     const text = this.cleanseAiImportText(rawContent.trim());
-    let current = this.currentView || 'launcher';
+    let current = options.targetTool || this.currentView || 'launcher';
 
     // Auto-navigate to appropriate tool if currently on launcher hub or full AI page
     if (current === 'launcher' || current === 'hub' || current === 'girionix') {
@@ -2838,16 +3084,16 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
 
       if (isTable) {
         current = 'axis';
-        this.navigateTo('axis');
+        this.navigateTo('axis', null, true, true);
       } else if (isSlide) {
         current = 'kinetic';
-        this.navigateTo('kinetic');
+        this.navigateTo('kinetic', null, true, true);
       } else if (isPdf) {
         current = 'pdf';
-        this.navigateTo('pdf');
+        this.navigateTo('pdf', null, true, true);
       } else {
         current = 'drift';
-        this.navigateTo('drift');
+        this.navigateTo('drift', null, true, true);
       }
     }
 
@@ -2868,37 +3114,49 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
    * Import AI content into Giri Drift (Word Processor) - Clean Natural Semantic HTML
    */
   importContentToDrift(text) {
-    const paper = document.getElementById('drift-paper-canvas');
+    let paper = document.getElementById('drift-paper-canvas');
     if (!paper) {
-      this.navigateTo('drift');
-      setTimeout(() => this.importContentToDrift(text), 160);
+      this.navigateTo('drift', 'AI Document', true, true);
+      setTimeout(() => this.importContentToDrift(text), 220);
       return;
     }
 
     const paragraphs = this.parseMarkdownToNaturalHtml(text);
 
-    // Target the active sheet or last sheet in the document
-    let targetSheet = paper.querySelector('.drift-page-sheet.active-sheet') || paper.querySelector('.drift-page-sheet:last-of-type');
-    if (!targetSheet) {
-      targetSheet = document.createElement('div');
-      targetSheet.className = 'drift-page-sheet active-sheet';
-      targetSheet.contentEditable = 'true';
-      targetSheet.spellcheck = true;
-      targetSheet.dataset.page = '1';
-      paper.appendChild(targetSheet);
+    // If selection is inside the paper canvas, insert at current cursor position
+    const sel = window.getSelection();
+    let insertedAtCursor = false;
+    if (sel && sel.rangeCount > 0 && paper.contains(sel.anchorNode)) {
+      try {
+        document.execCommand('insertHTML', false, paragraphs);
+        insertedAtCursor = true;
+      } catch (_) {}
     }
 
-    // Insert natural content directly into target sheet (NO wrapper div, NO blue line, NO banner!)
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = paragraphs;
+    if (!insertedAtCursor) {
+      // Target the active sheet or last sheet in the document
+      let targetSheet = paper.querySelector('.drift-page-sheet.active-sheet') || paper.querySelector('.drift-page-sheet:last-of-type');
+      if (!targetSheet) {
+        targetSheet = document.createElement('div');
+        targetSheet.className = 'drift-page-sheet active-sheet';
+        targetSheet.contentEditable = 'true';
+        targetSheet.spellcheck = true;
+        targetSheet.dataset.page = '1';
+        paper.appendChild(targetSheet);
+      }
 
-    const fragment = document.createDocumentFragment();
-    while (tempDiv.firstChild) {
-      fragment.appendChild(tempDiv.firstChild);
+      // Insert natural content directly into target sheet (NO wrapper div, NO blue line, NO banner!)
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = paragraphs;
+
+      const fragment = document.createDocumentFragment();
+      while (tempDiv.firstChild) {
+        fragment.appendChild(tempDiv.firstChild);
+      }
+
+      targetSheet.appendChild(fragment);
+      targetSheet.appendChild(document.createElement('p'));
     }
-
-    targetSheet.appendChild(fragment);
-    targetSheet.appendChild(document.createElement('p'));
 
     try {
       localStorage.setItem('giri_orbit_drift_doc', paper.innerHTML);
@@ -2912,8 +3170,10 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
    * Import AI tabular data & formulas into Giri Axis (Spreadsheet)
    */
   importContentToAxis(text) {
-    if (this.currentView !== 'axis') {
-      this.navigateTo('axis');
+    if (this.currentView !== 'axis' || !document.getElementById('axis-grid-body')) {
+      this.navigateTo('axis', null, true, true);
+      setTimeout(() => this.importContentToAxis(text), 220);
+      return;
     }
 
     try {
@@ -3031,7 +3291,7 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
     } catch (_) {}
 
     if (this.currentView === 'axis') {
-      renderAxisApp(this.workspace);
+      renderAxisApp(this.workspace, null, true);
     }
 
     this.showToast(`✅ Imported ${rows.length} rows (${populatedCount} cells) into Giri Axis Sheets!`, 'green');
@@ -3041,8 +3301,10 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
    * Import AI slide outline into Giri Kinetic (Presentation Studio)
    */
   importContentToKinetic(text) {
-    if (this.currentView !== 'kinetic') {
-      this.navigateTo('kinetic');
+    if (this.currentView !== 'kinetic' || !document.getElementById('kinetic-slide-frame')) {
+      this.navigateTo('kinetic', null, true, true);
+      setTimeout(() => this.importContentToKinetic(text), 220);
+      return;
     }
 
     try {
@@ -3126,7 +3388,7 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
       localStorage.setItem('giri_orbit_kinetic_deck', JSON.stringify(slides));
     } catch (_) {}
 
-    renderKineticApp(this.workspace);
+    renderKineticApp(this.workspace, null, true);
     this.showToast(`✅ Appended ${createdCount} slide${createdCount > 1 ? 's' : ''} to Giri Kinetic Deck!`, 'red');
   }
 
@@ -3134,8 +3396,10 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
    * Import AI compliance/audit addendum into Giri Aegis (PDF Studio)
    */
   importContentToPdf(text) {
-    if (this.currentView !== 'pdf') {
-      this.navigateTo('pdf');
+    if (this.currentView !== 'pdf' || !document.getElementById('pdf-sheet')) {
+      this.navigateTo('pdf', null, true, true);
+      setTimeout(() => this.importContentToPdf(text), 220);
+      return;
     }
 
     try {
@@ -3266,7 +3530,7 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
         const msgs = JSON.parse(raw);
         const lastAiMsg = msgs.slice().reverse().find(m => m.sender === 'ai' || m.sender === 'assistant');
         if (lastAiMsg && lastAiMsg.text) {
-          this.importAiDataToActiveTool(lastAiMsg.text, { source: 'ribbon-import' });
+          this.importAiDataToActiveTool(lastAiMsg.text, { source: 'ribbon-import', targetTool });
           this.showToast(`✅ Imported Girionix AI response into ${targetTool}!`, 'green');
           return;
         }

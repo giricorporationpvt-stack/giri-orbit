@@ -889,6 +889,14 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
 
           <!-- Top-Right Actions (Exact Match to Image 2) -->
           <div class="fluent-top-actions">
+            <button class="fluent-top-action-pill fluent-autosave-toggle-btn active" id="btn-axis-autosave-toggle" title="Auto-Save is ON: All changes saved automatically (Click to toggle)">
+              <span class="autosave-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;"></span>
+              <span class="autosave-text" style="font-weight:600;font-size:11.5px;">Auto-Save: ON</span>
+            </button>
+            <button class="fluent-top-action-pill" id="btn-axis-special-link" title="Special Document Link: Share & open instantly on any Phone or PC" style="background:linear-gradient(135deg,rgba(16,185,129,0.18),rgba(5,150,105,0.18));color:#34d399;border:1px solid rgba(52,211,153,0.4);font-weight:600;">
+              <span style="font-size:12px;">📱</span>
+              <span>Phone/PC Link</span>
+            </button>
             <button class="fluent-drive-action-pill" id="btn-axis-drive-sync" title="Google Drive Sync: Direct editing & cloud auto-save">
               <span class="drive-dot-live"></span>
               <span id="txt-axis-drive-status">☁️ Drive</span>
@@ -2121,10 +2129,27 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     });
   });
 
+  container.querySelector('#btn-axis-autosave-toggle')?.addEventListener('click', () => {
+    if (window.orbitPlatform && typeof window.orbitPlatform.toggleAutoSave === 'function') {
+      window.orbitPlatform.toggleAutoSave();
+    }
+  });
+
+  container.querySelector('#btn-axis-special-link')?.addEventListener('click', () => {
+    if (window.orbitPlatform && typeof window.orbitPlatform.generateSpecialDocLink === 'function') {
+      const link = window.orbitPlatform.generateSpecialDocLink('axis');
+      window.orbitPlatform.openShareModal(link, 'axis');
+    }
+  });
+
   container.querySelector('#btn-axis-share')?.addEventListener('click', () => {
-    const url = window.orbitPlatform ? window.orbitPlatform.getToolUrl('axis') : `${window.location.origin}/#axis`;
-    navigator.clipboard?.writeText(url);
-    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Copied direct link to Giri Axis: ${url}`);
+    if (window.orbitPlatform && typeof window.orbitPlatform.copyToolLink === 'function') {
+      window.orbitPlatform.copyToolLink('axis');
+    } else {
+      const url = `${window.location.origin}${window.location.pathname}#axis`;
+      navigator.clipboard?.writeText(url);
+      if (window.orbitPlatform) window.orbitPlatform.showToast('Copied link to clipboard', 'green');
+    }
   });
   const sheetTabsContainer = container.querySelector('#axis-sheet-tabs-container');
   const addSheetBtn = container.querySelector('#btn-axis-add-sheet');
@@ -2674,6 +2699,9 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
 
   let _saveSheetTimeout = null;
   function debouncedSaveSheet() {
+    if (window.orbitPlatform && typeof window.orbitPlatform.isAutoSaveEnabled === 'function' && !window.orbitPlatform.isAutoSaveEnabled()) {
+      return;
+    }
     if (_saveSheetTimeout) clearTimeout(_saveSheetTimeout);
     _saveSheetTimeout = setTimeout(() => {
       saveCurrentSheet();

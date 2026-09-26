@@ -1221,6 +1221,16 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
             <!-- Right Action Strip (Exact match to media_1789113480130.png) -->
             <div class="fluent-top-actions">
+              <button class="fluent-top-action-pill fluent-autosave-toggle-btn active" id="btn-drift-autosave-toggle" title="Auto-Save is ON: All changes saved automatically (Click to toggle)">
+                <span class="autosave-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px #22c55e;"></span>
+                <span class="autosave-text" style="font-weight:600;font-size:11.5px;">Auto-Save: ON</span>
+              </button>
+
+              <button class="fluent-top-action-pill" id="btn-drift-special-link" title="Special Document Link: Share & open instantly on any Phone or PC" style="background:linear-gradient(135deg,rgba(14,165,233,0.18),rgba(37,99,235,0.18));color:#38bdf8;border:1px solid rgba(56,189,248,0.4);font-weight:600;">
+                <span style="font-size:12px;">📱</span>
+                <span>Phone/PC Link</span>
+              </button>
+
               <button class="fluent-drive-action-pill" id="btn-drift-drive-sync" title="Google Drive Sync: Direct editing & cloud auto-save">
                 <span class="drive-dot-live"></span>
                 <span id="txt-drift-drive-status">☁️ Drive</span>
@@ -4442,6 +4452,9 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       // High-performance debounced save on rapid typing
       let saveDebounceTimer = null;
       function debouncedSaveDocument() {
+        if (window.orbitPlatform && typeof window.orbitPlatform.isAutoSaveEnabled === 'function' && !window.orbitPlatform.isAutoSaveEnabled()) {
+          return;
+        }
         if (saveDebounceTimer) clearTimeout(saveDebounceTimer);
         saveDebounceTimer = setTimeout(() => {
           saveDocument();
@@ -6706,10 +6719,27 @@ function calculateMetrics(records) {
         window.print();
       });
 
+      container.querySelector('#btn-drift-autosave-toggle')?.addEventListener('click', () => {
+        if (window.orbitPlatform && typeof window.orbitPlatform.toggleAutoSave === 'function') {
+          window.orbitPlatform.toggleAutoSave();
+        }
+      });
+
+      container.querySelector('#btn-drift-special-link')?.addEventListener('click', () => {
+        if (window.orbitPlatform && typeof window.orbitPlatform.generateSpecialDocLink === 'function') {
+          const link = window.orbitPlatform.generateSpecialDocLink('drift');
+          window.orbitPlatform.openShareModal(link, 'drift');
+        }
+      });
+
       container.querySelector('#btn-drift-share')?.addEventListener('click', () => {
-        const url = window.orbitPlatform ? window.orbitPlatform.getToolUrl('drift') : `${window.location.origin}/#drift`;
-        navigator.clipboard?.writeText(url);
-        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Copied direct link to Giri Drift: ${url}`);
+        if (window.orbitPlatform && typeof window.orbitPlatform.copyToolLink === 'function') {
+          window.orbitPlatform.copyToolLink('drift');
+        } else {
+          const url = `${window.location.origin}${window.location.pathname}#drift`;
+          navigator.clipboard?.writeText(url);
+          if (window.orbitPlatform) window.orbitPlatform.showToast('Copied link to clipboard', 'blue');
+        }
       });
 
       function insertNodeAtSelection(node) {
