@@ -11,6 +11,8 @@ const CACHE_NAME = 'giri-orbit-sovereign-v10.7';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/privacy.html',
+  '/terms.html',
   '/css/styles.css',
   '/css/print.css',
   '/css/social.css',
