@@ -16,6 +16,28 @@ class GirionixEngine {
     this.modelKey = 'orbit_girionix_model';
   }
 
+  static get PROVIDER_MODELS() {
+    return {
+      gemini: [
+        { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash (Recommended — Free, Fast & Smart)' },
+        { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Fast & Efficient)' },
+        { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro (Deep Complex Reasoning)' }
+      ],
+      openai: [
+        { id: 'gpt-4o-mini', name: 'GPT-4o mini (Fast & Affordable)' },
+        { id: 'gpt-4o', name: 'GPT-4o (Flagship Omni Intelligence)' },
+        { id: 'o3-mini', name: 'o3-mini (High-Reasoning Reasoning)' }
+      ],
+      groq: [
+        { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B Versatile (Ultra High Speed)' },
+        { id: 'deepseek-r1-distill-llama-70b', name: 'DeepSeek R1 Distill 70B (Math & Logic)' }
+      ],
+      sovereign: [
+        { id: 'Girionix-Local-10.4', name: 'Sovereign Core (100% Client-Side In-Memory Offline)' }
+      ]
+    };
+  }
+
   getApiKey() {
     try {
       return localStorage.getItem(this.storageKey) || '';
@@ -28,7 +50,13 @@ class GirionixEngine {
     try {
       localStorage.setItem(this.storageKey, (key || '').trim());
       localStorage.setItem(this.providerKey, provider);
-      if (model) localStorage.setItem(this.modelKey, model);
+      if (model) {
+        localStorage.setItem(this.modelKey, model);
+      } else {
+        const defaults = { gemini: 'gemini-2.0-flash', openai: 'gpt-4o-mini', groq: 'llama-3.3-70b-versatile', sovereign: 'Girionix-Local-10.4' };
+        localStorage.setItem(this.modelKey, defaults[provider] || 'gemini-2.0-flash');
+      }
+      window.dispatchEvent(new CustomEvent('girionix-api-settings-changed'));
       return true;
     } catch (_) {
       return false;
@@ -40,6 +68,7 @@ class GirionixEngine {
       localStorage.removeItem(this.storageKey);
       localStorage.removeItem(this.providerKey);
       localStorage.removeItem(this.modelKey);
+      window.dispatchEvent(new CustomEvent('girionix-api-settings-changed'));
     } catch (_) {}
   }
 
@@ -58,92 +87,153 @@ class GirionixEngine {
       if (saved) return saved;
       if (p === 'gemini') return 'gemini-2.0-flash';
       if (p === 'groq') return 'llama-3.3-70b-versatile';
-      return 'gpt-4o-mini';
+      if (p === 'openai') return 'gpt-4o-mini';
+      return 'Girionix-Local-10.4';
     } catch (_) {
       return 'gemini-2.0-flash';
     }
   }
 
   isLiveEnabled() {
+    const prov = this.getProvider();
+    if (prov === 'sovereign') return false;
     return Boolean(this.getApiKey() && navigator.onLine);
   }
 
   /**
-   * Test API key connectivity
+   * Get Live Connection Status Badge Metadata
+   */
+  getConnectionStatus() {
+    const provider = this.getProvider();
+    const model = this.getModel();
+    const isLive = this.isLiveEnabled();
+
+    if (isLive) {
+      const provName = provider === 'gemini' ? 'Gemini 2.0' : (provider === 'openai' ? 'ChatGPT' : 'Groq');
+      return {
+        isLive: true,
+        provider,
+        model,
+        badgeText: `${provName} (${model.replace('gemini-2.0-flash', 'Flash').replace('gemini-1.5-flash', 'Flash 1.5')})`,
+        statusColor: '#22c55e',
+        icon: '🟢',
+        title: `Connected to ${provider.toUpperCase()} (${model})`
+      };
+    }
+
+    return {
+      isLive: false,
+      provider: 'sovereign',
+      model: 'Girionix-Local-10.4',
+      badgeText: 'Sovereign Core (Offline)',
+      statusColor: '#c084fc',
+      icon: '🟣',
+      title: 'Running on Sovereign In-Memory Engine (Zero API Key Required)'
+    };
+  }
+
+  /**
+   * Test API key connectivity with 10s timeout
    */
   async testConnection(apiKey, provider, model) {
     provider = provider || this.getProvider();
     model = model || this.getModel();
     apiKey = apiKey || this.getApiKey();
 
-    if (!apiKey) throw new Error('No API key provided.');
+    if (!apiKey) throw new Error('No API key entered. Please paste your key to test.');
 
-    if (provider === 'gemini') {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model || 'gemini-2.0-flash'}:generateContent?key=${apiKey}`;
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: 'Ping test. Reply with "OK".' }] }]
-        })
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || `HTTP ${res.status} error from Google Gemini API`);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+    try {
+      if (provider === 'gemini') {
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model || 'gemini-2.0-flash'}:generateContent?key=${apiKey}`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: 'Ping test. Reply with "OK".' }] }],
+            generationConfig: { maxOutputTokens: 10 }
+          }),
+          signal: controller.signal
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          const errMsg = err.error?.message || `HTTP ${res.status} from Google Gemini API`;
+          if (res.status === 400 || errMsg.toLowerCase().includes('key not valid')) {
+            throw new Error('API key is invalid or not activated. Please verify at Google AI Studio.');
+          }
+          if (res.status === 429) {
+            throw new Error('Rate limit or quota reached on this Gemini key.');
+          }
+          throw new Error(errMsg);
+        }
+        return true;
+      } else if (provider === 'groq') {
+        const url = 'https://api.groq.com/openai/v1/chat/completions';
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: model || 'llama-3.3-70b-versatile',
+            messages: [{ role: 'user', content: 'Ping test. Reply with "OK".' }],
+            max_tokens: 10
+          }),
+          signal: controller.signal
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error?.message || `HTTP ${res.status} from Groq Cloud API`);
+        }
+        return true;
+      } else {
+        // OpenAI
+        const url = 'https://api.openai.com/v1/chat/completions';
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+          },
+          body: JSON.stringify({
+            model: model || 'gpt-4o-mini',
+            messages: [{ role: 'user', content: 'Ping test. Reply with "OK".' }],
+            max_tokens: 10
+          }),
+          signal: controller.signal
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error?.message || `HTTP ${res.status} from OpenAI API`);
+        }
+        return true;
       }
-      return true;
-    } else if (provider === 'groq') {
-      const url = 'https://api.groq.com/openai/v1/chat/completions';
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: model || 'llama-3.3-70b-versatile',
-          messages: [{ role: 'user', content: 'Ping test. Reply with "OK".' }],
-          max_tokens: 10
-        })
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || `HTTP ${res.status} error from Groq API`);
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        throw new Error('Connection timed out after 12 seconds. Check your internet connection.');
       }
-      return true;
-    } else {
-      // OpenAI
-      const url = 'https://api.openai.com/v1/chat/completions';
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify({
-          model: model || 'gpt-4o-mini',
-          messages: [{ role: 'user', content: 'Ping test. Reply with "OK".' }],
-          max_tokens: 10
-        })
-      });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error?.message || `HTTP ${res.status} error from OpenAI API`);
-      }
-      return true;
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
     }
   }
 
   /**
    * Main Generation Pipeline
    */
-  async generate({ tool = 'drift', prompt = '', attachment = null, tone = 'executive' }) {
+  async generate({ tool = 'drift', prompt = '', attachment = null, tone = 'executive', history = [] }) {
     const q = (prompt || '').trim();
 
     // 1. Try Live API if configured and online
     if (this.isLiveEnabled()) {
       try {
-        const liveText = await this.callLiveApi({ tool, prompt: q, attachment, tone });
+        const liveText = await this.callLiveApi({ tool, prompt: q, attachment, tone, history });
         if (liveText && liveText.length > 20) {
           return {
             source: 'live',
@@ -168,18 +258,25 @@ class GirionixEngine {
   }
 
   /**
-   * Live Cloud API Handler (Gemini / Groq / OpenAI)
+   * Live Cloud API Handler (Gemini / Groq / OpenAI) with Conversational Context
    */
-  async callLiveApi({ tool, prompt, attachment, tone }) {
+  async callLiveApi({ tool, prompt, attachment, tone, history = [] }) {
     const apiKey = this.getApiKey();
     const provider = this.getProvider();
     const model = this.getModel();
 
     const systemInstructions = {
-      drift: `You are Girionix Pro AI, an expert document author and writing partner inside Giri Drift. You write comprehensive, factual, eloquent, and accurately structured documents. If asked for an essay (e.g. on Mahatma Gandhi, Albert Einstein, Climate Change, etc.), write an authentic, well-researched, multi-paragraph essay adhering to any requested word count. If asked for a letter, email, speech, story, or memo, format appropriately with professional markdown headings, lists, and formatting. Never produce generic corporate filler when a specific academic, historical, or creative topic is requested.`,
-      axis: `You are Girionix Pro AI, a master spreadsheet and financial modeling copilot inside Giri Axis. If asked for a formula, provide the exact formula syntax (e.g. =XLOOKUP, =SUMIFS), explain each parameter clearly, and provide a sample markdown table showing it in action. If asked for data, provide a realistic markdown table with meaningful headers, data rows, and summary totals (=SUM, =AVERAGE).`,
-      kinetic: `You are Girionix Pro AI, a keynote presentation architect inside Giri Kinetic. If asked for slides, format your output with clear slide separators (---), Slide Number, Title, Subtitle, and structured bullet points or nodes tailored specifically to the subject matter.`,
-      pdf: `You are Girionix Pro AI, a senior legal, compliance, and document review specialist inside Giri Aegis PDF Studio. Deliver clear, factual, actionable analysis, clause breakdowns, and summaries.`
+      drift: `You are Girionix Pro AI, an expert document author and writing partner inside Giri Drift. You write comprehensive, factual, eloquent, and accurately structured documents. If asked for an essay (e.g. on Mahatma Gandhi, Albert Einstein, Climate Change, etc.), write an authentic, well-researched, multi-paragraph essay adhering to any requested word count. If asked for a letter, email, speech, story, or memo, format appropriately with professional markdown headings (#, ##, ###), lists, and formatting. Never produce generic corporate filler when a specific academic, historical, or creative topic is requested.`,
+      axis: `You are Girionix Pro AI, a master spreadsheet and financial modeling copilot inside Giri Axis. You MUST provide a realistic Markdown table with meaningful column headers, data rows, and summary totals containing actual spreadsheet calculation formulas (e.g. =SUM(B3:B7), =AVERAGE(B3:B7), =IF(D3>100,"PASS","FAIL"), =XLOOKUP(A3,F:F,H:H)). Never omit the data table. Ensure numbers are formatted realistically.`,
+      kinetic: `You are Girionix Pro AI, a keynote presentation architect inside Giri Kinetic. Format your output with clear slide separators like:
+--- Slide 1: [Title] ---
+Tag: [CATEGORY TAG]
+Subtitle: [Subtitle text]
+- [Key metric or insight 1]
+- [Key metric or insight 2]
+- [Key metric or insight 3]
+Provide 4-6 rich, well-structured slides tailored specifically to the subject matter.`,
+      pdf: `You are Girionix Pro AI, a senior legal, compliance, and document review specialist inside Giri Aegis PDF Studio. Deliver clear, factual, actionable analysis, clause breakdowns, and verification summaries in professional Markdown.`
     };
 
     let promptWithContext = prompt;
@@ -189,19 +286,31 @@ class GirionixEngine {
 
     if (provider === 'gemini') {
       const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      
+      // Build conversation contents including history
+      const contents = [];
+      if (Array.isArray(history) && history.length > 0) {
+        history.slice(-8).forEach(msg => {
+          if (!msg.text) return;
+          contents.push({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: [{ text: msg.text }]
+          });
+        });
+      }
+      contents.push({
+        role: 'user',
+        parts: [{ text: promptWithContext }]
+      });
+
       const payload = {
         systemInstruction: {
           parts: [{ text: systemInstructions[tool] || systemInstructions.drift }]
         },
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: promptWithContext }]
-          }
-        ],
+        contents,
         generationConfig: {
           temperature: 0.7,
-          maxOutputTokens: 2500
+          maxOutputTokens: 4096
         }
       };
 
@@ -224,6 +333,22 @@ class GirionixEngine {
         ? 'https://api.groq.com/openai/v1/chat/completions'
         : 'https://api.openai.com/v1/chat/completions';
 
+      const messages = [
+        { role: 'system', content: systemInstructions[tool] || systemInstructions.drift }
+      ];
+
+      if (Array.isArray(history) && history.length > 0) {
+        history.slice(-8).forEach(msg => {
+          if (!msg.text) return;
+          messages.push({
+            role: msg.role === 'user' ? 'user' : 'assistant',
+            content: msg.text
+          });
+        });
+      }
+
+      messages.push({ role: 'user', content: promptWithContext });
+
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -232,12 +357,9 @@ class GirionixEngine {
         },
         body: JSON.stringify({
           model: model,
-          messages: [
-            { role: 'system', content: systemInstructions[tool] || systemInstructions.drift },
-            { role: 'user', content: promptWithContext }
-          ],
+          messages,
           temperature: 0.7,
-          max_tokens: 2500
+          max_tokens: 4096
         })
       });
 
@@ -248,6 +370,231 @@ class GirionixEngine {
       const data = await res.json();
       return data.choices?.[0]?.message?.content || '';
     }
+  }
+
+  /**
+   * Unified In-App API Configuration Modal (Accessible anywhere in Giri Orbit)
+   */
+  openSettingsModal(onSaveCallback = null) {
+    document.getElementById('girionix-settings-modal-backdrop')?.remove();
+
+    const currentKey = this.getApiKey();
+    const currentProvider = this.getProvider();
+    const currentModel = this.getModel();
+    const allModels = GirionixEngine.PROVIDER_MODELS;
+
+    const renderModelOptions = (prov) => {
+      const list = allModels[prov] || allModels.gemini;
+      return list.map(m => `
+        <option value="${m.id}" ${m.id === currentModel ? 'selected' : ''}>${m.name}</option>
+      `).join('');
+    };
+
+    const modalHtml = `
+      <div id="girionix-settings-modal-backdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:999999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);padding:16px;">
+        <div style="background:#0c0e14;border:1px solid #272a38;border-radius:16px;width:520px;max-width:96vw;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.85);display:flex;flex-direction:column;animation:agentModalPop 0.22s cubic-bezier(0.16,1,0.3,1);">
+          
+          <!-- Header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #1a1d28;background:#07080c;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:20px;">⚙️</span>
+              <div>
+                <strong style="font-size:15px;color:#f8fafc;display:block;">Girionix AI &amp; LLM Configuration</strong>
+                <span style="font-size:11.5px;color:#94a3b8;">Google Gemini • OpenAI (ChatGPT) • Groq • Sovereign Offline</span>
+              </div>
+            </div>
+            <button id="btn-close-ai-settings-modal" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px;">✕</button>
+          </div>
+
+          <!-- Body -->
+          <div style="padding:22px 20px;display:flex;flex-direction:column;gap:16px;max-height:80vh;overflow-y:auto;">
+            
+            <!-- Provider Selection -->
+            <div>
+              <label style="display:block;font-size:11.5px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+                AI Intelligence Provider
+              </label>
+              <select id="modal-ai-provider-select" style="width:100%;box-sizing:border-box;background:#13151f;border:1px solid #2e3346;color:#f8fafc;border-radius:8px;padding:10px 12px;font-size:13px;outline:none;cursor:pointer;">
+                <option value="gemini" ${currentProvider === 'gemini' ? 'selected' : ''}>🌐 Google Gemini API (Recommended: 2.0 Flash — Fast, Free &amp; Powerful)</option>
+                <option value="openai" ${currentProvider === 'openai' ? 'selected' : ''}>🤖 OpenAI (ChatGPT — GPT-4o, GPT-4o-mini, o3-mini)</option>
+                <option value="groq" ${currentProvider === 'groq' ? 'selected' : ''}>⚡ Groq Cloud (Llama 3.3 70B — Sub-Second Velocity)</option>
+                <option value="sovereign" ${currentProvider === 'sovereign' ? 'selected' : ''}>🟣 Sovereign Local Core (100% In-Memory Offline — Zero Keys)</option>
+              </select>
+            </div>
+
+            <!-- Model Selection -->
+            <div id="modal-ai-model-container">
+              <label style="display:block;font-size:11.5px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
+                Specific Model Architecture
+              </label>
+              <select id="modal-ai-model-select" style="width:100%;box-sizing:border-box;background:#13151f;border:1px solid #2e3346;color:#38bdf8;border-radius:8px;padding:10px 12px;font-size:13px;outline:none;font-weight:600;cursor:pointer;">
+                ${renderModelOptions(currentProvider)}
+              </select>
+            </div>
+
+            <!-- API Key Input -->
+            <div id="modal-ai-key-container" style="${currentProvider === 'sovereign' ? 'display:none;' : ''}">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <label style="font-size:11.5px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:0.5px;">
+                  API Secret Key
+                </label>
+                <div id="modal-ai-key-links">
+                  <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" id="modal-get-key-link" style="font-size:11.5px;color:#38bdf8;text-decoration:none;font-weight:600;">Get Free Gemini Key ↗</a>
+                </div>
+              </div>
+              <div style="position:relative;display:flex;align-items:center;">
+                <input id="modal-ai-key-input" type="password" value="${currentKey}" placeholder="Paste API key here (e.g. AIzaSy... or sk-...)" style="width:100%;box-sizing:border-box;background:#090a0f;border:1px solid #2e3346;color:#f8fafc;border-radius:8px;padding:11px 40px 11px 12px;font-size:13px;font-family:monospace;outline:none;">
+                <button type="button" id="btn-toggle-key-visibility" title="Show/Hide API Key" style="position:absolute;right:8px;background:transparent;border:none;color:#94a3b8;cursor:pointer;font-size:14px;padding:4px;">👁️</button>
+              </div>
+              <p style="margin:6px 0 0 0;font-size:11.5px;color:#94a3b8;line-height:1.45;">
+                🔒 <strong>Privacy Guarantee:</strong> Your API key is stored strictly within this browser's local sandbox and sent directly to Google/OpenAI endpoints over TLS. It is never logged or collected by Giri Orbit.
+              </p>
+            </div>
+
+            <!-- Test Connection Result Area -->
+            <div id="modal-ai-test-result" style="display:none;padding:12px 14px;border-radius:8px;font-size:12.5px;line-height:1.45;"></div>
+
+          </div>
+
+          <!-- Footer Actions -->
+          <div style="padding:14px 20px;border-top:1px solid #1a1d28;background:#07080c;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <button id="btn-clear-ai-settings-modal" style="background:transparent;border:1px solid #ef4444;color:#ef4444;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;">Reset to Sovereign</button>
+            <div style="display:flex;gap:8px;">
+              <button id="btn-test-ai-settings-modal" style="background:#1e293b;border:1px solid #475569;color:#f8fafc;border-radius:8px;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;">Test Connection</button>
+              <button id="btn-save-ai-settings-modal" style="background:linear-gradient(135deg,#06b6d4,#2563eb);border:none;color:#fff;border-radius:8px;padding:8px 20px;font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(6,182,212,0.4);">Save &amp; Apply</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    const backdrop = document.getElementById('girionix-settings-modal-backdrop');
+    const closeBtn = document.getElementById('btn-close-ai-settings-modal');
+    const provSelect = document.getElementById('modal-ai-provider-select');
+    const modelSelect = document.getElementById('modal-ai-model-select');
+    const keyContainer = document.getElementById('modal-ai-key-container');
+    const keyInput = document.getElementById('modal-ai-key-input');
+    const keyToggleBtn = document.getElementById('btn-toggle-key-visibility');
+    const getKeyLink = document.getElementById('modal-get-key-link');
+    const testBtn = document.getElementById('btn-test-ai-settings-modal');
+    const testResult = document.getElementById('modal-ai-test-result');
+    const saveBtn = document.getElementById('btn-save-ai-settings-modal');
+    const clearBtn = document.getElementById('btn-clear-ai-settings-modal');
+
+    // Close handlers
+    closeBtn?.addEventListener('click', () => backdrop.remove());
+    backdrop?.addEventListener('click', (e) => { if (e.target === backdrop) backdrop.remove(); });
+
+    // Show/Hide password
+    keyToggleBtn?.addEventListener('click', () => {
+      if (keyInput.type === 'password') {
+        keyInput.type = 'text';
+        keyToggleBtn.textContent = '🔒';
+      } else {
+        keyInput.type = 'password';
+        keyToggleBtn.textContent = '👁️';
+      }
+    });
+
+    // Provider Change
+    provSelect?.addEventListener('change', () => {
+      const p = provSelect.value;
+      modelSelect.innerHTML = renderModelOptions(p);
+
+      if (p === 'sovereign') {
+        keyContainer.style.display = 'none';
+      } else {
+        keyContainer.style.display = 'block';
+        if (p === 'gemini') {
+          getKeyLink.href = 'https://aistudio.google.com/app/apikey';
+          getKeyLink.textContent = 'Get Free Gemini Key ↗';
+        } else if (p === 'groq') {
+          getKeyLink.href = 'https://console.groq.com/keys';
+          getKeyLink.textContent = 'Get Free Groq Key ↗';
+        } else {
+          getKeyLink.href = 'https://platform.openai.com/api-keys';
+          getKeyLink.textContent = 'Get OpenAI Key ↗';
+        }
+      }
+      testResult.style.display = 'none';
+    });
+
+    // Test Connection
+    testBtn?.addEventListener('click', async () => {
+      const p = provSelect.value;
+      const m = modelSelect.value;
+      const k = keyInput.value.trim();
+
+      if (p === 'sovereign') {
+        testResult.style.display = 'block';
+        testResult.style.background = 'rgba(168,85,247,0.15)';
+        testResult.style.border = '1px solid #a855f7';
+        testResult.style.color = '#e9d5ff';
+        testResult.innerHTML = '🟣 <strong>Sovereign Core Ready:</strong> 100% offline synthesis engine is active with zero external latency.';
+        return;
+      }
+
+      if (!k) {
+        testResult.style.display = 'block';
+        testResult.style.background = 'rgba(239,68,68,0.15)';
+        testResult.style.border = '1px solid #ef4444';
+        testResult.style.color = '#fca5a5';
+        testResult.textContent = 'Please enter an API key before testing.';
+        return;
+      }
+
+      testBtn.disabled = true;
+      testBtn.textContent = 'Pinging...';
+      testResult.style.display = 'block';
+      testResult.style.background = 'rgba(56,189,248,0.15)';
+      testResult.style.border = '1px solid #38bdf8';
+      testResult.style.color = '#7dd3fc';
+      testResult.textContent = `Connecting to ${p.toUpperCase()} (${m})...`;
+
+      try {
+        await this.testConnection(k, p, m);
+        testResult.style.background = 'rgba(34,197,94,0.15)';
+        testResult.style.border = '1px solid #22c55e';
+        testResult.style.color = '#86efac';
+        testResult.innerHTML = `🟢 <strong>Connection Verified!</strong> ${p.toUpperCase()} (${m}) responded successfully.`;
+      } catch (err) {
+        testResult.style.background = 'rgba(239,68,68,0.15)';
+        testResult.style.border = '1px solid #ef4444';
+        testResult.style.color = '#fca5a5';
+        testResult.innerHTML = `✕ <strong>Connection Failed:</strong> ${err.message || 'Unknown network error'}`;
+      } finally {
+        testBtn.disabled = false;
+        testBtn.textContent = 'Test Connection';
+      }
+    });
+
+    // Save & Apply
+    saveBtn?.addEventListener('click', () => {
+      const p = provSelect.value;
+      const m = modelSelect.value;
+      const k = keyInput.value.trim();
+
+      this.setApiKey(k, p, m);
+      if (typeof onSaveCallback === 'function') onSaveCallback();
+      if (window.orbitPlatform) {
+        window.orbitPlatform.showToast(`✅ Saved AI configuration: ${p.toUpperCase()} (${m})`, 'green');
+      }
+      backdrop.remove();
+    });
+
+    // Clear / Reset
+    clearBtn?.addEventListener('click', () => {
+      this.clearApiKey();
+      this.setApiKey('', 'sovereign', 'Girionix-Local-10.4');
+      if (typeof onSaveCallback === 'function') onSaveCallback();
+      if (window.orbitPlatform) {
+        window.orbitPlatform.showToast('Reset to Sovereign Local Core', 'blue');
+      }
+      backdrop.remove();
+    });
   }
 
   /**

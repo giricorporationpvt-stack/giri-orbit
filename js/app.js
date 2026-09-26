@@ -2426,138 +2426,28 @@ class GiriOrbitPlatform {
       }
     };
 
-    // AI Settings Modal
+    // AI Settings Modal (Delegated to unified Girionix Engine modal)
     const openAiSettingsModal = () => {
-      document.getElementById('girionix-settings-modal-backdrop')?.remove();
-      const currentKey = girionixEngine.getApiKey();
-      const currentProvider = girionixEngine.getProvider();
-
-      const modalHtml = `
-        <div id="girionix-settings-modal-backdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:16px;">
-          <div style="background:#0f172a;border:1px solid #334155;border-radius:14px;width:480px;max-width:96vw;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.7);display:flex;flex-direction:column;">
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #1e293b;background:#090d16;">
-              <div style="display:flex;align-items:center;gap:10px;">
-                <span style="font-size:18px;">⚙️</span>
-                <div>
-                  <strong style="font-size:14.5px;color:#f8fafc;display:block;">Girionix AI Engine &amp; API Key</strong>
-                  <span style="font-size:11px;color:#94a3b8;">Configure Live Cloud LLM or Sovereign Local Offline</span>
-                </div>
-              </div>
-              <button id="btn-close-ai-settings" style="background:transparent;border:none;color:#64748b;font-size:18px;cursor:pointer;line-height:1;">✕</button>
-            </div>
-            
-            <div style="padding:20px;display:flex;flex-direction:column;gap:16px;max-height:80vh;overflow-y:auto;">
-              <!-- Engine Mode Selector -->
-              <div>
-                <label style="display:block;font-size:11.5px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Select AI Intelligence Engine</label>
-                <select id="ai-engine-provider-select" style="width:100%;background:#1e293b;border:1px solid #334155;color:#f8fafc;border-radius:8px;padding:9px 12px;font-size:13px;outline:none;">
-                  <option value="gemini" ${currentProvider === 'gemini' ? 'selected' : ''}>🌐 Google Gemini API (Recommended: Gemini 2.0 Flash - Free &amp; Fast)</option>
-                  <option value="groq" ${currentProvider === 'groq' ? 'selected' : ''}>⚡ Groq Cloud (Llama 3.3 70B - Ultra High Speed)</option>
-                  <option value="openai" ${currentProvider === 'openai' ? 'selected' : ''}>🤖 OpenAI (GPT-4o-mini)</option>
-                </select>
-              </div>
-
-              <!-- API Key input -->
-              <div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                  <label style="font-size:11.5px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;">API Key</label>
-                  <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="font-size:11px;color:#38bdf8;text-decoration:none;">Get Free Gemini Key ↗</a>
-                </div>
-                <input id="ai-engine-key-input" type="password" value="${currentKey}" placeholder="Paste your API key here (e.g. AIzaSy...)" style="width:100%;box-sizing:border-box;background:#090d16;border:1px solid #334155;color:#f8fafc;border-radius:8px;padding:10px 12px;font-size:12.5px;font-family:monospace;outline:none;">
-                <p style="margin:6px 0 0 0;font-size:11px;color:#64748b;line-height:1.4;">
-                  ✨ <strong>Zero-Key Sovereign Guarantee:</strong> Even without an API key, Giri Orbit includes an extensive offline Sovereign Knowledge Base that accurately generates essays (e.g. Mahatma Gandhi, Einstein), sheets, keynote decks, and memos with 100% privacy and zero latency.
-                </p>
-              </div>
-
-              <!-- Connection status box -->
-              <div id="ai-settings-test-result" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;"></div>
-            </div>
-
-            <!-- Footer actions -->
-            <div style="padding:14px 20px;border-top:1px solid #1e293b;background:#090d16;display:flex;align-items:center;justify-content:space-between;gap:10px;">
-              <button id="btn-clear-ai-key" style="background:transparent;border:1px solid #ef4444;color:#ef4444;border-radius:6px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;">Clear Key (Reset)</button>
-              <div style="display:flex;gap:8px;">
-                <button id="btn-test-ai-key" style="background:#1e293b;border:1px solid #475569;color:#f8fafc;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;">Test Connection</button>
-                <button id="btn-save-ai-settings" style="background:#2563eb;border:none;color:#fff;border-radius:6px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;">Save &amp; Apply</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-      document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-      const backdrop = document.getElementById('girionix-settings-modal-backdrop');
-      const closeSettingsBtn = document.getElementById('btn-close-ai-settings');
-      const saveBtn = document.getElementById('btn-save-ai-settings');
-      const testBtn = document.getElementById('btn-test-ai-key');
-      const clearBtn = document.getElementById('btn-clear-ai-key');
-      const keyInput = document.getElementById('ai-engine-key-input');
-      const provSelect = document.getElementById('ai-engine-provider-select');
-      const testResult = document.getElementById('ai-settings-test-result');
-
-      closeSettingsBtn?.addEventListener('click', () => backdrop.remove());
-      backdrop?.addEventListener('click', (e) => { if (e.target === backdrop) backdrop.remove(); });
-
-      clearBtn?.addEventListener('click', () => {
-        girionixEngine.clearApiKey();
-        keyInput.value = '';
-        this.showToast('Reset to Sovereign Local AI Engine', 'blue');
+      girionixEngine.openSettingsModal(() => {
         updateEngineBadge();
-        backdrop.remove();
-      });
-
-      testBtn?.addEventListener('click', async () => {
-        const key = keyInput.value.trim();
-        const prov = provSelect.value;
-        if (!key) {
-          testResult.style.display = 'block';
-          testResult.style.background = 'rgba(239,68,68,0.15)';
-          testResult.style.border = '1px solid #ef4444';
-          testResult.style.color = '#fca5a5';
-          testResult.textContent = 'Please enter an API key to test.';
-          return;
-        }
-        testBtn.disabled = true;
-        testBtn.textContent = 'Testing...';
-        testResult.style.display = 'block';
-        testResult.style.background = 'rgba(56,189,248,0.15)';
-        testResult.style.border = '1px solid #38bdf8';
-        testResult.style.color = '#7dd3fc';
-        testResult.textContent = 'Sending ping to ' + prov + '...';
-
-        try {
-          await girionixEngine.testConnection(key, prov);
-          testResult.style.background = 'rgba(34,197,94,0.15)';
-          testResult.style.border = '1px solid #22c55e';
-          testResult.style.color = '#86efac';
-          testResult.textContent = '✓ Connection successful! Active model is responsive.';
-        } catch (err) {
-          testResult.style.background = 'rgba(239,68,68,0.15)';
-          testResult.style.border = '1px solid #ef4444';
-          testResult.style.color = '#fca5a5';
-          testResult.textContent = '✕ Test failed: ' + (err.message || 'Unknown error');
-        } finally {
-          testBtn.disabled = false;
-          testBtn.textContent = 'Test Connection';
-        }
-      });
-
-      saveBtn?.addEventListener('click', () => {
-        const key = keyInput.value.trim();
-        const prov = provSelect.value;
-        girionixEngine.setApiKey(key, prov);
-        updateEngineBadge();
-        this.showToast('✅ Saved Girionix AI settings!', 'green');
-        backdrop.remove();
       });
     };
 
     const updateEngineBadge = () => {
       const modeBtn = document.getElementById('btn-girionix-mode-instant');
+      const conn = girionixEngine.getConnectionStatus();
       if (modeBtn) {
-        if (girionixEngine.isLiveEnabled()) {
-          modeBtn.innerHTML = '🌐 Live AI';
-          modeBtn.title = 'Live Cloud AI active (' + girionixEngine.getProvider() + ')';
+        if (conn.isLive) {
+          modeBtn.innerHTML = `🟢 ${conn.provider === 'gemini' ? 'Gemini Live' : conn.provider.toUpperCase()}`;
+          modeBtn.title = `${conn.title} - Click ⚙️ to configure`;
+          modeBtn.style.color = '#22c55e';
+        } else {
+          modeBtn.innerHTML = '🟣 Sovereign';
+          modeBtn.title = 'Running on Sovereign Local Engine (Offline) - Click ⚙️ to configure';
+          modeBtn.style.color = '#c084fc';
+        }
+      }
+    };
         } else {
           modeBtn.innerHTML = '⚡ Sovereign';
           modeBtn.title = 'Sovereign Local Intelligence (100% private, 0ms latency)';
