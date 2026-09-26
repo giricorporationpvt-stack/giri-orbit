@@ -1328,6 +1328,10 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
             <!-- Girionix AI Formula Group -->
             <div class="fluent-ribbon-group" style="background:rgba(37,99,235,0.06); border-radius:4px;">
               <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-axis-ai-agent" title="Girionix Autonomous Agent: Build complete financial model or formula matrix (Alt+A)" style="color:#059669; font-weight:700; background:rgba(16,185,129,0.1); border-radius:6px;">
+                  <strong style="font-size:18px;">🤖</strong>
+                  <span style="color:#059669;">AI Agent</span>
+                </button>
                 <button class="fluent-btn-large" id="btn-axis-home-ai-copilot" title="Girionix AI Formula Copilot (Alt+J / Ctrl+Shift+J)" style="color:#2563eb; font-weight:700;">
                   <strong style="color:#2563eb; font-size:18px;">⚡</strong>
                   <span style="color:#2563eb;">AI Formula</span>
@@ -6971,6 +6975,13 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     }
 
     // Connect trigger buttons
+    container.querySelector('#btn-axis-ai-agent')?.addEventListener('click', () => {
+      if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAgent === 'function') {
+        window.orbitPlatform.openGirionixAgent('axis');
+      } else if (window.orbitAgent) {
+        window.orbitAgent.openAgent('axis');
+      }
+    });
     container.querySelector('#btn-axis-ai-formula-copilot')?.addEventListener('click', () => openModal());
     container.querySelector('#btn-axis-home-ai-copilot')?.addEventListener('click', () => openModal());
     container.querySelector('#btn-axis-ribbon-ai-copilot')?.addEventListener('click', () => openModal());

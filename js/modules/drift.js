@@ -1603,6 +1603,10 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
               <!-- Girionix AI Assist Group -->
               <div class="fluent-ribbon-group" style="border-right:none; background:rgba(37,99,235,0.06); border-radius:4px;">
                 <div class="fluent-group-controls">
+                  <button class="fluent-btn-large" id="btn-drift-ai-agent" title="Girionix Autonomous Agent: Draft complete document from prompt (Alt+A)" style="color:#0284c7; font-weight:700; background:rgba(6,182,212,0.1); border-radius:6px;">
+                    <span style="font-size:18px;">🤖</span>
+                    <span style="color:#0284c7;">AI Agent</span>
+                  </button>
                   <button class="fluent-btn-large" id="btn-drift-ai-copilot" title="Girionix AI Writing Assistant (Alt+J / Ctrl+Shift+J)" style="color:#2563eb; font-weight:700;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/><circle cx="12" cy="12" r="3"/></svg>
                     <span style="color:#2563eb;">AI Assist ▾</span>
@@ -8206,6 +8210,13 @@ function calculateMetrics(records) {
       });
 
       // Triggers across the app
+      container.querySelector('#btn-drift-ai-agent')?.addEventListener('click', () => {
+        if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAgent === 'function') {
+          window.orbitPlatform.openGirionixAgent('drift');
+        } else if (window.orbitAgent) {
+          window.orbitAgent.openAgent('drift');
+        }
+      });
       container.querySelector('#btn-drift-ai-copilot')?.addEventListener('click', () => openDriftAiAssistant());
       container.querySelector('#btn-drift-review-ai')?.addEventListener('click', () => openDriftAiAssistant('executive'));
       container.querySelector('#btn-drift-import-from-girionix')?.addEventListener('click', () => {

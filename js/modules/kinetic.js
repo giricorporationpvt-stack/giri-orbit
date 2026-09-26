@@ -2766,6 +2766,10 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
             <!-- Girionix AI Studio Group -->
             <div class="fluent-ribbon-group" style="background:rgba(168,85,247,0.08); border-radius:4px; border-right:none;">
               <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-kinetic-ai-agent" title="Girionix Autonomous Agent: Generate full slide deck from prompt (Alt+A)" style="color:#a855f7; font-weight:700; background:rgba(168,85,247,0.12); border-radius:6px;">
+                  <strong style="font-size:18px;">🤖</strong>
+                  <span style="color:#a855f7;">AI Agent</span>
+                </button>
                 <button class="fluent-btn-large" id="btn-kinetic-home-ai-studio" title="Girionix AI Presentation Studio (Alt+J / Ctrl+Shift+J)" style="color:#a855f7; font-weight:700;">
                   <strong style="color:#a855f7; font-size:18px;">⚡</strong>
                   <span style="color:#a855f7;">AI Studio</span>
@@ -5352,6 +5356,13 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     });
 
     // Connect trigger buttons
+    container.querySelector('#btn-kinetic-ai-agent')?.addEventListener('click', () => {
+      if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAgent === 'function') {
+        window.orbitPlatform.openGirionixAgent('kinetic');
+      } else if (window.orbitAgent) {
+        window.orbitAgent.openAgent('kinetic');
+      }
+    });
     container.querySelector('#btn-kinetic-ai-gen')?.addEventListener('click', () => openModal('slide'));
     container.querySelector('#btn-kinetic-home-ai-studio')?.addEventListener('click', () => openModal('deck'));
     container.querySelector('#btn-kinetic-import-from-girionix')?.addEventListener('click', () => {

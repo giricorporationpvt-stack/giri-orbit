@@ -5526,3 +5526,490 @@ body.dark .drift-merge-field-chip {
   color: #64748b;
   line-height: 1.35;
 }
+
+/* ============================================================================
+ * GIRIONIX AUTONOMOUS AGENT STYLING
+ * ============================================================================ */
+
+.tier1-agent-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(99, 102, 241, 0.28));
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  color: #38bdf8;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  letter-spacing: 0.2px;
+}
+
+.tier1-agent-pill:hover {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(99, 102, 241, 0.45));
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.6);
+  transform: translateY(-1px);
+}
+
+.girionix-agent-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  animation: agentFadeIn 0.2s ease-out;
+}
+
+@keyframes agentFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.girionix-agent-modal {
+  background: #0e1017;
+  border: 1px solid #27272a;
+  border-radius: 18px;
+  width: 720px;
+  max-width: 95vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 36px rgba(6, 182, 212, 0.15);
+  animation: agentModalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes agentModalPop {
+  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.girionix-agent-header {
+  padding: 16px 22px;
+  border-bottom: 1px solid #1e212b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #090a0f;
+}
+
+.girionix-agent-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.girionix-agent-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.5);
+  flex-shrink: 0;
+}
+
+.girionix-agent-avatar-badge {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  font-size: 11px;
+  background: #090a0f;
+  border-radius: 50%;
+  padding: 1px;
+}
+
+.agent-shortcut-tag {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #94a3b8;
+  font-size: 11px;
+  font-family: monospace;
+  padding: 3px 8px;
+  border-radius: 6px;
+  user-select: none;
+}
+
+.girionix-agent-close-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 18px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.girionix-agent-close-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.girionix-agent-mode-bar {
+  display: flex;
+  gap: 6px;
+  padding: 10px 22px;
+  background: #0b0c12;
+  border-bottom: 1px solid #1e212b;
+  overflow-x: auto;
+}
+
+.agent-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.agent-mode-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f1f5f9;
+}
+
+.agent-mode-btn.active {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.18), rgba(59, 130, 246, 0.18));
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #38bdf8;
+}
+
+.agent-mode-btn.polymath-btn {
+  background: rgba(168, 85, 247, 0.1);
+  border-color: rgba(168, 85, 247, 0.3);
+  color: #c084fc;
+}
+
+.agent-mode-btn.polymath-btn.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(236, 72, 153, 0.25));
+  border-color: #c084fc;
+  color: #f5d0fe;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+}
+
+.girionix-agent-body {
+  padding: 20px 22px;
+  overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.girionix-agent-prompt-box {
+  background: #12141c;
+  border: 1px solid #232734;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+#girionix-agent-prompt-input {
+  width: 100%;
+  background: #090a0e;
+  border: 1px solid #272a38;
+  border-radius: 8px;
+  color: #f8fafc;
+  font-size: 13.5px;
+  line-height: 1.5;
+  padding: 12px 64px 12px 14px;
+  outline: none;
+  resize: vertical;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+#girionix-agent-prompt-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+}
+
+.agent-input-actions {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.agent-mini-action-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  border-radius: 6px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.15s;
+}
+
+.agent-mini-action-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.agent-controls-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.agent-select-pill {
+  background: #090a0e;
+  border: 1px solid #272a38;
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 11.5px;
+  outline: none;
+  cursor: pointer;
+}
+
+.agent-model-pill {
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.btn-run-agent {
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  border: none;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-run-agent:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(6, 182, 212, 0.6);
+}
+
+.btn-run-agent:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.agent-spinner {
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: agentSpin 0.7s linear infinite;
+}
+
+@keyframes agentSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Stepper Progress Box */
+.agent-stepper-wrap {
+  background: #090a0f;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+
+.agent-stepper-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #1e212b;
+}
+
+.agent-stepper-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 10px #38bdf8;
+  animation: partnerPulse 1.5s infinite;
+}
+
+.agent-steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.agent-step-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.agent-step-item.step-active {
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.agent-step-item.step-done {
+  color: #22c55e;
+}
+
+.agent-step-item .step-indicator {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.agent-step-item.step-active .step-indicator {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+}
+
+.agent-step-item.step-done .step-indicator {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+/* Blueprints Grid */
+.agent-blueprints-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.agent-blueprint-card {
+  background: #11131a;
+  border: 1px solid #202430;
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.agent-blueprint-card:hover {
+  background: #181b26;
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.agent-bp-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.agent-bp-icon {
+  font-size: 16px;
+}
+
+.agent-bp-tool-tag {
+  font-size: 9px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.agent-bp-tool-tag.tool-drift {
+  background: rgba(37, 99, 235, 0.2);
+  color: #60a5fa;
+}
+
+.agent-bp-tool-tag.tool-axis {
+  background: rgba(22, 163, 74, 0.2);
+  color: #4ade80;
+}
+
+.agent-bp-tool-tag.tool-kinetic {
+  background: rgba(220, 38, 38, 0.2);
+  color: #f87171;
+}
+
+.agent-bp-tool-tag.tool-pdf {
+  background: rgba(234, 88, 12, 0.2);
+  color: #fb923c;
+}
+
+.agent-bp-tool-tag.tool-polymath {
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+}
+
+.agent-bp-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.3;
+}
+
+.agent-bp-desc {
+  margin: 0;
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.girionix-agent-footer {
+  padding: 14px 22px;
+  background: #090a0f;
+  border-top: 1px solid #1e212b;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+

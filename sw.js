@@ -7,7 +7,7 @@
  * Implements Stale-While-Revalidate and Cache-First strategies.
  */
 
-const CACHE_NAME = 'giri-orbit-sovereign-v10.9';
+const CACHE_NAME = 'giri-orbit-sovereign-v11.0';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -23,6 +23,7 @@ const STATIC_ASSETS = [
   '/js/components/localFileDirectSync.js',
   '/js/components/printManager.js',
   '/js/components/symbolsManager.js',
+  '/js/components/girionixAgent.js',
   '/js/data/templates.js',
   '/js/modules/drift.js',
   '/js/modules/axis.js',
@@ -31,6 +32,7 @@ const STATIC_ASSETS = [
   '/assets/giri-corp-logo-transparent.png',
   '/assets/giri-corp-logo.png',
   '/assets/giri-group-symbol-dark.png',
+  '/assets/girionix-logo.png',
   '/manifest.json'
 ];
 

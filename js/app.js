@@ -21,6 +21,7 @@ import { PrintStudioManager } from './components/printManager.js?v=10.2';
 import { syncManager } from './modules/syncManager.js?v=10.2';
 import { localSync } from './components/localFileDirectSync.js?v=10.2';
 import { driveSyncManager } from './modules/driveSyncManager.js?v=10.2';
+import { GirionixAgentManager } from './components/girionixAgent.js?v=10.9';
 
 class GiriOrbitPlatform {
   constructor() {
@@ -34,6 +35,8 @@ class GiriOrbitPlatform {
     window.orbitPlatform = this;
     window.orbitDriveSync = driveSyncManager;
     this.printManager = new PrintStudioManager(this);
+    this.agent = new GirionixAgentManager(this);
+    window.orbitAgent = this.agent;
 
     this.init();
   }
@@ -743,11 +746,14 @@ class GiriOrbitPlatform {
               </div>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
-              <button class="btn-giri-primary" id="btn-banner-launch-girionix" style="padding:7px 16px; font-size:12px; background:linear-gradient(135deg, #06b6d4, #2563eb); border:none; font-weight:700;">
+              <button class="btn-giri-primary" id="btn-banner-launch-agent" style="padding:7px 16px; font-size:12px; background:linear-gradient(135deg, #06b6d4, #2563eb); border:none; font-weight:700; box-shadow:0 0 14px rgba(6,182,212,0.5);">
+                <span>🤖 Run Autonomous Agent</span>
+              </button>
+              <button class="btn-giri-primary" id="btn-banner-launch-girionix" style="padding:7px 14px; font-size:12px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); font-weight:600;">
                 <span>Launch Girionix AI ⚡</span>
               </button>
               <button class="girionix-mini-btn" id="btn-banner-assistant-girionix" style="padding:7px 12px; font-size:12px;">
-                <span>💬 Ask Copilot</span>
+                <span>💬 Copilot</span>
               </button>
             </div>
           </div>
@@ -955,6 +961,9 @@ class GiriOrbitPlatform {
     // Bind Girionix AI Hub Banner & Hero Actions
     landingContainer.querySelector('#btn-hero-launch-girionix')?.addEventListener('click', () => {
       this.navigateTo('girionix');
+    });
+    landingContainer.querySelector('#btn-banner-launch-agent')?.addEventListener('click', () => {
+      if (this.agent) this.agent.openAgent();
     });
     landingContainer.querySelector('#btn-banner-launch-girionix')?.addEventListener('click', () => {
       this.navigateTo('girionix');
@@ -1428,6 +1437,12 @@ class GiriOrbitPlatform {
       this.openKeyboardShortcutsModal();
     });
 
+    document.getElementById('btn-open-girionix-agent')?.addEventListener('click', () => {
+      if (this.agent) {
+        this.agent.toggleAgent();
+      }
+    });
+
     // Keyboard navigation (Ctrl 1-5, Ctrl+/, ?, Ctrl+S on launcher)
     window.addEventListener('keydown', (e) => {
       if ((e.metaKey || e.ctrlKey) && ['1', '2', '3', '4', '5'].includes(e.key)) {
@@ -1458,6 +1473,12 @@ class GiriOrbitPlatform {
     const closeBtn = document.getElementById('cmd-close-btn');
 
     const commands = [
+      { name: '🤖 Open Girionix Autonomous Agent (Alt+A)', category: 'Agent', action: () => this.agent?.openAgent() },
+      { name: '🤖 Agent: Autonomous Document Draft (Drift)', category: 'Agent', action: () => this.agent?.openAgent('drift') },
+      { name: '🤖 Agent: Autonomous Financial Model (Axis)', category: 'Agent', action: () => this.agent?.openAgent('axis') },
+      { name: '🤖 Agent: Autonomous Pitch Deck (Kinetic)', category: 'Agent', action: () => this.agent?.openAgent('kinetic') },
+      { name: '🌐 Agent: Polymath Suite (Doc + Sheet + Slides)', category: 'Agent', action: () => this.agent?.openAgent('polymath') },
+      { name: '🤝 Inspect Giri Orbit × Girionix AI Strategic Alliance', category: 'Partnership', action: () => document.getElementById('girionix-partnership-modal-backdrop')?.style.setProperty('display', 'flex') },
       { name: 'Open Giri Writer (Drift Docs)', category: 'Tool', action: () => this.navigateTo('drift') },
       { name: 'Open Giri Sheet (Axis Spreadsheets)', category: 'Tool', action: () => this.navigateTo('axis') },
       { name: 'Open Giri Show (Kinetic Presentation)', category: 'Tool', action: () => this.navigateTo('kinetic') },

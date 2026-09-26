@@ -1211,6 +1211,10 @@ export function renderPdfStudioApp(container, onPdfUpdate = null, startInEditor 
             <!-- Girionix AI Studio Group -->
             <div class="fluent-ribbon-group" style="background:rgba(220,38,38,0.06); border-radius:4px; border-right:none;">
               <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-pdf-ai-agent" title="Girionix Autonomous Agent: Generate compliance audit report & seal (Alt+A)" style="color:#ea580c; font-weight:700; background:rgba(234,88,12,0.1); border-radius:6px;">
+                  <strong style="font-size:18px;">🤖</strong>
+                  <span style="color:#ea580c;">AI Agent</span>
+                </button>
                 <button class="fluent-btn-large" id="btn-pdf-home-ai-audit" title="Girionix AI PDF Assistant & Document Intelligence (Alt+J / Ctrl+Shift+J)" style="color:#dc2626; font-weight:700;">
                   <strong style="color:#dc2626; font-size:18px;">⚡</strong>
                   <span style="color:#dc2626;">AI Studio</span>
@@ -2900,6 +2904,13 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
   });
 
   // Girionix AI Studio Triggers
+  container.querySelector('#btn-pdf-ai-agent')?.addEventListener('click', () => {
+    if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAgent === 'function') {
+      window.orbitPlatform.openGirionixAgent('pdf');
+    } else if (window.orbitAgent) {
+      window.orbitAgent.openAgent('pdf');
+    }
+  });
   container.querySelector('#btn-pdf-home-ai-audit')?.addEventListener('click', () => {
     if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAiDrawer === 'function') {
       window.orbitPlatform.openGirionixAiDrawer('pdf');
