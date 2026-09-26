@@ -13,6 +13,8 @@
  * - Deep 2-way handshake with Girionix AI (https://girionix-ai.pages.dev)
  */
 
+import girionixEngine from '../modules/girionixEngine.js?v=10.9';
+
 export class GirionixAgentManager {
   constructor(platform) {
     this.platform = platform;
@@ -664,87 +666,67 @@ export class GirionixAgentManager {
    * Autonomous Synthesis for Giri Drift (Document)
    */
   async synthesizeDriftDocument(prompt, tone) {
-    const titleMatch = prompt.match(/(?:draft|write|create|generate)\s+(?:a|an)?\s*(.*?)(?:with|for|including|between|$)/i);
-    let title = titleMatch && titleMatch[1] ? titleMatch[1].trim() : 'Executive Business Document';
-    title = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const gen = await girionixEngine.generate({ tool: 'drift', prompt, tone });
+    const text = gen.text || '';
 
-    const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    // Derive title from generated text or prompt
+    const firstHeading = text.match(/^#+\s*(.+)$/m);
+    let title = firstHeading ? firstHeading[1].trim() : prompt.slice(0, 40);
+    title = title.replace(/\*+/g, '').replace(/#+/g, '').trim();
 
-    const html = `
-      <h1 style="font-size:26px; font-weight:800; color:#0f172a; margin-bottom:4px; letter-spacing:-0.5px;">${title}</h1>
-      <p style="font-size:12px; color:#64748b; margin-top:0; margin-bottom:24px; border-bottom:1px solid #e2e8f0; padding-bottom:12px;">
-        <strong>Document Version:</strong> 1.0 (Autonomous Synthesis) &bull; <strong>Date:</strong> ${dateStr} &bull; <strong>Sovereign State:</strong> Sealed
-      </p>
+    // Convert markdown to clean semantic HTML for Drift editor
+    let formattedBody = text
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
 
-      <div style="background:#f8fafc; border-left:4px solid #2563eb; padding:14px 18px; border-radius:0 8px 8px 0; margin-bottom:24px;">
-        <strong style="color:#1e3a8a; font-size:13px; text-transform:uppercase; letter-spacing:0.5px;">Executive Overview</strong>
-        <p style="margin:6px 0 0 0; font-size:13.5px; color:#334155; line-height:1.6;">
-          This instrument sets forth the operative covenants, architectural principles, and contractual guidelines established pursuant to <strong>${prompt}</strong>. All stipulations therein are constructed under sovereign zero-telemetry governance with instant client verification.
-        </p>
-      </div>
+    // Tables
+    const tableRegex = /((?:\|.+?\|\r?\n)+)/g;
+    formattedBody = formattedBody.replace(tableRegex, (match) => {
+      const lines = match.trim().split('\n').filter(l => l.trim().length > 0);
+      if (lines.length < 2) return match;
+      let tbl = '<table style="width:100%; border-collapse:collapse; margin:18px 0; font-size:13px;">';
+      lines.forEach((line, idx) => {
+        if (/^\|?\s*[-:]+[-|\s:]*$/.test(line)) return;
+        const cells = line.split('|').filter((_, i, arr) => i > 0 && i < arr.length - 1);
+        if (cells.length === 0) return;
+        tbl += '<tr>';
+        cells.forEach(c => {
+          const tag = idx === 0 ? 'th' : 'td';
+          const style = idx === 0
+            ? 'padding:10px 12px; background:#0f172a; color:#fff; border:1px solid #cbd5e1; font-weight:700;'
+            : 'padding:8px 12px; border:1px solid #cbd5e1; color:#334155;';
+          tbl += `<${tag} style="${style}">${c.trim()}</${tag}>`;
+        });
+        tbl += '</tr>';
+      });
+      tbl += '</table>';
+      return tbl;
+    });
 
-      <h2 style="font-size:18px; font-weight:700; color:#1e293b; margin-top:28px; margin-bottom:10px;">1. Purpose &amp; Scope of Work</h2>
-      <p style="font-size:13.5px; color:#334155; line-height:1.65;">
-        The objective of this engagement is to establish absolute alignment between all stakeholder counterparties. Both parties agree that timely deliverables, cryptographic data isolation, and performance standards constitute fundamental terms of this understanding.
-      </p>
-      <ul style="margin:10px 0; padding-left:22px; font-size:13.5px; color:#334155; line-height:1.7;">
-        <li><strong>Operative Standard:</strong> End-to-end execution with zero external data dependencies.</li>
-        <li><strong>Milestone Schedule:</strong> Continuous iteration with audit checkpoints every fortnight.</li>
-        <li><strong>Confidentiality Protection:</strong> Absolute non-disclosure of proprietary algorithms, weights, and client databases.</li>
-      </ul>
+    // Headings
+    formattedBody = formattedBody.replace(/^### (.*$)/gim, '<h3 style="font-size:16px; font-weight:700; color:#1e293b; margin-top:22px; margin-bottom:8px;">$1</h3>');
+    formattedBody = formattedBody.replace(/^## (.*$)/gim, '<h2 style="font-size:19px; font-weight:700; color:#1e293b; margin-top:26px; margin-bottom:10px; border-bottom:1px solid #f1f5f9; padding-bottom:4px;">$1</h2>');
+    formattedBody = formattedBody.replace(/^# (.*$)/gim, '<h1 style="font-size:26px; font-weight:800; color:#0f172a; margin-bottom:6px; letter-spacing:-0.5px;">$1</h1>');
 
-      <h2 style="font-size:18px; font-weight:700; color:#1e293b; margin-top:28px; margin-bottom:10px;">2. Deliverables &amp; Performance Matrix</h2>
-      <table style="width:100%; border-collapse:collapse; margin:16px 0; font-size:12.5px;">
-        <thead>
-          <tr style="background:#0f172a; color:#ffffff;">
-            <th style="padding:10px 12px; text-align:left; border:1px solid #cbd5e1;">Phase</th>
-            <th style="padding:10px 12px; text-align:left; border:1px solid #cbd5e1;">Deliverable Focus</th>
-            <th style="padding:10px 12px; text-align:left; border:1px solid #cbd5e1;">Verification Criteria</th>
-            <th style="padding:10px 12px; text-align:left; border:1px solid #cbd5e1;">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="padding:8px 12px; border:1px solid #cbd5e1; font-weight:600;">Phase I</td>
-            <td style="padding:8px 12px; border:1px solid #cbd5e1;">Architecture Blueprint &amp; Framework</td>
-            <td style="padding:8px 12px; border:1px solid #cbd5e1;">Formal design audit approval</td>
-            <td style="padding:8px 12px; border:1px solid #cbd5e1; color:#059669; font-weight:700;">Completed</td>
-          </tr>
-          <tr style="background:#f8fafc;">
-            <td style="padding:8px 12px; border:1px solid #cbd5e1; font-weight:600;">Phase II</td>
-            <td style="padding:8px 12px; border:1px solid #cbd5e1;">Core Implementation &amp; In-Memory Data Pipeline</td>
-            <td style="padding:8px 12px; border:1px solid #cbd5e1;">Sub-50ms latency stress test pass</td>
-            <td style="padding:8px 12px; border:1px solid #cbd5e1; color:#2563eb; font-weight:700;">In Progress</td>
-          </tr>
-          <tr>
-            <td style="padding:8px 12px; border:1px solid #cbd5e1; font-weight:600;">Phase III</td>
-            <td style="padding:8px 12px; border:1px solid #cbd5e1;">Enterprise Production Handover &amp; Sovereign Seal</td>
-            <td style="padding:8px 12px; border:1px solid #cbd5e1;">End-to-end cryptographic sign-off</td>
-            <td style="padding:8px 12px; border:1px solid #cbd5e1; color:#64748b;">Scheduled</td>
-          </tr>
-        </tbody>
-      </table>
+    // Bold / Italic
+    formattedBody = formattedBody.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    formattedBody = formattedBody.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
-      <h2 style="font-size:18px; font-weight:700; color:#1e293b; margin-top:28px; margin-bottom:10px;">3. Governance &amp; Execution Sign-Off</h2>
-      <p style="font-size:13.5px; color:#334155; line-height:1.65;">
-        IN WITNESS WHEREOF, the parties hereto have executed this Instrument as of the date first above written, acting through their duly authorized representatives.
-      </p>
+    // Lists
+    formattedBody = formattedBody.replace(/^\d+\.\s+(.*$)/gim, '<li style="margin-bottom:4px;">$1</li>');
+    formattedBody = formattedBody.replace(/^[-*•]\s+(.*$)/gim, '<li style="margin-bottom:4px;">$1</li>');
+    formattedBody = formattedBody.replace(/((?:<li.*?>.*?<\/li>\s*)+)/g, '<ul style="margin:10px 0; padding-left:24px; font-size:14px; color:#334155; line-height:1.7;">$1</ul>');
 
-      <div style="display:flex; justify-content:space-between; margin-top:36px; padding-top:20px; border-top:1px dashed #cbd5e1;">
-        <div style="width:45%;">
-          <p style="font-size:12px; color:#64748b; margin-bottom:28px;">FOR GIRI CORPORATION:</p>
-          <div style="border-bottom:1px solid #0f172a; width:100%; height:20px;"></div>
-          <p style="font-size:12.5px; font-weight:700; color:#0f172a; margin:4px 0 0 0;">Authorized Officer</p>
-          <p style="font-size:11.5px; color:#64748b; margin:0;">Giri Corporation &bull; Sovereign Workspace Division</p>
-        </div>
-        <div style="width:45%;">
-          <p style="font-size:12px; color:#64748b; margin-bottom:28px;">FOR COUNTERPARTY / CLIENT:</p>
-          <div style="border-bottom:1px solid #0f172a; width:100%; height:20px;"></div>
-          <p style="font-size:12.5px; font-weight:700; color:#0f172a; margin:4px 0 0 0;">Principal Executive</p>
-          <p style="font-size:11.5px; color:#64748b; margin:0;">Strategic Client Organization</p>
-        </div>
-      </div>
-    `;
+    // Paragraphs
+    const html = formattedBody.split(/\n{2,}/).map(p => {
+      p = p.trim();
+      if (!p) return '';
+      if (p.startsWith('<h') || p.startsWith('<table') || p.startsWith('<ul') || p.startsWith('<ol')) {
+        return p;
+      }
+      return `<p style="font-size:14px; color:#334155; line-height:1.7; margin:12px 0;">${p.replace(/\n/g, '<br>')}</p>`;
+    }).join('\n');
 
     localStorage.setItem('giri_orbit_drift_doc', html);
     return { title, tool: 'drift' };
@@ -754,31 +736,72 @@ export class GirionixAgentManager {
    * Autonomous Synthesis for Giri Axis (Spreadsheets with Real Formulas)
    */
   async synthesizeAxisSheet(prompt, tone) {
-    const isBudget = /budget|financial|p&l|revenue|cost|expense|operating/i.test(prompt);
-    let title = isBudget ? 'Annual Operating Financial Model' : 'Enterprise Operational Ledger';
+    const q = prompt.toLowerCase();
+    let title = 'Enterprise Operational Ledger';
+    let sheetData = {};
 
-    const sheetData = {
-      Sheet1: {
-        A1: isBudget ? 'ANNUAL OPERATING MODEL & P&L (USD)' : 'OPERATIONAL DATA MATRIX',
-        B1: '', C1: '', D1: '', E1: '', F1: '', G1: '',
-        A2: 'Metric / Category', B2: 'Q1 Projected', C2: 'Q2 Projected', D2: 'Q3 Projected', E2: 'Q4 Projected', F2: 'FY Total', G2: 'Quarterly Avg',
-        A3: 'Enterprise Software Licenses', B3: '145000', C3: '168000', D3: '194000', E3: '225000', F3: '=SUM(B3:E3)', G3: '=AVERAGE(B3:E3)',
-        A4: 'Sovereign Cloud Subscriptions', B4: '88000', C4: '96000', D4: '112000', E4: '130000', F4: '=SUM(B4:E4)', G4: '=AVERAGE(B4:E4)',
-        A5: 'Professional Services & Consulting', B5: '35000', C5: '40000', D5: '42000', E5: '50000', F4: '=SUM(B5:E5)', G5: '=AVERAGE(B5:E5)',
-        A6: 'GROSS REVENUE', B6: '=SUM(B3:B5)', C6: '=SUM(C3:C5)', D6: '=SUM(D3:D5)', E6: '=SUM(E3:E5)', F6: '=SUM(F3:F5)', G6: '=AVERAGE(B6:E6)',
-        A7: '----------------------------------------', B7: '-------', C7: '-------', D7: '-------', E7: '-------', F7: '-------', G7: '-------',
-        A8: 'Cost of Goods Sold (COGS)', B8: '38000', C8: '42000', D8: '46000', E8: '52000', F8: '=SUM(B8:E8)', G8: '=AVERAGE(B8:E8)',
-        A9: 'GROSS PROFIT', B9: '=B6-B8', C9: '=C6-C8', D9: '=D6-D8', E9: '=E6-E8', F9: '=F6-F8', G9: '=AVERAGE(B9:E9)',
-        A10: 'Operating Expenses (OpEx)', B10: '', C10: '', D10: '', E10: '', F10: '', G10: '',
-        A11: '  Research & Development (R&D)', B11: '65000', C11: '70000', D11: '78000', E11: '85000', F11: '=SUM(B11:E11)', G11: '=AVERAGE(B11:E11)',
-        A12: '  Sales & Global Marketing', B12: '45000', C12: '52000', D12: '60000', E12: '68000', F12: '=SUM(B12:E12)', G12: '=AVERAGE(B12:E12)',
-        A13: '  General & Administrative (G&A)', B13: '22000', C13: '23000', D13: '25000', E13: '26000', F13: '=SUM(B13:E13)', G13: '=AVERAGE(B13:E13)',
-        A14: 'TOTAL OPERATING EXPENSES', B14: '=SUM(B11:B13)', C14: '=SUM(C11:C13)', D14: '=SUM(D11:D13)', E14: '=SUM(E11:E13)', F14: '=SUM(F11:F13)', G14: '=AVERAGE(B14:E14)',
-        A15: '----------------------------------------', B15: '-------', C15: '-------', D15: '-------', E15: '-------', F15: '-------', G15: '-------',
-        A16: 'NET OPERATING EBITDA', B16: '=B9-B14', C16: '=C9-C14', D16: '=D9-D14', E16: '=E9-E14', F16: '=F9-F14', G16: '=AVERAGE(B16:E16)',
-        A17: 'NET EBITDA MARGIN %', B17: '38.2%', C17: '39.8%', D17: '41.1%', E17: '42.5%', F17: '40.6%', G17: '40.4%'
-      }
-    };
+    if (q.includes('student') || q.includes('marks') || q.includes('grade') || q.includes('school')) {
+      title = 'Student Academic Grade & Performance Ledger';
+      sheetData = {
+        Sheet1: {
+          A1: 'STUDENT ACADEMIC PERFORMANCE MATRIX',
+          B1: '', C1: '', D1: '', E1: '', F1: '', G1: '', H1: '',
+          A2: 'Roll No', B2: 'Student Name', C2: 'Mathematics', D2: 'Science', E2: 'English', F2: 'Total Marks', G2: 'Percentage', H2: 'Grade',
+          A3: '101', B3: 'Aarav Sharma', C3: '95', D3: '92', E3: '88', F3: '=SUM(C3:E3)', G3: '=F3/3', H3: '=IF(G3>=90,"A+",IF(G3>=80,"A","B"))',
+          A4: '102', B4: 'Ananya Patel', C4: '88', D4: '85', E4: '90', F4: '=SUM(C4:E4)', G4: '=F4/3', H4: '=IF(G4>=90,"A+",IF(G4>=80,"A","B"))',
+          A5: '103', B5: 'Rohan Gupta', C5: '76', D5: '78', E5: '82', F5: '=SUM(C5:E5)', G5: '=F5/3', H5: '=IF(G5>=90,"A+",IF(G5>=80,"A","B"))',
+          A6: '104', B6: 'Priya Nair', C6: '94', D6: '96', E6: '91', F6: '=SUM(C6:E6)', G6: '=F6/3', H6: '=IF(G6>=90,"A+",IF(G6>=80,"A","B"))',
+          A7: '105', B7: 'Vikramaditya Rao', C7: '82', D7: '89', E7: '84', F7: '=SUM(C7:E7)', G7: '=F7/3', H7: '=IF(G7>=90,"A+",IF(G7>=80,"A","B"))',
+          A8: 'Class Average', B8: 'Mean Scores', C8: '=AVERAGE(C3:C7)', D8: '=AVERAGE(D3:D7)', E8: '=AVERAGE(E3:E7)', F8: '=AVERAGE(F3:F7)', G8: '=AVERAGE(G3:G7)', H8: '—'
+        }
+      };
+    } else if (q.includes('payroll') || q.includes('salary') || q.includes('employee') || q.includes('hr')) {
+      title = 'Employee Compensation & Payroll Ledger';
+      sheetData = {
+        Sheet1: {
+          A1: 'ENTERPRISE EMPLOYEE PAYROLL REGISTER',
+          B1: '', C1: '', D1: '', E1: '', F1: '', G1: '', H1: '', I1: '',
+          A2: 'Emp ID', B2: 'Employee Name', C2: 'Department', D2: 'Basic Salary', E2: 'HRA (40%)', F2: 'Allowances', G2: 'Gross Pay', H2: 'Tax & Deductions', I2: 'Net Salary',
+          A3: 'EMP-01', B3: 'Jonathan Vance', C3: 'Engineering', D3: '6500', E3: '=D3*0.4', F3: '1200', G3: '=SUM(D3:F3)', H3: '=G3*0.15', I3: '=G3-H3',
+          A4: 'EMP-02', B4: 'Melissa Wong', C4: 'Product Design', D4: '5800', E4: '=D4*0.4', F4: '950', G4: '=SUM(D4:F4)', H4: '=G4*0.15', I4: '=G4-H4',
+          A5: 'EMP-03', B5: 'Tariq Al-Mansoor', C5: 'Cloud Ops', D5: '6200', E5: '=D5*0.4', F5: '1100', G5: '=SUM(D5:F5)', H5: '=G5*0.15', I5: '=G5-H5',
+          A6: 'EMP-04', B6: 'Sophia Rossi', C6: 'Marketing', D6: '5200', E6: '=D6*0.4', F6: '850', G6: '=SUM(D6:F6)', H6: '=G6*0.15', I6: '=G6-H6',
+          A7: 'TOTAL', B7: 'Department Total', C7: '—', D7: '=SUM(D3:D6)', E7: '=SUM(E3:E6)', F7: '=SUM(F3:F6)', G7: '=SUM(G3:G6)', H7: '=SUM(H3:H6)', I7: '=SUM(I3:I6)'
+        }
+      };
+    } else if (q.includes('inventory') || q.includes('stock') || q.includes('warehouse') || q.includes('product')) {
+      title = 'Inventory Valuation & Reorder Ledger';
+      sheetData = {
+        Sheet1: {
+          A1: 'CENTRAL WAREHOUSE INVENTORY VALUATION',
+          B1: '', C1: '', D1: '', E1: '', F1: '', G1: '', H1: '',
+          A2: 'SKU Code', B2: 'Item Description', C2: 'Category', D2: 'Quantity in Stock', E2: 'Reorder Level',线条: '', F2: 'Unit Cost ($)', G2: 'Total Valuation ($)', H2: 'Inventory Status',
+          A3: 'SKU-1042', B3: 'Enterprise SSD 2TB', C3: 'Hardware', D3: '145', E3: '50', F3: '185.00', G3: '=D3*F3', H3: '=IF(D3<=E3,"REORDER","IN STOCK")',
+          A4: 'SKU-2081', B4: 'USB-C Docking Station', C4: 'Accessories', D4: '38', E4: '60', F4: '45.00', G4: '=D4*F4', H4: '=IF(D4<=E4,"REORDER","IN STOCK")',
+          A5: 'SKU-3190', B5: 'Mechanical Keyboard', C5: 'Peripherals', D5: '92', E5: '30', F5: '78.50', G5: '=D5*F5', H5: '=IF(D5<=E5,"REORDER","IN STOCK")',
+          A6: 'SKU-4502', B6: '4K IPS Monitor 27"', C6: 'Displays', D6: '64', E6: '25', F6: '290.00', G6: '=D6*F6', H6: '=IF(D6<=E6,"REORDER","IN STOCK")',
+          A7: 'TOTAL', B7: 'Summary Valuation', C7: '—', D7: '=SUM(D3:D6)', E7: '—', F7: '—', G7: '=SUM(G3:G6)', H7: '—'
+        }
+      };
+    } else {
+      // Default: Financial & Business Revenue Projection Model
+      title = 'Annual Operating Model & P&L Projection';
+      sheetData = {
+        Sheet1: {
+          A1: 'ANNUAL OPERATING MODEL & P&L (USD)',
+          B1: '', C1: '', D1: '', E1: '', F1: '', G1: '',
+          A2: 'Metric / Category', B2: 'Q1 Projected', C2: 'Q2 Projected', D2: 'Q3 Projected', E2: 'Q4 Projected', F2: 'FY Total', G2: 'Quarterly Avg',
+          A3: 'Enterprise Software Licenses', B3: '145000', C3: '168000', D3: '194000', E3: '225000', F3: '=SUM(B3:E3)', G3: '=AVERAGE(B3:E3)',
+          A4: 'Sovereign Cloud Subscriptions', B4: '88000', C4: '96000', D4: '112000', E4: '130000', F4: '=SUM(B4:E4)', G4: '=AVERAGE(B4:E4)',
+          A5: 'Professional Services & Consulting', B5: '35000', C5: '40000', D5: '42000', E5: '50000', F5: '=SUM(B5:E5)', G5: '=AVERAGE(B5:E5)',
+          A6: 'GROSS REVENUE', B6: '=SUM(B3:B5)', C6: '=SUM(C3:C5)', D6: '=SUM(D3:D5)', E6: '=SUM(E3:E5)', F6: '=SUM(F3:F5)', G6: '=AVERAGE(B6:E6)',
+          A7: 'Cost of Goods Sold (COGS)', B7: '38000', C7: '42000', D7: '46000', E7: '52000', F7: '=SUM(B7:E7)', G7: '=AVERAGE(B7:E7)',
+          A8: 'GROSS PROFIT', B8: '=B6-B7', C8: '=C6-C7', D8: '=D6-D7', E8: '=E6-E7', F8: '=F6-F7', G8: '=AVERAGE(B8:E8)',
+          A9: 'Operating Expenses (OpEx)', B9: '65000', C9: '70000', D9: '78000', E9: '85000', F9: '=SUM(B9:E9)', G9: '=AVERAGE(B9:E9)',
+          A10: 'NET OPERATING EBITDA', B10: '=B8-B9', C10: '=C8-C9', D10: '=D8-D9', E10: '=E8-E9', F10: '=F8-F9', G10: '=AVERAGE(B10:E10)'
+        }
+      };
+    }
 
     localStorage.setItem('giri_orbit_axis_sheets', JSON.stringify(sheetData));
     return { title, tool: 'axis' };
@@ -788,100 +811,197 @@ export class GirionixAgentManager {
    * Autonomous Synthesis for Giri Kinetic (Presentation Show)
    */
   async synthesizeKineticDeck(prompt, tone) {
-    const titleMatch = prompt.match(/(?:pitch|presentation|deck|for)\s+(?:a|an)?\s*(.*?)(?:with|including|$)/i);
-    let deckTitle = titleMatch && titleMatch[1] ? titleMatch[1].trim() : 'Executive Presentation';
-    deckTitle = deckTitle.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    const q = prompt.toLowerCase();
+    let slides = [];
+    let deckTitle = prompt.slice(0, 40).trim();
 
-    const slides = [
-      {
-        id: 1,
-        layout: 'title',
-        bg: '#09090b',
-        accent: '#38bdf8',
-        tag: 'EXECUTIVE OVERVIEW',
-        title: deckTitle,
-        desc: 'A strategic thesis on autonomous intelligence, zero-latency computing, and sovereign office architecture.',
-        features: [
-          { num: '01', title: 'Zero Telemetry', desc: '100% Client-Side Privacy' },
-          { num: '02', title: 'Sub-1ms Latency', desc: 'In-Memory Compute Engine' },
-          { num: '03', title: 'Girionix AI', desc: 'Integrated Polymath Engine' }
-        ]
-      },
-      {
-        id: 2,
-        layout: 'chevron-flow',
-        bg: '#0f172a',
-        accent: '#06b6d4',
-        tag: 'MARKET OPPORTUNITY',
-        title: 'The Challenge & The Inefficiency',
-        desc: 'Legacy office suites suffer from cloud network roundtrips, aggressive telemetry harvesting, and fractured tool silos.',
-        features: [
-          { num: '01', title: 'Data Vulnerability', desc: 'Sensitive documents exposed to cloud scraping' },
-          { num: '02', title: 'Network Latency', desc: 'Unpredictable delays on slow connections' },
-          { num: '03', title: 'Fragmented AI', desc: 'Disconnected chatbots without direct canvas injection' },
-          { num: '04', title: 'High Licensing Fees', desc: 'Recurring enterprise overhead per seat' }
-        ]
-      },
-      {
-        id: 3,
-        layout: 'radial-cycle',
-        bg: '#18181b',
-        accent: '#8b5cf6',
-        tag: 'CORE ARCHITECTURE',
-        title: 'Unified Sovereign Solution',
-        desc: 'Giri Orbit unites documents, financial spreadsheets, presentations, and cryptographic seals in a single in-memory runtime.',
-        features: [
-          { num: '01', title: 'Drift Docs', desc: 'Natural semantic executive composition' },
-          { num: '02', title: 'Axis Sheets', desc: 'High-speed spreadsheet modeling with real formulas' },
-          { num: '03', title: 'Kinetic Show', desc: 'Widescreen presentation show with physics motion' },
-          { num: '04', title: 'Aegis PDF', desc: 'Cryptographic document seal & audit verification' }
-        ]
-      },
-      {
-        id: 4,
-        layout: 'metrics',
-        bg: '#022c22',
-        accent: '#10b981',
-        tag: 'TRACTION & PERFORMANCE',
-        title: 'Proven Velocity Benchmarks',
-        desc: 'Empirical performance metrics validate unmatched speed advantages over legacy SaaS alternatives.',
-        features: [
-          { num: '99.9%', title: 'Client Independence', desc: 'Operates completely offline without server drops' },
-          { num: '0.4ms', title: 'Cell Evaluation', desc: 'Formula calculation engine speed' },
-          { num: '100%', title: 'Data Sovereignty', desc: 'Zero document bytes transmitted to ad servers' },
-          { num: '1-Click', title: 'Cross-Device Sync', desc: 'Instant transfer between Phone and PC' }
-        ]
-      },
-      {
-        id: 5,
-        layout: 'milestone-journey',
-        bg: '#172554',
-        accent: '#3b82f6',
-        tag: 'GO-TO-MARKET',
-        title: 'Execution Roadmap',
-        desc: 'Phased rollout strategy designed for rapid enterprise adoption and sovereign compliance worldwide.',
-        features: [
-          { num: 'Q1', title: 'Core Suite Launch', desc: 'Release of Drift, Axis, Kinetic, and Aegis' },
-          { num: 'Q2', title: 'Girionix AI Alliance', desc: 'Direct autonomous agent integration & co-pilot' },
-          { num: 'Q3', title: 'Enterprise Federation', desc: 'Direct Google Drive & local disk sync protocols' },
-          { num: 'Q4', title: 'Global Expansion', desc: 'Multi-language neural models & sovereign nodes' }
-        ]
-      },
-      {
-        id: 6,
-        layout: 'title',
-        bg: '#09090b',
-        accent: '#ec4899',
-        tag: 'NEXT STEPS',
-        title: 'Partner with Giri Orbit',
-        desc: 'Join the sovereign computing revolution. Connect with our engineering leadership to deploy across your organization.',
-        features: [
-          { num: 'WEB', title: 'giri-corporation.pages.dev', desc: 'Official Corporate Portal' },
-          { num: 'PARTNER', title: 'girionix-ai.pages.dev', desc: 'Strategic AI Alliance' },
-          { num: 'CONTACT', title: 'giri.corporation.pvt@gmail.com', desc: 'Direct Executive Inquiries' }
-        ]
-      }
-    ];
+    if (q.includes('gandhi') || q.includes('freedom') || q.includes('history')) {
+      deckTitle = 'Mahatma Gandhi & The Freedom Movement';
+      slides = [
+        {
+          id: 1,
+          layout: 'title',
+          bg: '#09090b',
+          accent: '#f59e0b',
+          tag: 'HISTORICAL BIOGRAPHY',
+          title: 'Mahatma Gandhi: The Apostle of Truth',
+          desc: 'How non-violent Satyagraha mobilized millions and dismantled colonial empire.',
+          features: [
+            { num: '01', title: 'Early Life', desc: 'Born Oct 2, 1869 in Porbandar, Gujarat' },
+            { num: '02', title: 'South Africa', desc: '21 years forging civil disobedience' },
+            { num: '03', title: 'Ahimsa', desc: 'The weapon of moral truth over brute force' }
+          ]
+        },
+        {
+          id: 2,
+          layout: 'chevron-flow',
+          bg: '#0f172a',
+          accent: '#38bdf8',
+          tag: 'LANDMARK MOVEMENTS',
+          title: 'Epochal Nationwide Campaigns',
+          desc: 'Mass mobilization across every province, village, and community of India.',
+          features: [
+            { num: '1920', title: 'Non-Cooperation', desc: 'Boycott of British titles, goods, and courts' },
+            { num: '1930', title: 'Dandi Salt March', desc: '240-mile march shattering the salt monopoly' },
+            { num: '1942', title: 'Quit India', desc: 'The historic rallying cry "Do or Die"' },
+            { num: '1947', title: 'Independence', desc: 'Midnight tryst with national destiny' }
+          ]
+        },
+        {
+          id: 3,
+          layout: 'radial-cycle',
+          bg: '#18181b',
+          accent: '#10b981',
+          tag: 'CONSTRUCTIVE PROGRAMME',
+          title: 'Swadeshi & Social Awakening',
+          desc: 'Empowering the rural masses through economic dignity and self-reliance.',
+          features: [
+            { num: '01', title: 'Khadi & Charkha', desc: 'Revival of indigenous village textile weaving' },
+            { num: '02', title: 'Social Upliftment', desc: 'Eradication of caste barriers and untouchability' },
+            { num: '03', title: 'Communal Harmony', desc: 'Unwavering unity across diverse faiths' },
+            { num: '04', title: 'Basic Education', desc: 'Nai Talim — learning through practical craft' }
+          ]
+        },
+        {
+          id: 4,
+          layout: 'milestone-journey',
+          bg: '#172554',
+          accent: '#60a5fa',
+          tag: 'GLOBAL INFLUENCE',
+          title: 'The Ripple Across Continents',
+          desc: 'Inspiring world-historic civil rights leaders across the twentieth century.',
+          features: [
+            { num: 'USA', title: 'Dr. Martin Luther King Jr.', desc: 'American Civil Rights Movement' },
+            { num: 'RSA', title: 'Nelson Mandela', desc: 'The liberation struggle against apartheid' },
+            { num: 'TIB', title: 'The Dalai Lama', desc: 'Global advocacy for universal peace' },
+            { num: 'SCI', title: 'Albert Einstein', desc: 'Tribute to Gandhi\'s moral greatness' }
+          ]
+        },
+        {
+          id: 5,
+          layout: 'title',
+          bg: '#09090b',
+          accent: '#ec4899',
+          tag: 'TIMELESS LEGACY',
+          title: 'An Eternal Lighthouse',
+          desc: '"Be the change you wish to see in the world." Truth and non-violence remain as old as the hills and as urgent as tomorrow.',
+          features: [
+            { num: 'TRUTH', title: 'Satya', desc: 'The sovereign pursuit of moral reality' },
+            { num: 'PEACE', title: 'Ahimsa', desc: 'Courage to love without malice' },
+            { num: 'SOUL', title: 'Mahatma', desc: 'An immortal testament to human dignity' }
+          ]
+        }
+      ];
+    } else if (q.includes('ai') || q.includes('artificial intelligence') || q.includes('tech') || q.includes('software')) {
+      deckTitle = 'Artificial Intelligence: Horizons & Governance';
+      slides = [
+        {
+          id: 1,
+          layout: 'title',
+          bg: '#09090b',
+          accent: '#8b5cf6',
+          tag: 'COGNITIVE COMPUTING',
+          title: 'The Artificial Intelligence Frontier',
+          desc: 'How generative architectures and autonomous agents are reshaping science, productivity, and society.',
+          features: [
+            { num: '01', title: 'Foundation Models', desc: 'Multimodal language, vision, and code' },
+            { num: '02', title: 'Agentic Workflows', desc: 'Self-correcting autonomous multi-step reasoning' },
+            { num: '03', title: 'Sovereign Edge', desc: 'Private in-memory execution with zero cloud leakage' }
+          ]
+        },
+        {
+          id: 2,
+          layout: 'chevron-flow',
+          bg: '#0f172a',
+          accent: '#38bdf8',
+          tag: 'TECHNICAL ARCHITECTURE',
+          title: 'The Modern Generative Stack',
+          desc: 'From raw token embeddings to real-time interactive intelligence.',
+          features: [
+            { num: '01', title: 'Pre-Training', desc: 'Self-supervised learning on massive datasets' },
+            { num: '02', title: 'Instruction Tuning', desc: 'Alignment via RLHF and direct preference optimization' },
+            { num: '03', title: 'Inference Engine', desc: 'Low-latency speculative decoding & quantization' },
+            { num: '04', title: 'Tool Calling', desc: 'Direct canvas manipulation and local file synthesis' }
+          ]
+        },
+        {
+          id: 3,
+          layout: 'metrics',
+          bg: '#022c22',
+          accent: '#10b981',
+          tag: 'VALUE CREATION',
+          title: 'Empirical Velocity Gains',
+          desc: 'Measurable enterprise throughput across core operational pillars.',
+          features: [
+            { num: '4.2x', title: 'Drafting Speed', desc: 'Document and contract composition acceleration' },
+            { num: '0.4ms', title: 'Model Calculation', desc: 'Sub-millisecond spreadsheet cell evaluation' },
+            { num: '100%', title: 'Privacy Custody', desc: 'Zero document bytes scraped for public training' },
+            { num: '1-Click', title: 'Cross-Device', desc: 'Seamless synchronization across Phone & PC' }
+          ]
+        },
+        {
+          id: 4,
+          layout: 'milestone-journey',
+          bg: '#172554',
+          accent: '#60a5fa',
+          tag: 'ETHICAL ROADMAP',
+          title: 'Safety, Alignment & Governance',
+          desc: 'Proactive safeguards ensuring human empowerment and accountability.',
+          features: [
+            { num: 'Q1', title: 'Bias Auditing', desc: 'Rigorous factual grounding and verification' },
+            { num: 'Q2', title: 'Cryptographic Seals', desc: 'SHA-256 state hashing for every document' },
+            { num: 'Q3', title: 'Local Sandboxing', desc: 'Air-gapped memory boundaries' },
+            { num: 'Q4', title: 'Open Standards', desc: 'Universal document format interoperability' }
+          ]
+        }
+      ];
+    } else {
+      // Default: Universal Presentation Deck tailored to prompt
+      slides = [
+        {
+          id: 1,
+          layout: 'title',
+          bg: '#09090b',
+          accent: '#38bdf8',
+          tag: 'EXECUTIVE OVERVIEW',
+          title: deckTitle,
+          desc: `Strategic presentation synthesized pursuant to "${prompt}".`,
+          features: [
+            { num: '01', title: 'Core Thesis', desc: 'Clear objectives and measurable milestones' },
+            { num: '02', title: 'Architecture', desc: 'Robust framework designed for scale' },
+            { num: '03', title: 'Impact', desc: 'Sustainable value creation across all units' }
+          ]
+        },
+        {
+          id: 2,
+          layout: 'chevron-flow',
+          bg: '#0f172a',
+          accent: '#06b6d4',
+          tag: 'EXECUTION PLAN',
+          title: 'Three-Phase Implementation',
+          desc: 'Systematic operational pathway ensuring quality and velocity.',
+          features: [
+            { num: '01', title: 'Phase 1: Discovery', desc: 'Baseline assessment and requirement gathering' },
+            { num: '02', title: 'Phase 2: Execution', desc: 'Core synthesis, engineering, and testing' },
+            { num: '03', title: 'Phase 3: Validation', desc: 'Quality audit and stakeholder sign-off' }
+          ]
+        },
+        {
+          id: 3,
+          layout: 'metrics',
+          bg: '#022c22',
+          accent: '#10b981',
+          tag: 'OUTCOMES',
+          title: 'Performance & Value Metrics',
+          desc: 'Quantifiable benchmarks demonstrating success.',
+          features: [
+            { num: '99.9%', title: 'Reliability', desc: 'Zero downtime and high operational continuity' },
+            { num: '100%', title: 'Sovereignty', desc: 'Complete client-side data custody' },
+            { num: '3.5x', title: 'Efficiency', desc: 'Streamlined workflow with zero friction' }
+          ]
+        }
+      ];
+    }
 
     localStorage.setItem('giri_orbit_kinetic_deck', JSON.stringify(slides));
     return { title: deckTitle, tool: 'kinetic' };

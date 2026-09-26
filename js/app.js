@@ -22,6 +22,7 @@ import { syncManager } from './modules/syncManager.js?v=10.2';
 import { localSync } from './components/localFileDirectSync.js?v=10.2';
 import { driveSyncManager } from './modules/driveSyncManager.js?v=10.2';
 import { GirionixAgentManager } from './components/girionixAgent.js?v=10.9';
+import girionixEngine from './modules/girionixEngine.js?v=10.9';
 
 class GiriOrbitPlatform {
   constructor() {
@@ -2246,12 +2247,17 @@ class GiriOrbitPlatform {
     const renderAiMessageCardHtml = (msg, idx, tool) => {
       const meta = toolMeta[tool] || toolMeta.drift;
       const timeStr = msg.time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      const badgeHtml = msg.source === 'live'
+        ? `<span style="font-size:9.5px; background:rgba(34,197,94,0.18); color:#22c55e; border:1px solid rgba(34,197,94,0.3); border-radius:10px; padding:1.5px 6px; font-weight:800; letter-spacing:0.3px;">LIVE AI</span>`
+        : `<span style="font-size:9.5px; background:rgba(168,85,247,0.18); color:#c084fc; border:1px solid rgba(168,85,247,0.3); border-radius:10px; padding:1.5px 6px; font-weight:800; letter-spacing:0.3px;">SOVEREIGN</span>`;
+
       return `
         <div class="girionix-msg-ai" data-msg-idx="${idx}">
           <div class="girionix-ai-header">
-            <div class="girionix-ai-author">
+            <div class="girionix-ai-author" style="display:flex; align-items:center; gap:6px;">
               <img src="assets/giri-logo-symbol.png" alt="Logo" style="width:16px; height:16px; object-fit:contain;">
               <span>Girionix Pro • ${meta.name}</span>
+              ${badgeHtml}
             </div>
             <span class="girionix-ai-time">${timeStr}</span>
           </div>
@@ -2320,289 +2326,13 @@ class GiriOrbitPlatform {
       });
     };
 
-    // Autonomous Sovereign AI Response Generator (Guaranteed 0ms latency, zero hang!)
+    // Girionix AI Response Engine Integration (Hybrid: Live Cloud + Sovereign Deep Knowledge)
     const generateSovereignResponse = (tool, query, attachment) => {
-      const q = query.toLowerCase();
-      let response = '';
-
-      if (tool === 'drift') {
-        if (q.includes('nda') || q.includes('agreement') || q.includes('contract')) {
-          response = `# MUTUAL NON-DISCLOSURE & CONFIDENTIALITY AGREEMENT
-
-This Mutual Non-Disclosure Agreement ("Agreement") is executed and entered into as of this day by and between the Participating Entities (collectively, the "Parties").
-
-### 1. Purpose & Scope of Disclosure
-The Parties intend to engage in strategic business discussions regarding proprietary software architecture, corporate governance models, and sovereign office systems (the "Authorized Purpose").
-
-### 2. Definition of Confidential Information
-"Confidential Information" shall encompass all technical specifications, algorithmic implementations, business models, financial data, and customer matrices disclosed either orally, visually, or in writing.
-
-| Clause Ref | Standard Requirement | Compliance Tier |
-|---|---|---|
-| Section 3.1 | Non-Disclosure Obligation | Strict Enterprise (5 Years) |
-| Section 3.2 | Standard of Care | Reasonable / Best Industry Practice |
-| Section 3.3 | Exclusions & Public Domain | Verifiable Prior Art Excluded |
-
-### 3. Obligations of Receiving Party
-The Receiving Party agrees to maintain the confidential nature of all disclosed materials and shall not duplicate, reverse engineer, or transmit proprietary documents without prior written authorization.
-
-### 4. Governing Law & Jurisdiction
-This Agreement shall be interpreted and enforced under the applicable commercial laws governing sovereign enterprise agreements.
-
-*IN WITNESS WHEREOF, the Parties have executed this Mutual Non-Disclosure Agreement.*`;
-        } else if (q.includes('summary') || q.includes('executive') || q.includes('brief')) {
-          response = `# EXECUTIVE BRIEFING & STRATEGIC SYNTHESIS
-
-## Executive Summary
-During the current operational cycle, Giri Orbit Enterprise Suite demonstrated significant performance enhancements across all four core pillars: Drift Docs, Axis Sheets, Kinetic Slides, and Aegis PDF Studio.
-
-### Key Performance Trajectory
-* **System Uptime & Latency:** 99.98% availability with sub-50ms local memory document retrieval.
-* **Document Processing Velocity:** 4.2x speedup in large spreadsheet recalculations and complex rendering.
-* **Security Posture:** 100% sovereign client-side air-gapped data retention with zero telemetry leaks.
-
-### Operational Milestones
-| Milestone | Custodian | Target Date | Current Status |
-|---|---|---|---|
-| Sovereign Local Storage Engine | Core Architecture | Q3 Milestone | Complete (100%) |
-| Orbit ProofMaster™ Grammar Suite | Linguistic NLP | Q3 Milestone | Deployed & Active |
-| Girionix Pro Multi-Turn Copilot | AI Engineering | Q4 Horizon | Verified Flagship |
-
-### Strategic Recommendation
-Deploy full suite workstation updates across all department nodes, utilizing direct local file synchronization and client-side cryptographic seals.`;
-        } else if (q.includes('proofread') || q.includes('grammar') || q.includes('polish')) {
-          response = `# ORBIT PROOFMASTER™ EDITORIAL POLISH REPORT
-
-### ✦ Editorial Evaluation & Enhancements
-Your document text has been thoroughly audited for grammar, syntax, tone, and conciseness using the Orbit ProofMaster™ linguistic ruleset.
-
-### Recommended High-Impact Polish
-> "The implementation of the sovereign document architecture establishes an air-gapped standard of governance, ensuring verifiable data privacy and eliminating external dependency latency."
-
-### Key Improvements Applied:
-1. **Clarity & Mechanics:** Eliminated redundant passive constructions and normalized sentence transitions.
-2. **Executive Vocabulary:** Replaced colloquial terms with precise corporate and technical terminology.
-3. **Punctuation & Flow:** Corrected comma splices and standardized em-dash spacing throughout paragraphs.
-
-*Readability Metric: Grade 11.4 • Flesch Reading Ease: 68.2 (Optimal for Executive Audiences)*`;
-        } else if (q.includes('memo') || q.includes('memorandum') || q.includes('policy')) {
-          response = `# MEMORANDUM
-
-**TO:** All Enterprise Department Heads & Project Custodians  
-**FROM:** Executive Leadership & Technical Director  
-**DATE:** ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}  
-**SUBJECT:** Sovereign Workplace Architecture & Local-First Deployment Policy  
-
----
-
-### 1. Objective
-To formally announce the company-wide standardization on Giri Orbit as our primary office productivity workstation suite.
-
-### 2. Core Operational Directives
-* **Data Sovereignty:** All working documents, financial ledgers, and presentations must be maintained within the local workstation memory or encrypted Google Drive sync containers.
-* **Document Fidelity:** Word documents (.docx), spreadsheets (.xlsx), and slide decks (.pptx) must maintain complete bidirectional round-trip formatting.
-* **AI Assistance:** When generating executive correspondence or data analysis, staff may leverage the integrated Girionix Pro Copilot.
-
-### 3. Immediate Action Required
-Please ensure all project leads review the updated workflow documentation and execute pending milestone sign-offs by Friday, 5:00 PM.`;
-        } else {
-          response = `# DOCUMENT BRIEF: ${query.toUpperCase().slice(0, 36)}
-
-### Overview & Strategic Context
-In response to your directive: **"${query}"**, the following structured documentation has been synthesized for direct inclusion into your active Giri Drift document.
-
-### Core Provisions & Detailed Breakdown
-1. **Primary Framework:** Systematically addresses the operational imperatives and strategic goals defined by the project leadership.
-2. **Resource Allocation:** Identifies critical milestones, deliverable deadlines, and department accountability measures.
-3. **Risk Mitigation:** Provides contingencies for operational disruptions, ensuring high-availability continuity.
-
-### Deliverables Matrix
-| Phase | Deliverable | Objective | Target Completion |
-|---|---|---|---|
-| Phase 1 | Project Charter & Scope | Establish baseline parameters | Week 2 |
-| Phase 2 | Architecture Execution | Deploy core infrastructure | Week 4 |
-| Phase 3 | Review & Audit Signoff | Final stakeholder verification | Week 6 |
-
-*Click [✓ Insert into Giri Drift] below to append this content directly into your active sheet.*`;
-        }
-      } else if (tool === 'axis') {
-        if (q.includes('xlookup') || q.includes('vlookup') || q.includes('lookup')) {
-          response = `# AXIS SMART FORMULA: =XLOOKUP GUIDE & IMPLEMENTATION
-
-### Formula Syntax:
-\`\`\`excel
-=XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found], [match_mode])
-\`\`\`
-
-### Example Implementation:
-To look up an Employee ID in cell **A2** within Employee Directory column **F**, and return their Department from column **H**:
-\`\`\`excel
-=XLOOKUP(A2, F2:F100, H2:H100, "Employee Not Found", 0)
-\`\`\`
-
-### Sample Data Table Ready for Axis:
-| Emp ID | Employee Name | Department | Q3 Sales ($) | Performance |
-|---|---|---|---|---|
-| E-101 | Sarah Jenkins | Enterprise Sales | 425000 | Exceeds |
-| E-102 | Marcus Chen | Engineering | 0 | Meets |
-| E-103 | Elena Rostova | Product Strategy | 185000 | Exceeds |
-| E-104 | David Patel | Financial Operations | 92000 | Meets |
-
-### Why XLOOKUP Surpasses VLOOKUP:
-1. **Leftward Lookup:** Does not require the lookup key to be in the first column.
-2. **Native Error Handling:** Built-in \`[if_not_found]\` replaces messy \`=IFERROR(VLOOKUP(...))\`.
-3. **Exact Match Default:** Eliminates accidental approximate matching errors.`;
-        } else if (q.includes('model') || q.includes('revenue') || q.includes('financial') || q.includes('projection')) {
-          response = `# 5-YEAR FINANCIAL REVENUE PROJECTION MODEL
-
-### Financial Projections & Pro-Forma Income Model ($ in Thousands)
-
-| Metric | Year 1 | Year 2 | Year 3 | Year 4 | Year 5 | Formula Reference |
-|---|---|---|---|---|---|---|
-| Gross Revenue | 1250 | 2100 | 3850 | 6200 | 9500 | Input Matrix |
-| Cost of Goods Sold (COGS) | 375 | 588 | 962 | 1488 | 2185 | =Revenue * 0.28 |
-| **Gross Profit** | **875** | **1512** | **2888** | **4712** | **7315** | =B2-B3 |
-| Gross Margin % | 70.0% | 72.0% | 75.0% | 76.0% | 77.0% | =GrossProfit / Revenue |
-| Operating Expenses (OPEX) | 520 | 790 | 1250 | 1850 | 2600 | Operational Costs |
-| **Operating EBITDA** | **355** | **722** | **1638** | **2862** | **4715** | =GrossProfit - OPEX |
-| EBITDA Margin % | 28.4% | 34.4% | 42.5% | 46.2% | 49.6% | =EBITDA / Revenue |
-
-### Key Observations:
-* Compound Annual Growth Rate (CAGR): **50.1%** over the 5-year projection horizon.
-* Operating leverage expands EBITDA margin from 28.4% to 49.6% due to high gross margins.`;
-        } else {
-          response = `# AXIS SPREADSHEET FORMULA & DATA MATRIX
-
-### Recommended Formula for "${query}":
-\`\`\`excel
-=SUMIFS(D2:D100, B2:B100, ">=1000", C2:C100, "Enterprise")
-\`\`\`
-
-### Structured Dataset Matrix for Active Sheet:
-| Region | Category | Units Sold | Unit Price ($) | Total Revenue ($) | Growth % |
-|---|---|---|---|---|---|
-| North America | Enterprise Suite | 1450 | 120 | 174000 | +18.4% |
-| Europe | Enterprise Suite | 980 | 120 | 117600 | +12.1% |
-| Asia Pacific | Commercial Core | 2150 | 85 | 182750 | +24.6% |
-| Latin America | Commercial Core | 620 | 85 | 52700 | +8.2% |
-| **Total / Summary** | **All Regions** | **5200** | **—** | **=SUM(E2:E5)** | **+16.8%** |
-
-*Click [✓ Insert into Giri Axis] below to inject these rows directly into your spreadsheet cells.*`;
-        }
-      } else if (tool === 'kinetic') {
-        if (q.includes('pitch') || q.includes('deck') || q.includes('investor') || q.includes('slides')) {
-          response = `# 5-SLIDE EXECUTIVE INVESTOR PITCH DECK
-
----
-### Slide 1: Title & Executive Hook
-* **Title:** GIRI ORBIT: The Sovereign Enterprise Workstation
-* **Subtitle:** Eliminating cloud vendor lock-in through local air-gapped productivity.
-* **Presenter Note:** Open with the staggering cost and security vulnerability of traditional subscription cloud suites.
-
----
-### Slide 2: The Core Problem
-* **Title:** The Enterprise Cloud Dilemma
-* **Key Nodes:**
-  - 1. Skyrocketing recurring per-seat SaaS licensing fees ($36+/seat/month).
-  - 2. Latency and dependency on external servers during network blackouts.
-  - 3. Compliance and PII exposure risks from cloud telemetry scraping.
-
----
-### Slide 3: Our Proprietary Solution
-* **Title:** Sovereign Local Computing Architecture
-* **Key Nodes:**
-  - 1. **Complete 4-in-1 Suite:** Drift Docs, Axis Sheets, Kinetic Show, and Aegis PDF.
-  - 2. **Zero-Telemetry Security:** 100% client-side memory execution with SHA-256 seal.
-  - 3. **Autonomous AI:** Built-in Girionix Pro offline intelligence engine.
-
----
-### Slide 4: Market Traction & Unit Economics
-* **Title:** Operational Velocity & Capital Efficiency
-* **Key Metrics:**
-  - **$2.4M** Annual Run-Rate (ARR) projected across enterprise pilot programs.
-  - **82%** Gross Profit Margins due to zero server compute overhead.
-  - **4.8 / 5.0** User Satisfaction Score among legal and corporate test suites.
-
----
-### Slide 5: The Investment Ask & Roadmap
-* **Title:** Scaling Sovereign Workstations Globally
-* **Call to Action:** Raising $3.5M Seed to accelerate native desktop apps and mobile runtime.
-* **Contact:** leadership@giricorporation.com`;
-        } else if (q.includes('swot')) {
-          response = `# SWOT ANALYSIS STRATEGY SLIDE
-
----
-### Slide 1: Enterprise SWOT Matrix
-* **Title:** Strategic Capabilities & Threat Matrix
-* **Tag:** STRATEGIC PLANNING 2026
-
-#### ⊞ Quadrant 1: Strengths (Internal)
-* Proprietary local-first office processing engine.
-* Zero cloud server maintenance cost per active user.
-* Native Girionix Pro AI integration directly in the ribbon.
-
-#### ⊞ Quadrant 2: Weaknesses (Internal)
-* Real-time collaborative peer-to-peer editing is early stage.
-* Brand awareness compared to legacy 30-year incumbents.
-
-#### ⊞ Quadrant 3: Opportunities (External)
-* Surge in strict privacy regulations (GDPR, HIPAA, DPDP Act).
-* Corporate demand for permanent one-time license models.
-
-#### ⊞ Quadrant 4: Threats (External)
-* Legacy vendors bundling suites into operating system contracts.
-* Aggressive discounting from enterprise mega-conglomerates.`;
-        } else {
-          response = `# PRESENTATION DECK: ${query.toUpperCase().slice(0, 36)}
-
----
-### Slide 1: Strategic Vision & Direction
-* **Title:** ${query.slice(0, 40)}
-* **Subtitle:** Executive Operational Blueprint
-* **Key Points:**
-  - Defining the target market and key corporate stakeholders.
-  - Establishing baseline objectives and timeline horizons.
-
----
-### Slide 2: Execution Architecture
-* **Title:** Implementation Phases & Timeline
-* **Process Flow:**
-  - 1. Discovery & Needs Assessment (Weeks 1-2)
-  - 2. Solution Engineering & Prototyping (Weeks 3-5)
-  - 3. Production Rollout & Quality Assurance (Weeks 6-8)
-
----
-### Slide 3: Expected Strategic Impact
-* **Title:** Value Creation & Deliverables
-* **Outcomes:**
-  - Enhanced operational agility across technical units.
-  - Measurable cost reduction and streamlined workflows.`;
-        }
-      } else { // pdf / aegis
-        response = `# AEGIS LEGAL & REGULATORY COMPLIANCE AUDIT
-
-### Document Verification: ${query.slice(0, 40)}
-* **Audit Timestamp:** ${new Date().toISOString()}
-* **Sovereignty Classification:** Tier-1 Sovereign (Air-Gapped Local Execution)
-* **Cryptographic Hash (SHA-256):** \`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\`
-
-### Key Clause & Liability Analysis
-| Provision | Legal Standard | Audit Finding | Risk Assessment |
-|---|---|---|---|
-| Indemnification | Mutual Standard | Capped at 12 months fees paid | Low / Acceptable |
-| Governing Law | Local Jurisdiction | Sovereign Commercial Code | Compliant |
-| Data Ownership | Client Proprietary | 100% Intellectual Property Retention | Zero Risk |
-| Termination | 30 Days Notice | Standard reciprocal termination | Standard |
-
-### Auditor Certification:
-The active document satisfies enterprise data sovereignty standards. Zero external telemetry packets were transmitted during this review.`;
-      }
-
-      return response;
+      return girionixEngine.generateSovereignResponse(tool, query, attachment);
     };
 
-    // Execute User Prompt in Sovereign Engine
-    const executePrompt = (promptText, isRegen = false) => {
+    // Execute User Prompt in Girionix Engine
+    const executePrompt = async (promptText, isRegen = false) => {
       const q = promptText.trim();
       if (!q && !attachedFileData) return;
       if (isGenerating) return;
@@ -2639,7 +2369,7 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
           <span class="girionix-typing-dot"></span>
           <span class="girionix-typing-dot"></span>
         </div>
-        <span>✦ Girionix Pro is thinking...</span>
+        <span>✦ Girionix Pro is synthesizing response...</span>
       `;
       chatStream.appendChild(typingEl);
       chatStream.scrollTop = chatStream.scrollHeight;
@@ -2654,21 +2384,38 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
         } catch (_) {}
       }
 
-      // Generate sovereign response after brief realistic delay
-      setTimeout(() => {
+      try {
+        const genResult = await girionixEngine.generate({
+          tool: currentTool,
+          prompt: q,
+          attachment: attachedFileData
+        });
+
         typingEl.remove();
-        const aiResponseText = generateSovereignResponse(currentTool, q, attachedFileData);
-        
+
         const aiMsg = {
           role: 'assistant',
-          text: aiResponseText,
+          text: genResult.text,
+          source: genResult.source,
+          model: genResult.model,
           time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
         };
 
         history.push(aiMsg);
         saveChatHistory(currentTool, history);
-
-        // Clear attachment
+      } catch (err) {
+        console.warn('[Girionix Copilot] Generation fallback:', err);
+        typingEl.remove();
+        const fallbackText = girionixEngine.generateSovereignResponse(currentTool, q, attachedFileData);
+        const aiMsg = {
+          role: 'assistant',
+          text: fallbackText,
+          source: 'sovereign',
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+        };
+        history.push(aiMsg);
+        saveChatHistory(currentTool, history);
+      } finally {
         attachedFileData = null;
         if (fileInput) fileInput.value = '';
         if (chipRow) chipRow.style.display = 'none';
@@ -2676,8 +2423,152 @@ The active document satisfies enterprise data sovereignty standards. Zero extern
         isGenerating = false;
         renderToolChat(currentTool);
         this.showToast(`✦ Generated ${toolMeta[currentTool].name} response!`, 'blue');
-      }, 350);
+      }
     };
+
+    // AI Settings Modal
+    const openAiSettingsModal = () => {
+      document.getElementById('girionix-settings-modal-backdrop')?.remove();
+      const currentKey = girionixEngine.getApiKey();
+      const currentProvider = girionixEngine.getProvider();
+
+      const modalHtml = `
+        <div id="girionix-settings-modal-backdrop" style="position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);padding:16px;">
+          <div style="background:#0f172a;border:1px solid #334155;border-radius:14px;width:480px;max-width:96vw;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.7);display:flex;flex-direction:column;">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #1e293b;background:#090d16;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:18px;">⚙️</span>
+                <div>
+                  <strong style="font-size:14.5px;color:#f8fafc;display:block;">Girionix AI Engine &amp; API Key</strong>
+                  <span style="font-size:11px;color:#94a3b8;">Configure Live Cloud LLM or Sovereign Local Offline</span>
+                </div>
+              </div>
+              <button id="btn-close-ai-settings" style="background:transparent;border:none;color:#64748b;font-size:18px;cursor:pointer;line-height:1;">✕</button>
+            </div>
+            
+            <div style="padding:20px;display:flex;flex-direction:column;gap:16px;max-height:80vh;overflow-y:auto;">
+              <!-- Engine Mode Selector -->
+              <div>
+                <label style="display:block;font-size:11.5px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Select AI Intelligence Engine</label>
+                <select id="ai-engine-provider-select" style="width:100%;background:#1e293b;border:1px solid #334155;color:#f8fafc;border-radius:8px;padding:9px 12px;font-size:13px;outline:none;">
+                  <option value="gemini" ${currentProvider === 'gemini' ? 'selected' : ''}>🌐 Google Gemini API (Recommended: Gemini 2.0 Flash - Free &amp; Fast)</option>
+                  <option value="groq" ${currentProvider === 'groq' ? 'selected' : ''}>⚡ Groq Cloud (Llama 3.3 70B - Ultra High Speed)</option>
+                  <option value="openai" ${currentProvider === 'openai' ? 'selected' : ''}>🤖 OpenAI (GPT-4o-mini)</option>
+                </select>
+              </div>
+
+              <!-- API Key input -->
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                  <label style="font-size:11.5px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;">API Key</label>
+                  <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="font-size:11px;color:#38bdf8;text-decoration:none;">Get Free Gemini Key ↗</a>
+                </div>
+                <input id="ai-engine-key-input" type="password" value="${currentKey}" placeholder="Paste your API key here (e.g. AIzaSy...)" style="width:100%;box-sizing:border-box;background:#090d16;border:1px solid #334155;color:#f8fafc;border-radius:8px;padding:10px 12px;font-size:12.5px;font-family:monospace;outline:none;">
+                <p style="margin:6px 0 0 0;font-size:11px;color:#64748b;line-height:1.4;">
+                  ✨ <strong>Zero-Key Sovereign Guarantee:</strong> Even without an API key, Giri Orbit includes an extensive offline Sovereign Knowledge Base that accurately generates essays (e.g. Mahatma Gandhi, Einstein), sheets, keynote decks, and memos with 100% privacy and zero latency.
+                </p>
+              </div>
+
+              <!-- Connection status box -->
+              <div id="ai-settings-test-result" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;"></div>
+            </div>
+
+            <!-- Footer actions -->
+            <div style="padding:14px 20px;border-top:1px solid #1e293b;background:#090d16;display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <button id="btn-clear-ai-key" style="background:transparent;border:1px solid #ef4444;color:#ef4444;border-radius:6px;padding:8px 12px;font-size:12px;font-weight:600;cursor:pointer;">Clear Key (Reset)</button>
+              <div style="display:flex;gap:8px;">
+                <button id="btn-test-ai-key" style="background:#1e293b;border:1px solid #475569;color:#f8fafc;border-radius:6px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;">Test Connection</button>
+                <button id="btn-save-ai-settings" style="background:#2563eb;border:none;color:#fff;border-radius:6px;padding:8px 18px;font-size:12px;font-weight:700;cursor:pointer;">Save &amp; Apply</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+      const backdrop = document.getElementById('girionix-settings-modal-backdrop');
+      const closeSettingsBtn = document.getElementById('btn-close-ai-settings');
+      const saveBtn = document.getElementById('btn-save-ai-settings');
+      const testBtn = document.getElementById('btn-test-ai-key');
+      const clearBtn = document.getElementById('btn-clear-ai-key');
+      const keyInput = document.getElementById('ai-engine-key-input');
+      const provSelect = document.getElementById('ai-engine-provider-select');
+      const testResult = document.getElementById('ai-settings-test-result');
+
+      closeSettingsBtn?.addEventListener('click', () => backdrop.remove());
+      backdrop?.addEventListener('click', (e) => { if (e.target === backdrop) backdrop.remove(); });
+
+      clearBtn?.addEventListener('click', () => {
+        girionixEngine.clearApiKey();
+        keyInput.value = '';
+        this.showToast('Reset to Sovereign Local AI Engine', 'blue');
+        updateEngineBadge();
+        backdrop.remove();
+      });
+
+      testBtn?.addEventListener('click', async () => {
+        const key = keyInput.value.trim();
+        const prov = provSelect.value;
+        if (!key) {
+          testResult.style.display = 'block';
+          testResult.style.background = 'rgba(239,68,68,0.15)';
+          testResult.style.border = '1px solid #ef4444';
+          testResult.style.color = '#fca5a5';
+          testResult.textContent = 'Please enter an API key to test.';
+          return;
+        }
+        testBtn.disabled = true;
+        testBtn.textContent = 'Testing...';
+        testResult.style.display = 'block';
+        testResult.style.background = 'rgba(56,189,248,0.15)';
+        testResult.style.border = '1px solid #38bdf8';
+        testResult.style.color = '#7dd3fc';
+        testResult.textContent = 'Sending ping to ' + prov + '...';
+
+        try {
+          await girionixEngine.testConnection(key, prov);
+          testResult.style.background = 'rgba(34,197,94,0.15)';
+          testResult.style.border = '1px solid #22c55e';
+          testResult.style.color = '#86efac';
+          testResult.textContent = '✓ Connection successful! Active model is responsive.';
+        } catch (err) {
+          testResult.style.background = 'rgba(239,68,68,0.15)';
+          testResult.style.border = '1px solid #ef4444';
+          testResult.style.color = '#fca5a5';
+          testResult.textContent = '✕ Test failed: ' + (err.message || 'Unknown error');
+        } finally {
+          testBtn.disabled = false;
+          testBtn.textContent = 'Test Connection';
+        }
+      });
+
+      saveBtn?.addEventListener('click', () => {
+        const key = keyInput.value.trim();
+        const prov = provSelect.value;
+        girionixEngine.setApiKey(key, prov);
+        updateEngineBadge();
+        this.showToast('✅ Saved Girionix AI settings!', 'green');
+        backdrop.remove();
+      });
+    };
+
+    const updateEngineBadge = () => {
+      const modeBtn = document.getElementById('btn-girionix-mode-instant');
+      if (modeBtn) {
+        if (girionixEngine.isLiveEnabled()) {
+          modeBtn.innerHTML = '🌐 Live AI';
+          modeBtn.title = 'Live Cloud AI active (' + girionixEngine.getProvider() + ')';
+        } else {
+          modeBtn.innerHTML = '⚡ Sovereign';
+          modeBtn.title = 'Sovereign Local Intelligence (100% private, 0ms latency)';
+        }
+      }
+    };
+    updateEngineBadge();
+
+    // Wire settings button
+    const settingsBtn = document.getElementById('btn-girionix-settings');
+    settingsBtn?.addEventListener('click', openAiSettingsModal);
 
     // Tool Selector Pills Click Handler
     toolPills.forEach(pill => {
