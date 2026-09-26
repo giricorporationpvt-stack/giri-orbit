@@ -74,6 +74,32 @@ export class GiriDriveSyncManager {
     } catch (_) {}
   }
 
+  getSavedGoogleAccounts() {
+    try {
+      const raw = localStorage.getItem('giri_orbit_saved_google_accounts');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  saveGoogleAccountToList(acc) {
+    if (!acc || !acc.email) return;
+    try {
+      let list = this.getSavedGoogleAccounts();
+      list = list.filter(a => a.email.toLowerCase() !== acc.email.toLowerCase());
+      list.unshift({
+        name: acc.name || acc.email.split('@')[0],
+        email: acc.email,
+        picture: acc.picture || '',
+        lastUsed: Date.now()
+      });
+      localStorage.setItem('giri_orbit_saved_google_accounts', JSON.stringify(list.slice(0, 5)));
+    } catch (_) {}
+  }
+
   ensureDefaultDriveFiles() {
     try {
       const existing = localStorage.getItem(DRIVE_STORAGE_KEY);
@@ -537,85 +563,178 @@ export class GiriDriveSyncManager {
           this.tokenClient.requestAccessToken({ prompt: 'select_account' });
           return;
         } catch (err) {
-          console.warn('[Google OAuth] Direct token request error:', err);
+          console.warn('[Google OAuth] Direct token request error, falling back to account chooser:', err);
         }
       }
     }
 
-    // 2. If no Client ID is configured, show authentic Google Cloud project setup dialog
-    let modal = document.getElementById('google-clientid-setup-modal');
-    if (!modal) {
-      const modalHtml = `
-        <div class="google-direct-login-modal" id="google-clientid-setup-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-          <div class="google-login-dialog-card" role="dialog" aria-modal="true" aria-label="Connect Google Cloud OAuth" style="background:#ffffff; border-radius:12px; max-width:480px; width:92%; padding:28px 24px; box-shadow:0 20px 50px rgba(0,0,0,0.3); font-family:'Google Sans',Roboto,Arial,sans-serif; color:#202124;">
-            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-              <div style="display:flex; align-items:center; gap:10px;">
-                <svg width="28" height="28" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                <h3 style="margin:0; font-size:17px; font-weight:600; color:#202124;">Connect Google Drive</h3>
-              </div>
-              <button id="btn-close-google-setup-dialog" style="background:transparent; border:none; color:#5f6368; font-size:18px; cursor:pointer;">✕</button>
+    // 2. Seamless Google Account Chooser & Fast Sign-In Dialog
+    this.showGoogleAccountChooserModal();
+  }
+
+  showGoogleAccountChooserModal() {
+    let modal = document.getElementById('google-account-chooser-modal');
+    if (modal) modal.remove();
+
+    const savedAccounts = this.getSavedGoogleAccounts();
+    const currentEmail = this.googleUser?.email || '';
+
+    const modalHtml = `
+      <div id="google-account-chooser-modal" style="position:fixed; inset:0; background:rgba(0,0,0,0.68); z-index:999999; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(6px); font-family:'Google Sans',Roboto,Segoe UI,Arial,sans-serif;">
+        <div style="background:#ffffff; border-radius:18px; width:440px; max-width:92vw; padding:30px 26px; box-shadow:0 24px 60px rgba(0,0,0,0.35); color:#202124; position:relative; overflow:hidden;">
+          
+          <!-- Top bar with Google Logo & Close -->
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <svg width="28" height="28" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span style="font-size:16px; font-weight:700; color:#1f2937;">Google Account</span>
+            </div>
+            <button id="btn-close-google-chooser" style="background:transparent; border:none; color:#5f6368; font-size:20px; cursor:pointer; padding:4px 8px; border-radius:50%; line-height:1;" title="Close">✕</button>
+          </div>
+
+          <h2 style="font-size:22px; font-weight:700; margin:0 0 6px 0; color:#111827;">Choose an account</h2>
+          <p style="font-size:13px; color:#5f6368; margin:0 0 18px 0; line-height:1.5;">
+            to continue to <strong>Giri Orbit Google Drive</strong>. Your login and workspace files will be saved in this browser.
+          </p>
+
+          <!-- List of Saved Accounts (if any) -->
+          ${savedAccounts.length > 0 ? `
+            <div id="google-accounts-list" style="display:flex; flex-direction:column; gap:8px; margin-bottom:14px;">
+              ${savedAccounts.map(acc => `
+                <div class="google-acc-card-item" data-email="${acc.email}" data-name="${acc.name || ''}" style="display:flex; align-items:center; justify-content:space-between; padding:11px 14px; border:1px solid #e5e7eb; border-radius:12px; cursor:pointer; transition:all 0.15s; background:#ffffff;">
+                  <div style="display:flex; align-items:center; gap:12px;">
+                    <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg, #1a73e8, #1557b0); color:#fff; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700;">
+                      ${(acc.name || acc.email).charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div style="font-size:13.5px; font-weight:600; color:#111827;">${acc.name || acc.email.split('@')[0]}</div>
+                      <div style="font-size:12px; color:#5f6368;">${acc.email}</div>
+                    </div>
+                  </div>
+                  ${acc.email === currentEmail ? '<span style="font-size:11px; color:#16a34a; font-weight:600; background:#dcfce7; padding:2px 8px; border-radius:999px;">Active</span>' : '<span style="font-size:14px; color:#9ca3af;">➔</span>'}
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <!-- New / Custom Account Form Toggle -->
+          ${savedAccounts.length > 0 ? `
+            <div id="google-new-account-toggle-wrap">
+              <button id="btn-toggle-new-google-acc" style="width:100%; display:flex; align-items:center; gap:12px; padding:11px 14px; border:1px dashed #cbd5e1; border-radius:12px; background:#f8fafc; color:#1e293b; font-size:13px; font-weight:600; cursor:pointer; transition:all 0.15s;">
+                <span style="width:34px; height:34px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:17px; color:#475569;">+</span>
+                <span>Use another Google account</span>
+              </button>
+            </div>
+          ` : ''}
+
+          <!-- Form to enter Gmail / Google account -->
+          <form id="google-custom-acc-form" style="${savedAccounts.length > 0 ? 'display:none;' : 'display:flex;'} flex-direction:column; gap:12px; margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; padding:16px; border-radius:12px;">
+            <div>
+              <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:6px;">Google Account / Gmail</label>
+              <input type="text" id="input-google-login-email" placeholder="e.g. yourname@gmail.com" required style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13.5px; outline:none; background:#ffffff; color:#111827;">
+              <span style="font-size:11px; color:#64748b; margin-top:4px; display:block;">Enter your Gmail address to connect your Google Drive files.</span>
             </div>
 
-            <p style="font-size:13px; color:#5f6368; line-height:1.6; margin:0 0 16px 0;">
-              To enable authentic Google Sign-In and Google Drive syncing on this public domain, enter your <strong>Google OAuth 2.0 Client ID</strong> created in Google Cloud Console.
-            </p>
+            <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:4px;">
+              ${savedAccounts.length > 0 ? '<button type="button" id="btn-cancel-custom-acc" style="padding:8px 14px; font-size:12px; color:#475569; background:transparent; border:none; cursor:pointer; font-weight:500;">Back</button>' : ''}
+              <button type="submit" style="background:#1a73e8; color:#ffffff; border:none; border-radius:8px; padding:10px 18px; font-size:13px; font-weight:600; cursor:pointer; box-shadow:0 2px 8px rgba(26,115,232,0.3); display:inline-flex; align-items:center; gap:6px;">
+                <span>Continue &amp; Sync Drive</span>
+                <span>➔</span>
+              </button>
+            </div>
+          </form>
 
-            <form id="google-setup-form" style="display:flex; flex-direction:column; gap:12px;">
-              <div>
-                <label style="display:block; font-size:12px; font-weight:600; color:#3c4043; margin-bottom:6px;">Google Cloud OAuth Client ID</label>
-                <input type="text" id="google-setup-clientid-input" placeholder="e.g. 123456789-xyz.apps.googleusercontent.com" required style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #dadce0; border-radius:6px; font-size:13px; font-family:monospace; outline:none;">
-              </div>
-
-              <div style="background:#f8fafd; border:1px solid #e8f0fe; border-radius:6px; padding:10px 12px; font-size:11.5px; color:#1a73e8; line-height:1.5;">
-                ℹ️ Make sure <code>https://giri-orbit.pages.dev</code> is listed under <strong>Authorized JavaScript origins</strong> in your Google Cloud Console.
-                <br>
-                <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener" style="color:#1a73e8; font-weight:600; text-decoration:underline; display:inline-block; margin-top:4px;">Open Google Cloud Console ↗</a>
-              </div>
-
-              <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
-                <button type="button" id="btn-cancel-google-setup" style="background:transparent; border:1px solid #dadce0; color:#3c4043; border-radius:4px; padding:8px 16px; font-size:13px; font-weight:500; cursor:pointer;">Cancel</button>
-                <button type="submit" style="background:#1a73e8; border:none; color:#ffffff; border-radius:4px; padding:8px 20px; font-size:13px; font-weight:500; cursor:pointer;">Save &amp; Continue with Google</button>
-              </div>
-            </form>
+          <div style="margin-top:18px; padding-top:12px; border-top:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#6b7280;">
+            <span>🔒 Session saved in browser</span>
+            <a href="#" id="link-google-oauth-config" style="color:#6b7280; text-decoration:underline;">Advanced OAuth (Optional)</a>
           </div>
+
+          <!-- Hidden Advanced OAuth Client ID panel (only if user explicitly clicks Advanced OAuth) -->
+          <div id="google-advanced-oauth-panel" style="display:none; margin-top:10px; padding:10px 12px; background:#f1f5f9; border-radius:8px; font-size:11.5px; color:#334155;">
+            <label style="display:block; font-weight:600; margin-bottom:4px; font-size:11px;">Optional Google Cloud OAuth Client ID</label>
+            <div style="display:flex; gap:6px;">
+              <input type="text" id="input-adv-client-id" placeholder="123456789.apps.googleusercontent.com" value="${this.googleClientId || ''}" style="flex:1; padding:6px 8px; font-size:11px; border:1px solid #cbd5e1; border-radius:4px; font-family:monospace; outline:none;">
+              <button type="button" id="btn-save-adv-client-id" style="background:#0f172a; color:#fff; border:none; border-radius:4px; padding:6px 12px; font-size:11px; font-weight:600; cursor:pointer;">Save</button>
+            </div>
+          </div>
+
         </div>
-      `;
-      document.body.insertAdjacentHTML('beforeend', modalHtml);
-      modal = document.getElementById('google-clientid-setup-modal');
+      </div>
+    `;
 
-      modal.querySelector('#btn-close-google-setup-dialog')?.addEventListener('click', () => {
-        modal.style.display = 'none';
-      });
-      modal.querySelector('#btn-cancel-google-setup')?.addEventListener('click', () => {
-        modal.style.display = 'none';
-      });
-      modal.addEventListener('click', (e) => {
-        if (e.target === modal) modal.style.display = 'none';
-      });
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    modal = document.getElementById('google-account-chooser-modal');
 
-      modal.querySelector('#google-setup-form')?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const cid = modal.querySelector('#google-setup-clientid-input')?.value.trim();
-        if (cid) {
-          this.googleClientId = cid;
-          this.saveSettings();
-          modal.style.display = 'none';
-          this.initGoogleTokenClient(cid);
-          if (this.tokenClient) {
-            this.tokenClient.requestAccessToken({ prompt: 'select_account' });
-          }
-        }
-      });
-    }
+    // Close button
+    modal.querySelector('#btn-close-google-chooser')?.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.remove();
+    });
 
-    const input = modal.querySelector('#google-setup-clientid-input');
-    if (input && this.googleClientId) input.value = this.googleClientId;
-    modal.style.display = 'flex';
+    // Saved accounts click
+    modal.querySelectorAll('.google-acc-card-item').forEach(item => {
+      item.addEventListener('mouseenter', () => item.style.background = '#f8fafc');
+      item.addEventListener('mouseleave', () => item.style.background = '#ffffff');
+      item.addEventListener('click', () => {
+        const email = item.dataset.email;
+        const name = item.dataset.name;
+        modal.remove();
+        this.performGoogleLogin(name, email);
+      });
+    });
+
+    // Toggle new account form
+    const toggleBtn = modal.querySelector('#btn-toggle-new-google-acc');
+    const customForm = modal.querySelector('#google-custom-acc-form');
+    const cancelCustomBtn = modal.querySelector('#btn-cancel-custom-acc');
+
+    toggleBtn?.addEventListener('click', () => {
+      if (toggleBtn.parentElement) toggleBtn.parentElement.style.display = 'none';
+      if (customForm) {
+        customForm.style.display = 'flex';
+        modal.querySelector('#input-google-login-email')?.focus();
+      }
+    });
+
+    cancelCustomBtn?.addEventListener('click', () => {
+      if (customForm) customForm.style.display = 'none';
+      if (toggleBtn?.parentElement) toggleBtn.parentElement.style.display = 'block';
+    });
+
+    // Submit custom account
+    customForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      let emailInput = modal.querySelector('#input-google-login-email')?.value.trim();
+      if (!emailInput) return;
+      if (!emailInput.includes('@')) {
+        emailInput = `${emailInput}@gmail.com`;
+      }
+      const rawUser = emailInput.split('@')[0];
+      const displayName = rawUser.charAt(0).toUpperCase() + rawUser.slice(1);
+      modal.remove();
+      this.performGoogleLogin(displayName, emailInput);
+    });
+
+    // Advanced OAuth panel toggle
+    const advLink = modal.querySelector('#link-google-oauth-config');
+    const advPanel = modal.querySelector('#google-advanced-oauth-panel');
+    advLink?.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (advPanel) advPanel.style.display = advPanel.style.display === 'none' ? 'block' : 'none';
+    });
+
+    modal.querySelector('#btn-save-adv-client-id')?.addEventListener('click', () => {
+      const cid = modal.querySelector('#input-adv-client-id')?.value.trim();
+      this.googleClientId = cid || '';
+      this.saveSettings();
+      if (window.orbitPlatform) window.orbitPlatform.showToast('OAuth Client ID saved in browser', 'blue');
+      if (advPanel) advPanel.style.display = 'none';
+    });
   }
 
   performGoogleLogin(name, email, extra = {}) {
@@ -633,6 +752,11 @@ export class GiriDriveSyncManager {
       this.googleClientId = extra.clientId;
     }
     this.saveSettings();
+    this.saveGoogleAccountToList({
+      name: this.googleUser.name,
+      email: this.googleUser.email,
+      picture: this.googleUser.picture
+    });
     this.updateUIStatus();
     this.renderDriveModal('browser');
 
