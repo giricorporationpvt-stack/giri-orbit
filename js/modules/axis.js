@@ -2011,6 +2011,35 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
   const formulaInput = container.querySelector('#axis-formula-input');
   const gridTable = container.querySelector('#axis-grid-table');
   const gridViewport = container.querySelector('#axis-grid-viewport');
+
+  // Floating Excel-grade Autofill Handle (Placed in viewport, never injected inside editable cells!)
+  let autofillHandle = gridViewport ? gridViewport.querySelector('#axis-autofill-handle') : null;
+  if (!autofillHandle && gridViewport) {
+    autofillHandle = document.createElement('div');
+    autofillHandle.id = 'axis-autofill-handle';
+    autofillHandle.className = 'axis-autofill-handle';
+    autofillHandle.title = 'Drag to autofill range';
+    autofillHandle.setAttribute('contenteditable', 'false');
+    autofillHandle.style.cssText = 'display:none; position:absolute; width:7px; height:7px; background:#000000; border:1px solid #ffffff; cursor:crosshair; z-index:50; pointer-events:auto; box-sizing:border-box; user-select:none;';
+    gridViewport.appendChild(autofillHandle);
+    attachAutofillDragHandler(autofillHandle);
+  }
+
+  function positionAutofillHandle(targetCell) {
+    if (!targetCell || !autofillHandle || targetCell.offsetParent === null) {
+      if (autofillHandle) autofillHandle.style.display = 'none';
+      return;
+    }
+    const top = targetCell.offsetTop + targetCell.offsetHeight - 4;
+    const left = targetCell.offsetLeft + targetCell.offsetWidth - 4;
+    autofillHandle.style.top = `${top}px`;
+    autofillHandle.style.left = `${left}px`;
+    autofillHandle.style.display = 'block';
+  }
+
+  function hideAutofillHandle() {
+    if (autofillHandle) autofillHandle.style.display = 'none';
+  }
   const chartDrawer = container.querySelector('#axis-chart-drawer');
   const chartBarsWrap = container.querySelector('#chart-svg-bars');
   const chartTypePicker = container.querySelector('#axis-chart-type-picker');
@@ -2512,8 +2541,11 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     }
   }
 
-  if (!sheetsData['Sheet1'] || Array.isArray(sheetsData['Sheet1'])) {
-    sheetsData['Sheet1'] = {};
+  if (!sheetsData || typeof sheetsData !== 'object' || Object.keys(sheetsData).length === 0) {
+    sheetsData = { Sheet1: getInitialSeedData() };
+  } else if (!sheetsData['Sheet1'] && !sheetsData[activeSheet]) {
+    const firstKey = Object.keys(sheetsData)[0];
+    if (firstKey) activeSheet = firstKey;
   }
 
   // Ribbon Tab Switching
@@ -2611,6 +2643,8 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       cell.className = 'axis-cell';
       cell.removeAttribute('style');
     });
+    gridTable.querySelectorAll('.axis-autofill-handle').forEach(h => h.remove());
+    hideAutofillHandle();
     rawFormulas.clear();
 
     let rawItems = sheetsData[sheetName] || [];
@@ -2681,24 +2715,14 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
 
   function getCellDirectText(cell) {
     if (!cell) return '';
-    let text = '';
-    for (let i = 0; i < cell.childNodes.length; i++) {
-      const node = cell.childNodes[i];
-      if (node.nodeType === Node.TEXT_NODE) {
-        text += node.textContent;
-      } else if (node.nodeType === Node.ELEMENT_NODE && !node.classList.contains('axis-autofill-handle')) {
-        text += node.textContent;
-      }
-    }
-    return text.trim();
+    const clone = cell.cloneNode(true);
+    clone.querySelectorAll('.axis-autofill-handle').forEach(h => h.remove());
+    return (clone.textContent || '').trim();
   }
 
   function setCellDirectText(cell, val) {
     if (!cell) return;
-    const handle = cell.querySelector('.axis-autofill-handle');
-    if (handle) handle.remove();
     cell.textContent = val;
-    if (handle) cell.appendChild(handle);
   }
 
   let _saveSheetTimeout = null;
@@ -2749,7 +2773,10 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     }
 
     activeCell = cell;
-    if (!activeCell) return;
+    if (!activeCell) {
+      hideAutofillHandle();
+      return;
+    }
 
     const cellId = activeCell.dataset.cellId;
 
@@ -2783,16 +2810,14 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       if (rowTd) {
         rowTd.classList.add('active-row-header', 'in-row-selection');
       }
+      if (!selectedRange || (selectedRange.minCol === selectedRange.maxCol && selectedRange.minRow === selectedRange.maxRow)) {
+        selectedRange = { minCol: coord.col, maxCol: coord.col, minRow: coord.row, maxRow: coord.row };
+      }
     }
 
-    // Attach autofill handle to active cell if not multi-range
+    // Position floating autofill handle at bottom-right of active cell
     if (!selectedRange || (selectedRange.minCol === selectedRange.maxCol && selectedRange.minRow === selectedRange.maxRow)) {
-      gridTable.querySelectorAll('.axis-autofill-handle').forEach(h => h.remove());
-      const handle = document.createElement('div');
-      handle.className = 'axis-autofill-handle';
-      handle.title = 'Drag to autofill range';
-      attachAutofillDragHandler(handle);
-      activeCell.appendChild(handle);
+      positionAutofillHandle(activeCell);
     }
 
     const raw = rawFormulas.get(cellId) || getCellDirectText(activeCell);
@@ -3387,11 +3412,25 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     gridTable.querySelectorAll('.in-col-selection').forEach(th => th.classList.remove('in-col-selection'));
     gridTable.querySelectorAll('.in-row-selection').forEach(td => td.classList.remove('in-row-selection'));
     selectedRange = null;
+    if (activeCell) {
+      positionAutofillHandle(activeCell);
+    } else {
+      hideAutofillHandle();
+    }
   }
 
   function updateRangeSelection(startCoord, endCoord) {
-    clearRangeSelection();
-    if (!startCoord || !endCoord) return;
+    gridTable.querySelectorAll('.in-selection-range, .range-top, .range-bottom, .range-left, .range-right').forEach(c => {
+      c.classList.remove('in-selection-range', 'range-top', 'range-bottom', 'range-left', 'range-right');
+    });
+    gridTable.querySelectorAll('.in-col-selection').forEach(th => th.classList.remove('in-col-selection'));
+    gridTable.querySelectorAll('.in-row-selection').forEach(td => td.classList.remove('in-row-selection'));
+    if (!startCoord || !endCoord) {
+      selectedRange = null;
+      if (activeCell) positionAutofillHandle(activeCell);
+      else hideAutofillHandle();
+      return;
+    }
 
     const minCol = Math.min(startCoord.col, endCoord.col);
     const maxCol = Math.max(startCoord.col, endCoord.col);
@@ -3422,15 +3461,11 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       }
     }
 
-    // Place autofill handle on bottom-right cell
+    // Position floating autofill handle on bottom-right cell
     const brCol = indexToColName(maxCol);
     const brCell = gridTable.querySelector(`[data-cell-id="${brCol}${maxRow}"]`);
-    if (brCell && !brCell.querySelector('.axis-autofill-handle')) {
-      const handle = document.createElement('div');
-      handle.className = 'axis-autofill-handle';
-      handle.title = 'Drag to autofill range';
-      attachAutofillDragHandler(handle);
-      brCell.appendChild(handle);
+    if (brCell) {
+      positionAutofillHandle(brCell);
     }
 
     // Column & Row Header Highlights
@@ -5506,6 +5541,13 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     }
   });
 
+  gridViewport?.addEventListener('scroll', () => {
+    const target = selectedRange
+      ? gridTable.querySelector(`[data-cell-id="${indexToColName(selectedRange.maxCol)}${selectedRange.maxRow}"]`)
+      : activeCell;
+    if (target) positionAutofillHandle(target);
+  });
+
   // Formula Input Sync & Live Save
   formulaInput.addEventListener('input', () => {
     if (!activeCell) return;
@@ -6328,8 +6370,8 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       } else {
         if (nextEl) {
           dragAnchor = { col: targetCol, row: targetRow };
-          setActiveCell(nextEl);
           clearRangeSelection();
+          setActiveCell(nextEl);
         }
       }
     }

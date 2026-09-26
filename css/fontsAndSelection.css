@@ -288,14 +288,14 @@
 /* Autofill square handle at bottom-right of active selection */
 .axis-autofill-handle {
   position: absolute;
-  bottom: -4px;
-  right: -4px;
   width: 7px;
   height: 7px;
-  background: #107c41;
-  border: 1px solid #ffffff;
-  cursor: crosshair;
-  z-index: 50;
+  background: #000000 !important;
+  border: 1px solid #ffffff !important;
+  cursor: crosshair !important;
+  z-index: 50 !important;
+  box-sizing: border-box !important;
+  pointer-events: auto !important;
 }
 
 .axis-col-header.in-col-selection {
