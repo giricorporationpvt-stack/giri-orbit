@@ -327,28 +327,100 @@
     <!-- Draggable Resize Handle -->
     <div class="girionix-resize-handle" id="girionix-resize-handle" title="Drag to adjust assistant width"></div>
 
-    <div class="girionix-drawer-header" style="padding:10px 14px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #27272a; background:#11141c;">
+    <!-- Header Tier 1: Brand, Title, New Chat & Controls -->
+    <div class="girionix-drawer-header" style="padding:10px 14px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.08); background:#0c0f18;">
       <div class="girionix-drawer-title-wrap" style="display:flex; align-items:center; gap:8px;">
-        <div class="girionix-drawer-logo" style="display:flex; align-items:center; justify-content:center; background:transparent; box-shadow:none; width:auto; height:auto;">
-          <img src="assets/giri-logo-symbol.png" alt="Giri Orbit Logo" style="width:26px; height:26px; object-fit:contain;">
+        <div class="girionix-drawer-logo" style="display:flex; align-items:center; justify-content:center; background:transparent; width:auto; height:auto;">
+          <img src="assets/giri-logo-symbol.png" alt="Giri Orbit Logo" style="width:24px; height:24px; object-fit:contain;">
         </div>
-        <div style="display:flex; align-items:center; gap:6px;">
+        <div style="display:flex; align-items:center; gap:5px;">
           <span style="font-size:13.5px; font-weight:800; color:#f1f5f9; letter-spacing:-0.2px;">Girionix AI</span>
-          <span style="background:rgba(168,85,247,0.18); border:1px solid rgba(168,85,247,0.4); color:#c084fc; font-size:10px; font-weight:800; padding:1.5px 6px; border-radius:10px; letter-spacing:0.5px;">PRO</span>
+          <span style="background:rgba(168,85,247,0.18); border:1px solid rgba(168,85,247,0.4); color:#c084fc; font-size:9.5px; font-weight:800; padding:1.5px 5px; border-radius:10px; letter-spacing:0.5px;">PRO</span>
         </div>
-        <span id="girionix-tool-lock-badge" style="background:rgba(37,99,235,0.15); border:1px solid rgba(37,99,235,0.35); color:#60a5fa; font-size:11px; font-weight:700; padding:2px 8px; border-radius:12px; margin-left:2px;">Drift Copilot</span>
+        <!-- Active Copilot Indicator matching user screenshot -->
+        <span id="girionix-copilot-title-badge" style="font-size:11px; font-weight:700; color:#38bdf8; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:2px 8px; white-space:nowrap;">✦ Giri Drift Co-Pilot</span>
       </div>
+
       <div class="girionix-drawer-actions" style="display:flex; align-items:center; gap:6px;">
+        <!-- New Chat Button (Per active tool) -->
+        <button id="btn-girionix-new-chat" class="girionix-new-chat-btn" title="Start a fresh AI conversation for this tool" style="display:flex; align-items:center; gap:5px; background:linear-gradient(135deg, rgba(37,99,235,0.25), rgba(6,182,212,0.25)); border:1px solid rgba(56,189,248,0.4); color:#38bdf8; font-size:11.5px; font-weight:700; padding:4px 10px; border-radius:6px; cursor:pointer; transition:all 0.15s ease;">
+          <span style="font-size:13px; font-weight:900; line-height:1;">+</span>
+          <span>New Chat</span>
+        </button>
+        <!-- Mode Tabs: Instant Copilot vs Cloud Web -->
+        <div class="girionix-mode-pill-toggle" style="display:flex; background:#18181b; border:1px solid #27272a; border-radius:6px; padding:2px;">
+          <button id="btn-girionix-mode-instant" class="girionix-mode-btn active" title="Instant Local Sovereign AI (100% Guaranteed Response)" style="background:#2563eb; color:#fff; border:none; border-radius:4px; font-size:10px; font-weight:700; padding:2px 6px; cursor:pointer;">⚡ Instant</button>
+          <button id="btn-girionix-mode-cloud" class="girionix-mode-btn" title="Cloud Studio Web App" style="background:transparent; color:#94a3b8; border:none; border-radius:4px; font-size:10px; font-weight:600; padding:2px 6px; cursor:pointer;">🌐 Cloud</button>
+        </div>
         <button class="girionix-icon-btn" id="btn-girionix-expand" title="Adjust Width (Compact / Wide / Full)" style="background:transparent; border:1px solid #27272a; color:#94a3b8; border-radius:6px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px;">⛶</button>
         <button class="girionix-icon-btn" id="btn-girionix-drawer-close" title="Close Copilot (ESC)" style="background:transparent; border:1px solid #27272a; color:#94a3b8; border-radius:6px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px;">✕</button>
       </div>
     </div>
 
-    <!-- Direct Full-Height Copilot Workspace with Auto-Selected Office Tool -->
-    <div class="girionix-drawer-content" style="flex:1; display:flex; flex-direction:column; min-height:0; position:relative; overflow:hidden;">
-      <div class="girionix-iframe-wrap" style="flex:1; width:100%; height:100%; position:relative;">
-        <iframe id="girionix-drawer-iframe" src="about:blank" data-src="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;embed=true&amp;mode=office&amp;model=girionix-pro&amp;name=Orbit%20User" title="Girionix AI Office Copilot" allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen" style="width:100%; height:100%; border:none; display:block;"></iframe>
+    <!-- Header Tier 2: Tool Switcher Pills Bar (Exact visual match to user screenshot Image 1) -->
+    <div class="girionix-tool-pills-bar" style="display:flex; align-items:center; gap:8px; padding:8px 14px; background:#080b13; border-bottom:1px solid rgba(255,255,255,0.06); overflow-x:auto;">
+      <button class="girionix-tool-pill active" data-tool="drift">Giri Drift</button>
+      <button class="girionix-tool-pill" data-tool="axis">Giri Axis</button>
+      <button class="girionix-tool-pill" data-tool="kinetic">Giri Kinetic</button>
+      <button class="girionix-tool-pill" data-tool="pdf">Giri Aegis</button>
+      <div style="margin-left:auto; font-size:10px; color:#64748b; font-family:monospace; display:flex; align-items:center; gap:5px; white-space:nowrap;">
+        <span class="live-dot" style="width:6px; height:6px; border-radius:50%; background:#22c55e; display:inline-block;"></span>
+        <span id="girionix-live-time">06:47 AM</span>
+        <span style="background:rgba(168,85,247,0.15); color:#c084fc; border:1px solid rgba(168,85,247,0.3); border-radius:4px; padding:1px 5px; font-size:9.5px; font-weight:700;">Auto-Identified</span>
       </div>
+    </div>
+
+    <!-- Copilot Body: Panes Container -->
+    <div class="girionix-drawer-content" style="flex:1; display:flex; flex-direction:column; min-height:0; position:relative; overflow:hidden;">
+      
+      <!-- PANE 1: ⚡ SOVEREIGN INSTANT COPILOT (Guaranteed Response, 0ms Delay, 100% Reliable) -->
+      <div id="girionix-pane-sovereign" class="girionix-copilot-pane active" style="flex:1; display:flex; flex-direction:column; min-height:0; position:relative; background:#070911;">
+        <!-- Chat Message Stream -->
+        <div id="girionix-chat-stream" class="girionix-chat-stream" style="flex:1; overflow-y:auto; padding:16px 14px; display:flex; flex-direction:column; gap:14px;">
+          <!-- Dynamically populated or Welcome Hero -->
+        </div>
+
+        <!-- Suggestion Chips Bar -->
+        <div id="girionix-suggestion-chips" class="girionix-suggestion-chips" style="display:flex; gap:6px; padding:6px 14px; overflow-x:auto; background:#090d16; border-top:1px solid rgba(255,255,255,0.05); scrollbar-width:none;">
+          <!-- Dynamically injected based on active tool -->
+        </div>
+
+        <!-- Input Compose Box -->
+        <div class="girionix-chat-compose" style="padding:10px 14px 14px; background:#0c101c; border-top:1px solid rgba(255,255,255,0.08); display:flex; flex-direction:column; gap:8px;">
+          <div id="girionix-attached-chip-row" class="girionix-attached-chip-row" style="display:none; margin:0 0 6px 0;">
+            <span id="girionix-attached-chip-label">📄 document.txt</span>
+            <button id="btn-girionix-remove-chip" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:12px; margin-left:auto;">✕</button>
+          </div>
+          <div style="display:flex; gap:8px; align-items:flex-end;">
+            <input type="file" id="girionix-file-input" accept=".txt,.md,.json,.csv,.tsv,.html,.doc,.docx" style="display:none;">
+            <button id="btn-girionix-attach-file" class="girionix-attach-btn" title="Attach file context (Ctrl+U)">📎</button>
+            <div style="flex:1; position:relative; display:flex; align-items:center;">
+              <textarea id="girionix-drawer-prompt-input" rows="1" placeholder="Ask Girionix AI for formulas, tables, slides, or prose..." style="width:100%; max-height:120px; background:#111624; border:1px solid rgba(56,189,248,0.25); border-radius:8px; padding:9px 38px 9px 12px; color:#f8fafc; font-size:12.5px; font-family:inherit; resize:none; outline:none; line-height:1.45;"></textarea>
+              <button id="btn-girionix-voice-dictate" title="Voice Dictation" style="position:absolute; right:8px; background:transparent; border:none; color:#64748b; font-size:15px; cursor:pointer; padding:4px;">🎙️</button>
+            </div>
+            <button id="btn-girionix-drawer-send" title="Send message (Enter)" style="background:linear-gradient(135deg, #06b6d4, #2563eb); border:none; color:#fff; width:36px; height:36px; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; flex-shrink:0; transition:all 0.15s ease;">➤</button>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:10px; color:#64748b;">
+            <span>Giri Orbit Sovereign Intelligence • Pro 10.3</span>
+            <span>Shift+Enter for new line</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANE 2: 🌐 CLOUD STUDIO (Remote Iframe Web App) -->
+      <div id="girionix-pane-cloud" class="girionix-copilot-pane" style="flex:1; display:none; flex-direction:column; min-height:0; position:relative; background:#07080e;">
+        <div class="girionix-frame-controls" style="display:flex; align-items:center; justify-content:space-between; padding:6px 12px; background:#05070e; border-bottom:1px solid rgba(255,255,255,0.06); font-size:11px; color:#64748b;">
+          <span class="girionix-frame-url" style="color:#38bdf8;">girionix-ai.pages.dev</span>
+          <div style="display:flex; gap:6px;">
+            <button class="girionix-mini-btn" id="btn-girionix-frame-reload">↻ Reload</button>
+            <a class="girionix-mini-btn" id="btn-girionix-popout-link" href="https://girionix-ai.pages.dev" target="_blank" rel="noopener">↗ Popout</a>
+          </div>
+        </div>
+        <div class="girionix-iframe-wrap" style="flex:1; width:100%; height:100%; position:relative;">
+          <iframe id="girionix-drawer-iframe" src="about:blank" data-src="https://girionix-ai.pages.dev/?direct=chat&amp;app=true&amp;embed=true&amp;mode=office&amp;model=girionix-pro&amp;name=Orbit%20User" title="Girionix AI Cloud Studio" allow="clipboard-read; clipboard-write; microphone; camera; display-capture; fullscreen" style="width:100%; height:100%; border:none; display:block;"></iframe>
+        </div>
+      </div>
+
     </div>
   </aside>
 
@@ -356,7 +428,7 @@
   <div class="orbit-toast-wrap" id="orbit-toast-wrap" aria-live="polite"></div>
 
   <!-- Main Orchestrator -->
-  <script type="module" src="js/app.js?v=10.2"></script>
+  <script type="module" src="js/app.js?v=10.3"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

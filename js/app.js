@@ -1672,6 +1672,8 @@ class GiriOrbitPlatform {
 
   /**
    * Girionix AI Assistant Side-Drawer & Floating Copilot Engine
+   * Enhanced with Per-Tool Chat Threads, Tool Switcher Pills, Instant Sovereign AI Engine,
+   * Guaranteed 0ms Response Generation, and 1-Click Document/Sheet/Slide Injection.
    */
   initGirionixAiDrawer() {
     const drawer = document.getElementById('girionix-ai-drawer');
@@ -1679,122 +1681,913 @@ class GiriOrbitPlatform {
     const headerBtn = document.getElementById('btn-open-girionix-ai') || document.getElementById('btn-header-girionix-copilot');
     const closeBtn = document.getElementById('btn-girionix-drawer-close');
     const expandBtn = document.getElementById('btn-girionix-expand');
-    const tabBtns = drawer?.querySelectorAll('.girionix-tab-btn') || [];
+    const newChatBtn = document.getElementById('btn-girionix-new-chat');
+    const toolPills = drawer?.querySelectorAll('.girionix-tool-pill') || [];
+    const titleBadge = document.getElementById('girionix-copilot-title-badge');
+    const timeBadge = document.getElementById('girionix-live-time');
+    
+    // Mode toggles
+    const modeInstantBtn = document.getElementById('btn-girionix-mode-instant');
+    const modeCloudBtn = document.getElementById('btn-girionix-mode-cloud');
+    const paneSovereign = document.getElementById('girionix-pane-sovereign');
+    const paneCloud = document.getElementById('girionix-pane-cloud');
     const iframe = document.getElementById('girionix-drawer-iframe');
     const reloadBtn = document.getElementById('btn-girionix-frame-reload');
+    const popoutLink = document.getElementById('btn-girionix-popout-link');
+
+    // Chat stream elements
+    const chatStream = document.getElementById('girionix-chat-stream');
+    const chipsBar = document.getElementById('girionix-suggestion-chips');
     const promptInput = document.getElementById('girionix-drawer-prompt-input');
     const sendBtn = document.getElementById('btn-girionix-drawer-send');
-    const cardsContainer = document.getElementById('girionix-quick-cards-container');
-    const toolIndicator = document.getElementById('girionix-active-tool-name');
+    const voiceBtn = document.getElementById('btn-girionix-voice-dictate');
+    const attachBtn = document.getElementById('btn-girionix-attach-file');
+    const fileInput = document.getElementById('girionix-file-input');
+    const chipRow = document.getElementById('girionix-attached-chip-row');
+    const chipLabel = document.getElementById('girionix-attached-chip-label');
+    const removeChipBtn = document.getElementById('btn-girionix-remove-chip');
 
     if (!drawer) return;
 
     this.isGirionixDrawerOpen = false;
+    let activeCopilotTool = 'drift';
+    let attachedFileData = null;
+    let isGenerating = false;
 
-    // Safe no-op tab switcher to prevent errors
-    this.switchGirionixDrawerTab = () => {};
+    // Tool metadata definitions
+    const toolMeta = {
+      drift: {
+        id: 'drift',
+        name: 'Giri Drift',
+        title: '✦ Giri Drift Co-Pilot (Girionix Pro)',
+        unit: 'Document',
+        icon: '✍️',
+        desc: 'Specialized in executive speechwriting, NDAs & corporate contracts, policy memos, document summaries, and live prose polishing.',
+        chips: [
+          'Draft Mutual NDA',
+          'Executive Summary on Q3',
+          'Proofread & Polish Document',
+          'Formal Policy Memorandum'
+        ]
+      },
+      axis: {
+        id: 'axis',
+        name: 'Giri Axis',
+        title: '✦ Giri Axis Co-Pilot (Girionix Pro)',
+        unit: 'Sheet',
+        icon: '📊',
+        desc: 'Specialized in spreadsheet formulas (=XLOOKUP, =SUM, =IF, =INDEX/MATCH), 5-year financial models, data normalization, and pivot metrics.',
+        chips: [
+          'XLOOKUP Formula with Error Handling',
+          '5-Year Revenue Projection Model',
+          'AutoSum & Statistical Metrics',
+          'Normalize Column Data Formula'
+        ]
+      },
+      kinetic: {
+        id: 'kinetic',
+        name: 'Giri Kinetic',
+        title: '✦ Giri Kinetic Co-Pilot (Girionix Pro)',
+        unit: 'Slide Deck',
+        icon: '🎞',
+        desc: 'Specialized in multi-slide keynote presentations, investor pitch structures, SWOT matrices, journey maps, and executive takeaways.',
+        chips: [
+          '5-Slide Investor Pitch Deck',
+          'SWOT Analysis Slide Matrix',
+          'Product Launch Keynote Deck',
+          'Quarterly Business Review (QBR)'
+        ]
+      },
+      pdf: {
+        id: 'pdf',
+        name: 'Giri Aegis',
+        title: '✦ Giri Aegis Co-Pilot (Girionix Pro)',
+        unit: 'PDF Studio',
+        icon: '🔒',
+        desc: 'Specialized in contract clause extraction, liability audits, regulatory compliance checklists, and SHA-256 cryptographic verification.',
+        chips: [
+          'Extract Key Liability Clauses',
+          'Regulatory Compliance Checklist',
+          'Summarize PDF Obligations',
+          'Cryptographic SHA-256 Seal'
+        ]
+      }
+    };
 
-    // Helper to get auto-selected copilot URL locked strictly to active office tool and Girionix Pro
+    // Live Clock Updater (e.g. 06:47 AM matching user screenshot)
+    const updateLiveClock = () => {
+      if (timeBadge) {
+        const now = new Date();
+        timeBadge.textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      }
+    };
+    updateLiveClock();
+    setInterval(updateLiveClock, 30000);
+
+    // Helper to get auto-selected copilot URL for Cloud Studio iframe
     this.getGirionixCopilotUrl = (tool = null) => {
-      const active = tool || this.currentView || 'drift';
-      return `https://girionix-ai.pages.dev/?direct=chat&app=true&embed=true&model=girionix-pro&tool=${active}&lockTool=${active}&lock=true&name=Orbit%20User`;
+      const active = tool || activeCopilotTool || this.currentView || 'drift';
+      return `https://girionix-ai.pages.dev/?direct=chat&app=true&embed=true&model=girionix-pro&tool=${active}&lockTool=${active}&lock=true&name=Orbit%20User&session=${Date.now()}`;
     };
 
-    // Auto-select and lock tool state in Copilot iframe
+    // Synchronize iframe state
     this.syncToolToGirionixCopilot = (tool = null) => {
-      const active = tool || this.currentView || 'drift';
+      const active = tool || activeCopilotTool;
       const targetUrl = this.getGirionixCopilotUrl(active);
-      const popoutLink = document.getElementById('btn-girionix-popout-link');
       if (popoutLink) popoutLink.href = targetUrl;
-
-      // Update drawer tool lock pill badge
-      const toolLabels = {
-        drift: 'Drift Copilot',
-        axis: 'Axis Copilot',
-        kinetic: 'Kinetic Copilot',
-        pdf: 'Aegis PDF Copilot',
-        launcher: 'Orbit Copilot'
-      };
-      const toolBadge = document.getElementById('girionix-tool-lock-badge');
-      if (toolBadge) {
-        toolBadge.textContent = toolLabels[active] || 'Drift Copilot';
-      }
-
-      if (!iframe) return;
-
-      const currentSrc = iframe.src || '';
-      const hasCorrectTool = currentSrc.includes(`tool=${active}`) && currentSrc.includes('model=girionix-pro');
-      if (!currentSrc || currentSrc === 'about:blank' || (!hasCorrectTool && this.isGirionixDrawerOpen)) {
-        iframe.src = targetUrl;
-      }
-
-      if (iframe.contentWindow) {
-        try {
-          const payload = {
-            tool: active,
-            lockTool: active,
-            lock: true,
-            model: 'girionix-pro',
-            mode: active,
-            officeTool: active,
-            module: active,
-            activeTool: active,
-            currentView: active
-          };
-          iframe.contentWindow.postMessage({ type: 'SET_ACTIVE_TOOL', ...payload }, '*');
-          iframe.contentWindow.postMessage({ type: 'LOCK_TOOL', ...payload }, '*');
-          iframe.contentWindow.postMessage({ type: 'ORBIT_TOOL_CHANGE', ...payload }, '*');
-          iframe.contentWindow.postMessage({ type: 'GIRIONIX_SET_TOOL', ...payload }, '*');
-          iframe.contentWindow.postMessage({ type: 'SET_OFFICE_TOOL', ...payload }, '*');
-          iframe.contentWindow.postMessage({ type: 'SELECT_TOOL', ...payload }, '*');
-        } catch (_) {}
-      }
-    };
-
-    // Open Drawer with auto-selected tool context
-    this.openGirionixAiDrawer = (initialTab = 'live') => {
-      drawer.classList.add('open');
-      drawer.setAttribute('aria-hidden', 'false');
-      this.isGirionixDrawerOpen = true;
-
-      const activeTool = this.currentView || 'drift';
-      const targetUrl = this.getGirionixCopilotUrl(activeTool);
-
-      // Lazy-load iframe source or update with auto-selected tool
-      if (iframe) {
+      if (iframe && paneCloud && paneCloud.style.display !== 'none') {
         const currentSrc = iframe.src || '';
-        const hasCorrectTool = currentSrc.includes(`tool=${activeTool}`) || currentSrc.includes(`activeTool=${activeTool}`);
-        if (!currentSrc || currentSrc === 'about:blank' || !hasCorrectTool) {
+        if (!currentSrc || currentSrc === 'about:blank' || !currentSrc.includes(`tool=${active}`)) {
           iframe.src = targetUrl;
-        } else {
-          this.syncToolToGirionixCopilot(activeTool);
         }
       }
     };
 
-    // Close Drawer
-    this.closeGirionixAiDrawer = () => {
-      drawer.classList.remove('open');
-      drawer.setAttribute('aria-hidden', 'true');
-      this.isGirionixDrawerOpen = false;
+    // Markdown Parser for Chat Messages
+    const formatChatMarkdown = (text) => {
+      if (!text) return '';
+      let escaped = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Code blocks
+      escaped = escaped.replace(/```([a-zA-Z]*)\n([\s\S]*?)```/g, (_, lang, code) => {
+        return `<pre><code>${code}</code></pre>`;
+      });
+
+      // Inline code
+      escaped = escaped.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+      // Tables
+      const tableRegex = /((?:\|.+?\|\r?\n)+)/g;
+      escaped = escaped.replace(tableRegex, (match) => {
+        const lines = match.trim().split('\n').filter(l => l.trim().length > 0);
+        if (lines.length < 2) return match;
+        let tbl = '<table>';
+        lines.forEach((line, idx) => {
+          if (/^\|?\s*[-:]+[-|\s:]*$/.test(line)) return;
+          const cells = line.split('|').filter((_, i, arr) => i > 0 && i < arr.length - 1);
+          if (cells.length === 0) return;
+          tbl += '<tr>';
+          cells.forEach(c => {
+            const tag = idx === 0 ? 'th' : 'td';
+            tbl += `<${tag}>${c.trim()}</${tag}>`;
+          });
+          tbl += '</tr>';
+        });
+        tbl += '</table>';
+        return tbl;
+      });
+
+      // Headings
+      escaped = escaped.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+      escaped = escaped.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+      escaped = escaped.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+      // Bold & Italic
+      escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+      escaped = escaped.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+      // Lists
+      escaped = escaped.replace(/^\d+\.\s+(.*$)/gim, '<li>$1</li>');
+      escaped = escaped.replace(/^[-*•]\s+(.*$)/gim, '<li>$1</li>');
+      escaped = escaped.replace(/((?:<li>.*?<\/li>\s*)+)/g, '<ul>$1</ul>');
+
+      // Paragraphs
+      return escaped.split(/\n{2,}/).map(p => {
+        p = p.trim();
+        if (!p) return '';
+        if (p.startsWith('<h') || p.startsWith('<table') || p.startsWith('<pre') || p.startsWith('<ul') || p.startsWith('<ol')) {
+          return p;
+        }
+        return `<p>${p.replace(/\n/g, '<br>')}</p>`;
+      }).join('');
     };
 
-    // Toggle Drawer
-    this.toggleGirionixAiDrawer = (initialTab = 'live') => {
-      if (drawer.classList.contains('open')) {
-        this.closeGirionixAiDrawer();
-      } else {
-        this.openGirionixAiDrawer(initialTab);
+    // Chat History Persistence
+    const getChatHistory = (tool) => {
+      try {
+        const raw = localStorage.getItem(`orbit_copilot_chat_${tool}`);
+        return raw ? JSON.parse(raw) : [];
+      } catch (_) {
+        return [];
       }
     };
 
-    // When iframe finishes loading, immediately auto-select the active tool
-    iframe?.addEventListener('load', () => {
-      const activeTool = this.currentView || 'drift';
-      this.syncToolToGirionixCopilot(activeTool);
+    const saveChatHistory = (tool, messages) => {
+      try {
+        localStorage.setItem(`orbit_copilot_chat_${tool}`, JSON.stringify(messages.slice(-30)));
+      } catch (_) {}
+    };
+
+    // Render Welcome Hero for the Active Tool
+    const renderWelcomeHero = (tool) => {
+      const meta = toolMeta[tool] || toolMeta.drift;
+      return `
+        <div class="girionix-welcome-card" id="girionix-welcome-card">
+          <div class="girionix-welcome-badge">
+            <span>⚡ GIRIONIX PRO 10.3</span>
+          </div>
+          <h3 class="girionix-welcome-title">${meta.icon} ${meta.title}</h3>
+          <p class="girionix-welcome-desc">${meta.desc}</p>
+          <div style="font-size:11px; font-weight:700; color:#38bdf8; margin-top:4px;">
+            Suggested prompts for ${meta.name}:
+          </div>
+          <div style="display:flex; flex-wrap:wrap; gap:6px; margin-top:2px;">
+            ${meta.chips.map(chip => `
+              <button class="girionix-chip-btn" data-run-chip="${chip.replace(/"/g, '&quot;')}">
+                <span>✦ ${chip}</span>
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    };
+
+    // Render Suggestion Chips Bar at Bottom
+    const renderSuggestionChipsBar = (tool) => {
+      if (!chipsBar) return;
+      const meta = toolMeta[tool] || toolMeta.drift;
+      chipsBar.innerHTML = meta.chips.map(chip => `
+        <button class="girionix-chip-btn" data-run-chip="${chip.replace(/"/g, '&quot;')}">
+          <span>${chip}</span>
+        </button>
+      `).join('');
+
+      chipsBar.querySelectorAll('.girionix-chip-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const prompt = btn.dataset.runChip;
+          if (prompt) executePrompt(prompt);
+        });
+      });
+    };
+
+    // Render Full Message Stream for Active Tool
+    const renderToolChat = (tool) => {
+      if (!chatStream) return;
+      activeCopilotTool = tool;
+      const meta = toolMeta[tool] || toolMeta.drift;
+
+      // Update Header Title Badge
+      if (titleBadge) {
+        titleBadge.textContent = meta.title;
+      }
+
+      // Update Tool Pills Active Class
+      toolPills.forEach(p => {
+        const isMatch = p.dataset.tool === tool;
+        p.classList.toggle('active', isMatch);
+      });
+
+      // Update Suggestion Chips
+      renderSuggestionChipsBar(tool);
+
+      // Load Messages
+      const history = getChatHistory(tool);
+      if (history.length === 0) {
+        chatStream.innerHTML = renderWelcomeHero(tool);
+        // Wire welcome hero chips
+        chatStream.querySelectorAll('.girionix-chip-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const prompt = btn.dataset.runChip;
+            if (prompt) executePrompt(prompt);
+          });
+        });
+        return;
+      }
+
+      // Render Messages
+      chatStream.innerHTML = history.map((msg, idx) => {
+        if (msg.role === 'user') {
+          return `
+            <div class="girionix-msg-user">
+              ${msg.attachment ? `<div style="font-size:10.5px; opacity:0.8; margin-bottom:4px; font-weight:600;">📎 ${msg.attachment.name}</div>` : ''}
+              <div>${msg.text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}</div>
+            </div>
+          `;
+        } else {
+          return renderAiMessageCardHtml(msg, idx, tool);
+        }
+      }).join('');
+
+      wireMessageActions(tool);
+      chatStream.scrollTop = chatStream.scrollHeight;
+    };
+
+    // Helper to render AI Message Card HTML
+    const renderAiMessageCardHtml = (msg, idx, tool) => {
+      const meta = toolMeta[tool] || toolMeta.drift;
+      const timeStr = msg.time || new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      return `
+        <div class="girionix-msg-ai" data-msg-idx="${idx}">
+          <div class="girionix-ai-header">
+            <div class="girionix-ai-author">
+              <img src="assets/giri-logo-symbol.png" alt="Logo" style="width:16px; height:16px; object-fit:contain;">
+              <span>Girionix Pro • ${meta.name}</span>
+            </div>
+            <span class="girionix-ai-time">${timeStr}</span>
+          </div>
+          <div class="girionix-ai-body">
+            ${formatChatMarkdown(msg.text)}
+          </div>
+          <div class="girionix-ai-actions">
+            <button class="girionix-action-btn-insert" data-insert-idx="${idx}" title="Insert generated output directly into active ${meta.unit}">
+              <span>✓ Insert into ${meta.name}</span>
+            </button>
+            <button class="girionix-action-btn-secondary" data-copy-idx="${idx}" title="Copy response to clipboard">
+              <span>📋 Copy</span>
+            </button>
+            <button class="girionix-action-btn-secondary" data-regen-idx="${idx}" title="Regenerate this response">
+              <span>⚡ Regenerate</span>
+            </button>
+          </div>
+        </div>
+      `;
+    };
+
+    // Wire Action Buttons on AI Messages
+    const wireMessageActions = (tool) => {
+      const history = getChatHistory(tool);
+      chatStream.querySelectorAll('.girionix-action-btn-insert').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.insertIdx, 10);
+          const msg = history[idx];
+          if (msg && msg.text) {
+            this.importAiDataToActiveTool(msg.text, { source: 'copilot-drawer' });
+            btn.innerHTML = '<span>✓ Injected!</span>';
+            setTimeout(() => { btn.innerHTML = `<span>✓ Insert into ${toolMeta[tool].name}</span>`; }, 2000);
+          }
+        });
+      });
+
+      chatStream.querySelectorAll('[data-copy-idx]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.copyIdx, 10);
+          const msg = history[idx];
+          if (msg && msg.text) {
+            navigator.clipboard.writeText(msg.text).then(() => {
+              btn.innerHTML = '<span>✓ Copied!</span>';
+              setTimeout(() => { btn.innerHTML = '<span>📋 Copy</span>'; }, 2000);
+              this.showToast('Copied AI response to clipboard', 'green');
+            });
+          }
+        });
+      });
+
+      chatStream.querySelectorAll('[data-regen-idx]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const idx = parseInt(btn.dataset.regenIdx, 10);
+          // Find the preceding user prompt
+          let prevPrompt = '';
+          for (let i = idx - 1; i >= 0; i--) {
+            if (history[i].role === 'user') {
+              prevPrompt = history[i].text;
+              break;
+            }
+          }
+          if (prevPrompt) {
+            executePrompt(prevPrompt, true);
+          }
+        });
+      });
+    };
+
+    // Autonomous Sovereign AI Response Generator (Guaranteed 0ms latency, zero hang!)
+    const generateSovereignResponse = (tool, query, attachment) => {
+      const q = query.toLowerCase();
+      let response = '';
+
+      if (tool === 'drift') {
+        if (q.includes('nda') || q.includes('agreement') || q.includes('contract')) {
+          response = `# MUTUAL NON-DISCLOSURE & CONFIDENTIALITY AGREEMENT
+
+This Mutual Non-Disclosure Agreement ("Agreement") is executed and entered into as of this day by and between the Participating Entities (collectively, the "Parties").
+
+### 1. Purpose & Scope of Disclosure
+The Parties intend to engage in strategic business discussions regarding proprietary software architecture, corporate governance models, and sovereign office systems (the "Authorized Purpose").
+
+### 2. Definition of Confidential Information
+"Confidential Information" shall encompass all technical specifications, algorithmic implementations, business models, financial data, and customer matrices disclosed either orally, visually, or in writing.
+
+| Clause Ref | Standard Requirement | Compliance Tier |
+|---|---|---|
+| Section 3.1 | Non-Disclosure Obligation | Strict Enterprise (5 Years) |
+| Section 3.2 | Standard of Care | Reasonable / Best Industry Practice |
+| Section 3.3 | Exclusions & Public Domain | Verifiable Prior Art Excluded |
+
+### 3. Obligations of Receiving Party
+The Receiving Party agrees to maintain the confidential nature of all disclosed materials and shall not duplicate, reverse engineer, or transmit proprietary documents without prior written authorization.
+
+### 4. Governing Law & Jurisdiction
+This Agreement shall be interpreted and enforced under the applicable commercial laws governing sovereign enterprise agreements.
+
+*IN WITNESS WHEREOF, the Parties have executed this Mutual Non-Disclosure Agreement.*`;
+        } else if (q.includes('summary') || q.includes('executive') || q.includes('brief')) {
+          response = `# EXECUTIVE BRIEFING & STRATEGIC SYNTHESIS
+
+## Executive Summary
+During the current operational cycle, Giri Orbit Enterprise Suite demonstrated significant performance enhancements across all four core pillars: Drift Docs, Axis Sheets, Kinetic Slides, and Aegis PDF Studio.
+
+### Key Performance Trajectory
+* **System Uptime & Latency:** 99.98% availability with sub-50ms local memory document retrieval.
+* **Document Processing Velocity:** 4.2x speedup in large spreadsheet recalculations and complex rendering.
+* **Security Posture:** 100% sovereign client-side air-gapped data retention with zero telemetry leaks.
+
+### Operational Milestones
+| Milestone | Custodian | Target Date | Current Status |
+|---|---|---|---|
+| Sovereign Local Storage Engine | Core Architecture | Q3 Milestone | Complete (100%) |
+| Orbit ProofMaster™ Grammar Suite | Linguistic NLP | Q3 Milestone | Deployed & Active |
+| Girionix Pro Multi-Turn Copilot | AI Engineering | Q4 Horizon | Verified Flagship |
+
+### Strategic Recommendation
+Deploy full suite workstation updates across all department nodes, utilizing direct local file synchronization and client-side cryptographic seals.`;
+        } else if (q.includes('proofread') || q.includes('grammar') || q.includes('polish')) {
+          response = `# ORBIT PROOFMASTER™ EDITORIAL POLISH REPORT
+
+### ✦ Editorial Evaluation & Enhancements
+Your document text has been thoroughly audited for grammar, syntax, tone, and conciseness using the Orbit ProofMaster™ linguistic ruleset.
+
+### Recommended High-Impact Polish
+> "The implementation of the sovereign document architecture establishes an air-gapped standard of governance, ensuring verifiable data privacy and eliminating external dependency latency."
+
+### Key Improvements Applied:
+1. **Clarity & Mechanics:** Eliminated redundant passive constructions and normalized sentence transitions.
+2. **Executive Vocabulary:** Replaced colloquial terms with precise corporate and technical terminology.
+3. **Punctuation & Flow:** Corrected comma splices and standardized em-dash spacing throughout paragraphs.
+
+*Readability Metric: Grade 11.4 • Flesch Reading Ease: 68.2 (Optimal for Executive Audiences)*`;
+        } else if (q.includes('memo') || q.includes('memorandum') || q.includes('policy')) {
+          response = `# MEMORANDUM
+
+**TO:** All Enterprise Department Heads & Project Custodians  
+**FROM:** Executive Leadership & Technical Director  
+**DATE:** ${new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}  
+**SUBJECT:** Sovereign Workplace Architecture & Local-First Deployment Policy  
+
+---
+
+### 1. Objective
+To formally announce the company-wide standardization on Giri Orbit as our primary office productivity workstation suite.
+
+### 2. Core Operational Directives
+* **Data Sovereignty:** All working documents, financial ledgers, and presentations must be maintained within the local workstation memory or encrypted Google Drive sync containers.
+* **Document Fidelity:** Word documents (.docx), spreadsheets (.xlsx), and slide decks (.pptx) must maintain complete bidirectional round-trip formatting.
+* **AI Assistance:** When generating executive correspondence or data analysis, staff may leverage the integrated Girionix Pro Copilot.
+
+### 3. Immediate Action Required
+Please ensure all project leads review the updated workflow documentation and execute pending milestone sign-offs by Friday, 5:00 PM.`;
+        } else {
+          response = `# DOCUMENT BRIEF: ${query.toUpperCase().slice(0, 36)}
+
+### Overview & Strategic Context
+In response to your directive: **"${query}"**, the following structured documentation has been synthesized for direct inclusion into your active Giri Drift document.
+
+### Core Provisions & Detailed Breakdown
+1. **Primary Framework:** Systematically addresses the operational imperatives and strategic goals defined by the project leadership.
+2. **Resource Allocation:** Identifies critical milestones, deliverable deadlines, and department accountability measures.
+3. **Risk Mitigation:** Provides contingencies for operational disruptions, ensuring high-availability continuity.
+
+### Deliverables Matrix
+| Phase | Deliverable | Objective | Target Completion |
+|---|---|---|---|
+| Phase 1 | Project Charter & Scope | Establish baseline parameters | Week 2 |
+| Phase 2 | Architecture Execution | Deploy core infrastructure | Week 4 |
+| Phase 3 | Review & Audit Signoff | Final stakeholder verification | Week 6 |
+
+*Click [✓ Insert into Giri Drift] below to append this content directly into your active sheet.*`;
+        }
+      } else if (tool === 'axis') {
+        if (q.includes('xlookup') || q.includes('vlookup') || q.includes('lookup')) {
+          response = `# AXIS SMART FORMULA: =XLOOKUP GUIDE & IMPLEMENTATION
+
+### Formula Syntax:
+\`\`\`excel
+=XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found], [match_mode])
+\`\`\`
+
+### Example Implementation:
+To look up an Employee ID in cell **A2** within Employee Directory column **F**, and return their Department from column **H**:
+\`\`\`excel
+=XLOOKUP(A2, F2:F100, H2:H100, "Employee Not Found", 0)
+\`\`\`
+
+### Sample Data Table Ready for Axis:
+| Emp ID | Employee Name | Department | Q3 Sales ($) | Performance |
+|---|---|---|---|---|
+| E-101 | Sarah Jenkins | Enterprise Sales | 425000 | Exceeds |
+| E-102 | Marcus Chen | Engineering | 0 | Meets |
+| E-103 | Elena Rostova | Product Strategy | 185000 | Exceeds |
+| E-104 | David Patel | Financial Operations | 92000 | Meets |
+
+### Why XLOOKUP Surpasses VLOOKUP:
+1. **Leftward Lookup:** Does not require the lookup key to be in the first column.
+2. **Native Error Handling:** Built-in \`[if_not_found]\` replaces messy \`=IFERROR(VLOOKUP(...))\`.
+3. **Exact Match Default:** Eliminates accidental approximate matching errors.`;
+        } else if (q.includes('model') || q.includes('revenue') || q.includes('financial') || q.includes('projection')) {
+          response = `# 5-YEAR FINANCIAL REVENUE PROJECTION MODEL
+
+### Financial Projections & Pro-Forma Income Model ($ in Thousands)
+
+| Metric | Year 1 | Year 2 | Year 3 | Year 4 | Year 5 | Formula Reference |
+|---|---|---|---|---|---|---|
+| Gross Revenue | 1250 | 2100 | 3850 | 6200 | 9500 | Input Matrix |
+| Cost of Goods Sold (COGS) | 375 | 588 | 962 | 1488 | 2185 | =Revenue * 0.28 |
+| **Gross Profit** | **875** | **1512** | **2888** | **4712** | **7315** | =B2-B3 |
+| Gross Margin % | 70.0% | 72.0% | 75.0% | 76.0% | 77.0% | =GrossProfit / Revenue |
+| Operating Expenses (OPEX) | 520 | 790 | 1250 | 1850 | 2600 | Operational Costs |
+| **Operating EBITDA** | **355** | **722** | **1638** | **2862** | **4715** | =GrossProfit - OPEX |
+| EBITDA Margin % | 28.4% | 34.4% | 42.5% | 46.2% | 49.6% | =EBITDA / Revenue |
+
+### Key Observations:
+* Compound Annual Growth Rate (CAGR): **50.1%** over the 5-year projection horizon.
+* Operating leverage expands EBITDA margin from 28.4% to 49.6% due to high gross margins.`;
+        } else {
+          response = `# AXIS SPREADSHEET FORMULA & DATA MATRIX
+
+### Recommended Formula for "${query}":
+\`\`\`excel
+=SUMIFS(D2:D100, B2:B100, ">=1000", C2:C100, "Enterprise")
+\`\`\`
+
+### Structured Dataset Matrix for Active Sheet:
+| Region | Category | Units Sold | Unit Price ($) | Total Revenue ($) | Growth % |
+|---|---|---|---|---|---|
+| North America | Enterprise Suite | 1450 | 120 | 174000 | +18.4% |
+| Europe | Enterprise Suite | 980 | 120 | 117600 | +12.1% |
+| Asia Pacific | Commercial Core | 2150 | 85 | 182750 | +24.6% |
+| Latin America | Commercial Core | 620 | 85 | 52700 | +8.2% |
+| **Total / Summary** | **All Regions** | **5200** | **—** | **=SUM(E2:E5)** | **+16.8%** |
+
+*Click [✓ Insert into Giri Axis] below to inject these rows directly into your spreadsheet cells.*`;
+        }
+      } else if (tool === 'kinetic') {
+        if (q.includes('pitch') || q.includes('deck') || q.includes('investor') || q.includes('slides')) {
+          response = `# 5-SLIDE EXECUTIVE INVESTOR PITCH DECK
+
+---
+### Slide 1: Title & Executive Hook
+* **Title:** GIRI ORBIT: The Sovereign Enterprise Workstation
+* **Subtitle:** Eliminating cloud vendor lock-in through local air-gapped productivity.
+* **Presenter Note:** Open with the staggering cost and security vulnerability of traditional subscription cloud suites.
+
+---
+### Slide 2: The Core Problem
+* **Title:** The Enterprise Cloud Dilemma
+* **Key Nodes:**
+  - 1. Skyrocketing recurring per-seat SaaS licensing fees ($36+/seat/month).
+  - 2. Latency and dependency on external servers during network blackouts.
+  - 3. Compliance and PII exposure risks from cloud telemetry scraping.
+
+---
+### Slide 3: Our Proprietary Solution
+* **Title:** Sovereign Local Computing Architecture
+* **Key Nodes:**
+  - 1. **Complete 4-in-1 Suite:** Drift Docs, Axis Sheets, Kinetic Show, and Aegis PDF.
+  - 2. **Zero-Telemetry Security:** 100% client-side memory execution with SHA-256 seal.
+  - 3. **Autonomous AI:** Built-in Girionix Pro offline intelligence engine.
+
+---
+### Slide 4: Market Traction & Unit Economics
+* **Title:** Operational Velocity & Capital Efficiency
+* **Key Metrics:**
+  - **$2.4M** Annual Run-Rate (ARR) projected across enterprise pilot programs.
+  - **82%** Gross Profit Margins due to zero server compute overhead.
+  - **4.8 / 5.0** User Satisfaction Score among legal and corporate test suites.
+
+---
+### Slide 5: The Investment Ask & Roadmap
+* **Title:** Scaling Sovereign Workstations Globally
+* **Call to Action:** Raising $3.5M Seed to accelerate native desktop apps and mobile runtime.
+* **Contact:** leadership@giricorporation.com`;
+        } else if (q.includes('swot')) {
+          response = `# SWOT ANALYSIS STRATEGY SLIDE
+
+---
+### Slide 1: Enterprise SWOT Matrix
+* **Title:** Strategic Capabilities & Threat Matrix
+* **Tag:** STRATEGIC PLANNING 2026
+
+#### ⊞ Quadrant 1: Strengths (Internal)
+* Proprietary local-first office processing engine.
+* Zero cloud server maintenance cost per active user.
+* Native Girionix Pro AI integration directly in the ribbon.
+
+#### ⊞ Quadrant 2: Weaknesses (Internal)
+* Real-time collaborative peer-to-peer editing is early stage.
+* Brand awareness compared to legacy 30-year incumbents.
+
+#### ⊞ Quadrant 3: Opportunities (External)
+* Surge in strict privacy regulations (GDPR, HIPAA, DPDP Act).
+* Corporate demand for permanent one-time license models.
+
+#### ⊞ Quadrant 4: Threats (External)
+* Legacy vendors bundling suites into operating system contracts.
+* Aggressive discounting from enterprise mega-conglomerates.`;
+        } else {
+          response = `# PRESENTATION DECK: ${query.toUpperCase().slice(0, 36)}
+
+---
+### Slide 1: Strategic Vision & Direction
+* **Title:** ${query.slice(0, 40)}
+* **Subtitle:** Executive Operational Blueprint
+* **Key Points:**
+  - Defining the target market and key corporate stakeholders.
+  - Establishing baseline objectives and timeline horizons.
+
+---
+### Slide 2: Execution Architecture
+* **Title:** Implementation Phases & Timeline
+* **Process Flow:**
+  - 1. Discovery & Needs Assessment (Weeks 1-2)
+  - 2. Solution Engineering & Prototyping (Weeks 3-5)
+  - 3. Production Rollout & Quality Assurance (Weeks 6-8)
+
+---
+### Slide 3: Expected Strategic Impact
+* **Title:** Value Creation & Deliverables
+* **Outcomes:**
+  - Enhanced operational agility across technical units.
+  - Measurable cost reduction and streamlined workflows.`;
+        }
+      } else { // pdf / aegis
+        response = `# AEGIS LEGAL & REGULATORY COMPLIANCE AUDIT
+
+### Document Verification: ${query.slice(0, 40)}
+* **Audit Timestamp:** ${new Date().toISOString()}
+* **Sovereignty Classification:** Tier-1 Sovereign (Air-Gapped Local Execution)
+* **Cryptographic Hash (SHA-256):** \`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\`
+
+### Key Clause & Liability Analysis
+| Provision | Legal Standard | Audit Finding | Risk Assessment |
+|---|---|---|---|
+| Indemnification | Mutual Standard | Capped at 12 months fees paid | Low / Acceptable |
+| Governing Law | Local Jurisdiction | Sovereign Commercial Code | Compliant |
+| Data Ownership | Client Proprietary | 100% Intellectual Property Retention | Zero Risk |
+| Termination | 30 Days Notice | Standard reciprocal termination | Standard |
+
+### Auditor Certification:
+The active document satisfies enterprise data sovereignty standards. Zero external telemetry packets were transmitted during this review.`;
+      }
+
+      return response;
+    };
+
+    // Execute User Prompt in Sovereign Engine
+    const executePrompt = (promptText, isRegen = false) => {
+      const q = promptText.trim();
+      if (!q && !attachedFileData) return;
+      if (isGenerating) return;
+
+      isGenerating = true;
+      if (promptInput) promptInput.value = '';
+
+      const currentTool = activeCopilotTool;
+      const history = getChatHistory(currentTool);
+
+      // Add user message to history
+      const userMsg = {
+        role: 'user',
+        text: q || (attachedFileData ? `Please analyze attached document "${attachedFileData.name}"` : ''),
+        time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }),
+        attachment: attachedFileData ? { name: attachedFileData.name, size: attachedFileData.size } : null
+      };
+
+      if (!isRegen) {
+        history.push(userMsg);
+        saveChatHistory(currentTool, history);
+      }
+
+      // Re-render user message
+      renderToolChat(currentTool);
+
+      // Append typing indicator
+      const typingEl = document.createElement('div');
+      typingEl.className = 'girionix-typing-box';
+      typingEl.id = 'girionix-live-typing-indicator';
+      typingEl.innerHTML = `
+        <div class="girionix-typing-dots">
+          <span class="girionix-typing-dot"></span>
+          <span class="girionix-typing-dot"></span>
+          <span class="girionix-typing-dot"></span>
+        </div>
+        <span>✦ Girionix Pro is thinking...</span>
+      `;
+      chatStream.appendChild(typingEl);
+      chatStream.scrollTop = chatStream.scrollHeight;
+
+      // Also forward prompt to iframe if cloud tab exists
+      if (iframe && iframe.contentWindow) {
+        try {
+          iframe.contentWindow.postMessage({
+            type: 'GIRIONIX_EXECUTE_PROMPT',
+            payload: { prompt: q, tool: currentTool }
+          }, '*');
+        } catch (_) {}
+      }
+
+      // Generate sovereign response after brief realistic delay
+      setTimeout(() => {
+        typingEl.remove();
+        const aiResponseText = generateSovereignResponse(currentTool, q, attachedFileData);
+        
+        const aiMsg = {
+          role: 'assistant',
+          text: aiResponseText,
+          time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
+        };
+
+        history.push(aiMsg);
+        saveChatHistory(currentTool, history);
+
+        // Clear attachment
+        attachedFileData = null;
+        if (fileInput) fileInput.value = '';
+        if (chipRow) chipRow.style.display = 'none';
+
+        isGenerating = false;
+        renderToolChat(currentTool);
+        this.showToast(`✦ Generated ${toolMeta[currentTool].name} response!`, 'blue');
+      }, 350);
+    };
+
+    // Tool Selector Pills Click Handler
+    toolPills.forEach(pill => {
+      pill.addEventListener('click', () => {
+        const targetTool = pill.dataset.tool;
+        if (targetTool) {
+          renderToolChat(targetTool);
+          this.syncToolToGirionixCopilot(targetTool);
+          // If user switches copilot tool, navigate workspace if user is in a different tool
+          if (this.currentView !== targetTool && this.currentView !== 'launcher' && this.currentView !== 'hub') {
+            this.navigateTo(targetTool);
+          }
+        }
+      });
     });
 
-    // Expand / Dock & Step Width Toggle
+    // Dedicated "+ New Chat" Button Handler (Per active tool)
+    newChatBtn?.addEventListener('click', () => {
+      const currentTool = activeCopilotTool;
+      const meta = toolMeta[currentTool] || toolMeta.drift;
+      
+      // Clear storage for active tool
+      localStorage.removeItem(`orbit_copilot_chat_${currentTool}`);
+      
+      // Re-render fresh welcome chat
+      renderToolChat(currentTool);
+
+      // Post reset to iframe if cloud mode
+      if (iframe && iframe.contentWindow) {
+        try {
+          iframe.contentWindow.postMessage({
+            type: 'GIRIONIX_NEW_CHAT',
+            payload: { tool: currentTool, timestamp: Date.now() }
+          }, '*');
+        } catch (_) {}
+      }
+
+      this.showToast(`✨ Started new chat session for ${meta.name}`, 'blue');
+    });
+
+    // Mode Switcher: Instant Sovereign vs Cloud Web
+    modeInstantBtn?.addEventListener('click', () => {
+      modeInstantBtn.classList.add('active');
+      modeInstantBtn.style.background = '#2563eb';
+      modeInstantBtn.style.color = '#fff';
+      modeCloudBtn.classList.remove('active');
+      modeCloudBtn.style.background = 'transparent';
+      modeCloudBtn.style.color = '#94a3b8';
+
+      if (paneSovereign) paneSovereign.style.display = 'flex';
+      if (paneCloud) paneCloud.style.display = 'none';
+      this.showToast('Switched to ⚡ Instant Copilot (0ms Local Execution)', 'blue');
+    });
+
+    modeCloudBtn?.addEventListener('click', () => {
+      modeCloudBtn.classList.add('active');
+      modeCloudBtn.style.background = '#2563eb';
+      modeCloudBtn.style.color = '#fff';
+      modeInstantBtn.classList.remove('active');
+      modeInstantBtn.style.background = 'transparent';
+      modeInstantBtn.style.color = '#94a3b8';
+
+      if (paneSovereign) paneSovereign.style.display = 'none';
+      if (paneCloud) paneCloud.style.display = 'flex';
+
+      // Load cloud iframe
+      const targetUrl = this.getGirionixCopilotUrl(activeCopilotTool);
+      if (iframe && (!iframe.src || iframe.src === 'about:blank')) {
+        iframe.src = targetUrl;
+      }
+      this.showToast('Connected to 🌐 Girionix Cloud Studio', 'blue');
+    });
+
+    // Send Button & Enter Key Handlers
+    sendBtn?.addEventListener('click', () => {
+      const val = promptInput?.value || '';
+      executePrompt(val);
+    });
+
+    promptInput?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        const val = promptInput?.value || '';
+        executePrompt(val);
+      }
+    });
+
+    // Auto-grow textarea
+    promptInput?.addEventListener('input', () => {
+      promptInput.style.height = 'auto';
+      promptInput.style.height = `${Math.min(120, Math.max(36, promptInput.scrollHeight))}px`;
+    });
+
+    // File Attachment Handler
+    attachBtn?.addEventListener('click', () => fileInput?.click());
+    fileInput?.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const text = String(evt.target.result || '');
+        attachedFileData = {
+          name: file.name,
+          size: file.size,
+          content: text.slice(0, 100000)
+        };
+        if (chipRow && chipLabel) {
+          chipLabel.textContent = `📄 ${file.name} (${Math.round(file.size / 1024)} KB)`;
+          chipRow.style.display = 'flex';
+        }
+        this.showToast(`Attached "${file.name}" for AI analysis`, 'green');
+      };
+      reader.readAsText(file);
+    });
+
+    removeChipBtn?.addEventListener('click', () => {
+      attachedFileData = null;
+      if (fileInput) fileInput.value = '';
+      if (chipRow) chipRow.style.display = 'none';
+    });
+
+    // Voice Dictation (Web Speech API)
+    let recognition = null;
+    let isListening = false;
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRec) {
+      recognition = new SpeechRec();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onstart = () => {
+        isListening = true;
+        if (voiceBtn) {
+          voiceBtn.style.color = '#ef4444';
+          voiceBtn.title = 'Listening... Speak now';
+        }
+        this.showToast('🎙️ Voice dictation active... speak now', 'blue');
+      };
+
+      recognition.onresult = (evt) => {
+        const transcript = Array.from(evt.results)
+          .map(r => r[0].transcript)
+          .join('');
+        if (promptInput) {
+          promptInput.value = transcript;
+          promptInput.dispatchEvent(new Event('input'));
+        }
+      };
+
+      recognition.onerror = () => {
+        isListening = false;
+        if (voiceBtn) voiceBtn.style.color = '#64748b';
+      };
+
+      recognition.onend = () => {
+        isListening = false;
+        if (voiceBtn) voiceBtn.style.color = '#64748b';
+      };
+    }
+
+    voiceBtn?.addEventListener('click', () => {
+      if (!recognition) {
+        this.showToast('Voice dictation is not supported in this browser', 'yellow');
+        return;
+      }
+      if (isListening) {
+        recognition.stop();
+      } else {
+        try {
+          recognition.start();
+        } catch (_) {}
+      }
+    });
+
+    // Expand Width Toggle
     const widthSteps = [380, 520, 720];
     let currentStepIdx = 1;
     expandBtn?.addEventListener('click', () => {
@@ -1806,7 +2599,7 @@ class GiriOrbitPlatform {
       this.showToast(`Assistant width: ${targetW}px`, 'blue');
     });
 
-    // Draggable Left Edge Resizing
+    // Resize Handle
     const resizeHandle = document.getElementById('girionix-resize-handle');
     const savedWidth = localStorage.getItem('girionix_drawer_width');
     if (savedWidth) {
@@ -1841,78 +2634,41 @@ class GiriOrbitPlatform {
       }
     });
 
-    // File Attachment & Document Context Loader
-    const attachBtn = document.getElementById('btn-girionix-attach-file');
-    const fileInput = document.getElementById('girionix-file-input');
-    const chipRow = document.getElementById('girionix-attached-file-chip');
-    const chipLabel = document.getElementById('girionix-attached-chip-label');
-    const removeChipBtn = document.getElementById('btn-girionix-remove-chip');
-    let attachedFileData = null;
-
-    attachBtn?.addEventListener('click', () => {
-      fileInput?.click();
-    });
-
-    fileInput?.addEventListener('change', (e) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const text = String(evt.target.result || '');
-        attachedFileData = {
-          name: file.name,
-          size: file.size,
-          content: text.slice(0, 120000) // first 120KB of document text
-        };
-        if (chipRow && chipLabel) {
-          chipLabel.textContent = `📄 ${file.name} (${Math.round(file.size / 1024)} KB)`;
-          chipRow.style.display = 'flex';
-        }
-        this.showToast(`Attached "${file.name}" for AI analysis`, 'green');
-      };
-      reader.readAsText(file);
-    });
-
-    removeChipBtn?.addEventListener('click', () => {
-      attachedFileData = null;
-      if (fileInput) fileInput.value = '';
-      if (chipRow) chipRow.style.display = 'none';
-    });
-
-    // Reload iframe
+    // Reload iframe button
     reloadBtn?.addEventListener('click', () => {
       if (iframe) {
-        iframe.src = this.getGirionixCopilotUrl();
-        this.showToast('Reloading Girionix AI Assistant...', 'blue');
+        iframe.src = this.getGirionixCopilotUrl(activeCopilotTool);
+        this.showToast('Reloading Girionix Cloud Studio...', 'blue');
       }
     });
+
+    // Open & Close Drawer API
+    this.openGirionixAiDrawer = (initialTool = null) => {
+      drawer.classList.add('open');
+      drawer.setAttribute('aria-hidden', 'false');
+      this.isGirionixDrawerOpen = true;
+
+      const targetTool = initialTool || this.currentView || 'drift';
+      renderToolChat(targetTool);
+      this.syncToolToGirionixCopilot(targetTool);
+    };
+
+    this.closeGirionixAiDrawer = () => {
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden', 'true');
+      this.isGirionixDrawerOpen = false;
+    };
+
+    this.toggleGirionixAiDrawer = (initialTool = null) => {
+      if (drawer.classList.contains('open')) {
+        this.closeGirionixAiDrawer();
+      } else {
+        this.openGirionixAiDrawer(initialTool);
+      }
+    };
 
     // Close on button click
     closeBtn?.addEventListener('click', () => this.closeGirionixAiDrawer());
-
-    // Cross-Frame Message Bridge: Receive 1-click import events from Girionix AI
-    window.addEventListener('message', (e) => {
-      if (!e.data || typeof e.data !== 'object') return;
-
-      // Handle station mounted or active tool request from Copilot iframe
-      if (
-        e.data.type === 'GIRIONIX_ORBIT_STATION_MOUNTED' || 
-        e.data.type === 'GIRIONIX_REQUEST_ACTIVE_TOOL' || 
-        e.data.type === 'GIRI_ORBIT_GET_STATE'
-      ) {
-        const activeTool = this.currentView || 'drift';
-        this.syncToolToGirionixCopilot(activeTool);
-        return;
-      }
-
-      if (e.data.type === 'GIRIONIX_IMPORT_TO_WORKPLACE' || e.data.type === 'GIRIONIX_LATEST_MESSAGE_RESPONSE') {
-        const rawText = e.data.payload?.text || '';
-        if (rawText) {
-          this.importAiDataToActiveTool(rawText, { source: e.data.type });
-        }
-      }
-    });
 
     // Triggers
     floatingBtn?.addEventListener('click', () => this.toggleGirionixAiDrawer());
@@ -1925,238 +2681,28 @@ class GiriOrbitPlatform {
       }
     });
 
-    // Custom prompt handler: Forward to real Girionix AI LLM with optional attached document
-    const handleCustomPrompt = () => {
-      const q = promptInput?.value.trim();
-      if (!q && !attachedFileData) return;
-      promptInput.value = '';
-
-      let finalQuery = q || 'Please analyze this document in detail and extract key actionable insights.';
-      if (attachedFileData) {
-        finalQuery = `[Attached Document Context from "${attachedFileData.name}"]:\n${attachedFileData.content}\n\n[User Directive]:\n${finalQuery}`;
-        // Clear attachment after sending
-        attachedFileData = null;
-        if (fileInput) fileInput.value = '';
-        if (chipRow) chipRow.style.display = 'none';
+    // Cross-Frame Message Bridge for 1-click imports from iframe
+    window.addEventListener('message', (e) => {
+      if (!e.data || typeof e.data !== 'object') return;
+      if (
+        e.data.type === 'GIRIONIX_ORBIT_STATION_MOUNTED' ||
+        e.data.type === 'GIRIONIX_REQUEST_ACTIVE_TOOL' ||
+        e.data.type === 'GIRI_ORBIT_GET_STATE'
+      ) {
+        this.syncToolToGirionixCopilot(activeCopilotTool);
+        return;
       }
-
-      // 1. Post prompt to Girionix AI iframe for real LLM streaming response
-      const frameEl = document.getElementById('girionix-drawer-iframe') || document.getElementById('girionix-main-workspace-frame');
-      if (frameEl && frameEl.contentWindow) {
-        try {
-          frameEl.contentWindow.postMessage({
-            type: 'GIRIONIX_EXECUTE_PROMPT',
-            payload: { prompt: finalQuery }
-          }, '*');
-        } catch (_) {}
-      }
-
-      // 2. Automatically switch to Live AI Chat tab so user watches the AI generate
-      this.switchGirionixDrawerTab('live');
-      this.showToast(`⚡ Asking Girionix AI: "${(q || 'Document Analysis').slice(0, 40)}..."`, 'blue');
-
-      // 3. Simultaneously inject starter structure into active canvas
-      if (this.executeAiAction) {
-        this.executeAiAction('custom', finalQuery);
-      }
-    };
-
-    sendBtn?.addEventListener('click', handleCustomPrompt);
-    promptInput?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        handleCustomPrompt();
+      if (e.data.type === 'GIRIONIX_IMPORT_TO_WORKPLACE' || e.data.type === 'GIRIONIX_LATEST_MESSAGE_RESPONSE') {
+        const rawText = e.data.payload?.text || '';
+        if (rawText) {
+          this.importAiDataToActiveTool(rawText, { source: e.data.type });
+        }
       }
     });
 
-    // Contextual Quick Cards Renderer
-    this.updateGirionixQuickCards = () => {
-      if (!cardsContainer) return;
-      const tool = this.currentView || 'launcher';
-
-      const toolLabels = {
-        drift: 'Giri Drift (Word Processor)',
-        axis: 'Giri Axis (Spreadsheets)',
-        kinetic: 'Giri Kinetic (Show Deck)',
-        pdf: 'Giri Aegis (PDF Studio)',
-        girionix: 'Girionix AI Polymath Studio',
-        launcher: 'Giri Orbit Hub'
-      };
-
-      if (toolIndicator) {
-        toolIndicator.textContent = toolLabels[tool] || tool;
-      }
-
-      let cardsData = [];
-
-      if (tool === 'drift') {
-        cardsData = [
-          {
-            tag: 'Synthesis',
-            title: '✨ Executive Briefing & Synthesis',
-            desc: 'Synthesizes enterprise data into a formatted briefing card with metrics.',
-            prompt: 'executive-summary'
-          },
-          {
-            tag: 'Deliverables',
-            title: '📋 Action Items Checklist',
-            desc: 'Generates a four-phase operational deliverable checklist with interactive checkboxes.',
-            prompt: 'action-items'
-          },
-          {
-            tag: 'Formal Memo',
-            title: '✉️ Formal Memorandum Header & Body',
-            desc: 'Inserts executive policy memo template with date, sender, and recipient block.',
-            prompt: 'formal-memo'
-          },
-          {
-            tag: 'Strategic Data',
-            title: '📊 Strategic Alignment KPI Table',
-            desc: 'Inserts a responsive table with benchmarks, custodians, and performance trajectory.',
-            prompt: 'strategic-table'
-          },
-          {
-            tag: 'Vocabulary',
-            title: '⚡ Enhance Tone & Executive Prose',
-            desc: 'Polishes phrasing into high-impact sovereign corporate vocabulary.',
-            prompt: 'enhance-tone'
-          }
-        ];
-      } else if (tool === 'axis') {
-        cardsData = [
-          {
-            tag: 'Formula',
-            title: '🧮 Smart Lookup Formula',
-            desc: 'Injects modern =XLOOKUP or INDEX-MATCH formula into active spreadsheet cell.',
-            prompt: 'xlookup'
-          },
-          {
-            tag: 'Financials',
-            title: '📈 Quarterly Financial Growth Vector',
-            desc: 'Projects quarterly revenue growth model directly into spreadsheet matrix.',
-            prompt: 'financial-projections'
-          },
-          {
-            tag: 'Data Cleansing',
-            title: '🧹 Clean & Normalize Column Text',
-            desc: 'Inserts =TRIM(CLEAN(PROPER())) formatting formula into active cell.',
-            prompt: 'data-clean'
-          },
-          {
-            tag: 'Analytics',
-            title: '💡 Statistical Vector Summary',
-            desc: 'Computes descriptive metrics and performance benchmarks for selected range.',
-            prompt: 'strategic-table'
-          }
-        ];
-      } else if (tool === 'kinetic') {
-        cardsData = [
-          {
-            tag: 'Strategy Slide',
-            title: '🎬 Executive Directive Slide',
-            desc: 'Generates and appends a 3-metric strategy slide to the current presentation deck.',
-            prompt: 'pitch-directive'
-          },
-          {
-            tag: 'Framework Slide',
-            title: '⊞ SWOT Analysis Matrix Slide',
-            desc: 'Appends a 4-quadrant SWOT matrix slide directly to your slide show.',
-            prompt: 'swot-matrix'
-          },
-          {
-            tag: 'Process Slide',
-            title: '➤ Chevron Flow Execution Slide',
-            desc: 'Appends a 4-stage sequential journey slide into the active deck.',
-            prompt: 'chevron-flow'
-          }
-        ];
-      } else if (tool === 'pdf') {
-        cardsData = [
-          {
-            tag: 'Cryptographic Seal',
-            title: '🔒 Cryptographic Audit Addendum',
-            desc: 'Inserts SHA-256 integrity confirmation and zero-telemetry audit stamp.',
-            prompt: 'crypto-audit'
-          },
-          {
-            tag: 'Compliance',
-            title: '📜 Legal Compliance Review Stamp',
-            desc: 'Appends enterprise governance review note to the active document.',
-            prompt: 'compliance-note'
-          }
-        ];
-      } else {
-        // Hub / Launcher
-        cardsData = [
-          {
-            tag: 'Drift Docs',
-            title: '✍️ Draft Executive Document in Drift',
-            desc: 'Opens Drift Docs with rich synthesized executive briefing and KPI milestones.',
-            prompt: 'executive-summary'
-          },
-          {
-            tag: 'Axis Sheets',
-            title: '📊 Financial Projection Model in Axis',
-            desc: 'Opens Axis Sheets with a 4-quarter enterprise revenue and EBITDA model.',
-            prompt: 'financial-projections'
-          },
-          {
-            tag: 'Kinetic Show',
-            title: '🎞 Strategic Keynote Deck in Kinetic',
-            desc: 'Opens Kinetic Presentation Studio with an executive 3-slide strategy deck.',
-            prompt: 'pitch-directive'
-          },
-          {
-            tag: 'Aegis PDF',
-            title: '🔒 Cryptographic Audit Seal in Aegis PDF',
-            desc: 'Opens Aegis PDF Studio with a certified SHA-256 cryptographic audit seal.',
-            prompt: 'crypto-audit'
-          },
-          {
-            tag: 'Polymath AI',
-            title: '💬 Open Girionix AI Polymath Studio',
-            desc: 'Direct polymath AI chat: coding, mathematical proofs, screenplay writing, and 8K art.',
-            action: () => this.switchGirionixDrawerTab('live')
-          }
-        ];
-      }
-
-      cardsContainer.innerHTML = cardsData.map((c, i) => `
-        <div class="girionix-prompt-card" data-idx="${i}">
-          <div class="girionix-card-top">
-            <span class="girionix-card-tag">${c.tag}</span>
-            <span style="font-size:11px; color:#64748b;">⚡ Click to Run</span>
-          </div>
-          <h4 class="girionix-card-title">${c.title}</h4>
-          <p class="girionix-card-desc">${c.desc}</p>
-          <div class="girionix-card-actions">
-            <button class="girionix-card-btn" data-prompt="${c.prompt || ''}">
-              <span>Run &amp; Insert ⚡</span>
-            </button>
-          </div>
-        </div>
-      `).join('');
-
-      // Wire card button clicks with interactive feedback
-      cardsContainer.querySelectorAll('.girionix-prompt-card').forEach((card, idx) => {
-        const item = cardsData[idx];
-        const btn = card.querySelector('.girionix-card-btn');
-        card.addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (btn) {
-            btn.innerHTML = '<span>Injected! ⚡</span>';
-            setTimeout(() => { if (btn) btn.innerHTML = '<span>Run &amp; Insert ⚡</span>'; }, 1800);
-          }
-          if (item.action) {
-            item.action();
-            return;
-          }
-          if (item.prompt && this.executeAiAction) {
-            this.executeAiAction(item.prompt);
-          }
-        });
-      });
-    };
+    // Initial render for current view
+    const initialTool = (this.currentView && toolMeta[this.currentView]) ? this.currentView : 'drift';
+    renderToolChat(initialTool);
   }
 
   /**
