@@ -17,6 +17,8 @@ const DRIVE_STORAGE_KEY = 'giri_orbit_drive_files';
 const DRIVE_SETTINGS_KEY = 'giri_orbit_drive_settings';
 const DRIVE_ACTIVE_FILE_KEY = 'giri_orbit_drive_active_file';
 
+export const DEFAULT_GOOGLE_CLIENT_ID = '340226227470-np4m4o749r8t12nkpb2lgqru8rftju3r.apps.googleusercontent.com';
+
 export class GiriDriveSyncManager {
   constructor() {
     this.activeFileHandles = new Map(); // fileId -> FileSystemFileHandle
@@ -41,7 +43,7 @@ export class GiriDriveSyncManager {
       if (saved) {
         const parsed = JSON.parse(saved);
         this.isAutoSaveEnabled = parsed.autoSave !== false;
-        this.googleClientId = parsed.googleClientId || '';
+        this.googleClientId = parsed.googleClientId || DEFAULT_GOOGLE_CLIENT_ID;
         this.googleUser = (parsed.googleUser && typeof parsed.googleUser === 'object' && parsed.googleUser.email) ? parsed.googleUser : null;
         // MUST have an actual authenticated googleUser object to be connected
         this.isConnectedToGoogle = !!(parsed.isConnectedToGoogle && this.googleUser);
@@ -49,13 +51,13 @@ export class GiriDriveSyncManager {
         this.isAutoSaveEnabled = true;
         this.isConnectedToGoogle = false;
         this.googleUser = null;
-        this.googleClientId = '';
+        this.googleClientId = DEFAULT_GOOGLE_CLIENT_ID;
       }
     } catch (_) {
       this.isAutoSaveEnabled = true;
       this.isConnectedToGoogle = false;
       this.googleUser = null;
-      this.googleClientId = '';
+      this.googleClientId = DEFAULT_GOOGLE_CLIENT_ID;
     }
 
     if (this.googleClientId) {
@@ -518,6 +520,10 @@ export class GiriDriveSyncManager {
         this.tokenClient = window.google.accounts.oauth2.initTokenClient({
           client_id: cId,
           scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+          error_callback: (err) => {
+            console.warn('[Google OAuth] Token error or popup blocked:', err);
+            this.showGoogleAccountChooserModal();
+          },
           callback: async (resp) => {
             if (resp.error) {
               console.warn('[Google OAuth] Error or cancelled:', resp);
@@ -598,9 +604,26 @@ export class GiriDriveSyncManager {
           </div>
 
           <h2 style="font-size:22px; font-weight:700; margin:0 0 6px 0; color:#111827;">Choose an account</h2>
-          <p style="font-size:13px; color:#5f6368; margin:0 0 18px 0; line-height:1.5;">
+          <p style="font-size:13px; color:#5f6368; margin:0 0 16px 0; line-height:1.5;">
             to continue to <strong>Giri Orbit Google Drive</strong>. Your login and workspace files will be saved in this browser.
           </p>
+
+          <!-- Authentic Google OAuth Button -->
+          <button id="btn-trigger-real-google-oauth" type="button" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px; padding:11px 16px; border:1px solid #dadce0; border-radius:12px; background:#ffffff; color:#3c4043; font-size:13.5px; font-weight:600; cursor:pointer; box-shadow:0 1px 3px rgba(60,64,67,0.12); margin-bottom:14px; transition:all .15s ease;">
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Sign in with Google (OAuth)</span>
+          </button>
+
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+            <div style="flex:1; height:1px; background:#e5e7eb;"></div>
+            <span style="font-size:11px; color:#9ca3af; text-transform:uppercase; letter-spacing:0.5px;">Or saved browser account</span>
+            <div style="flex:1; height:1px; background:#e5e7eb;"></div>
+          </div>
 
           <!-- List of Saved Accounts (if any) -->
           ${savedAccounts.length > 0 ? `
@@ -674,6 +697,27 @@ export class GiriDriveSyncManager {
     modal.querySelector('#btn-close-google-chooser')?.addEventListener('click', () => modal.remove());
     modal.addEventListener('click', (e) => {
       if (e.target === modal) modal.remove();
+    });
+
+    // Real Google OAuth button click
+    const realOAuthBtn = modal.querySelector('#btn-trigger-real-google-oauth');
+    realOAuthBtn?.addEventListener('click', () => {
+      if (!this.tokenClient && window.google?.accounts?.oauth2) {
+        this.initGoogleTokenClient(this.googleClientId);
+      }
+      if (this.tokenClient) {
+        try {
+          modal.remove();
+          this.tokenClient.requestAccessToken({ prompt: 'select_account' });
+        } catch (err) {
+          console.warn('[Google OAuth] Direct token request error:', err);
+          this.showGoogleAccountChooserModal();
+        }
+      } else {
+        if (window.orbitPlatform) {
+          window.orbitPlatform.showToast('Connecting with Google Services...', 'blue');
+        }
+      }
     });
 
     // Saved accounts click
