@@ -4555,6 +4555,158 @@ body.dark .drift-merge-field-chip {
   color: #38bdf8;
   margin: 8px 16px 0 16px;
 }
+
+/* ==========================================================================
+   ORBIT PROOFMASTER GRAMMAR, GIRIONIX AI PARTNERSHIP & FLAGSHIP FEATURES
+   ========================================================================== */
+
+/* ProofMaster Underlines & Wavy Highlights */
+.orbit-proof-spelling {
+  text-decoration: underline wavy #ef4444 1.5px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: 2px;
+  transition: background 0.15s ease;
+}
+.orbit-proof-spelling:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+.orbit-proof-grammar {
+  text-decoration: underline wavy #3b82f6 1.5px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  background: rgba(59, 130, 246, 0.08);
+  border-radius: 2px;
+  transition: background 0.15s ease;
+}
+.orbit-proof-grammar:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+.orbit-proof-clarity {
+  text-decoration: underline wavy #10b981 1.5px;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  background: rgba(16, 185, 129, 0.08);
+  border-radius: 2px;
+  transition: background 0.15s ease;
+}
+.orbit-proof-clarity:hover {
+  background: rgba(16, 185, 129, 0.2);
+}
+
+/* Floating Correction Popover Card */
+.orbit-proof-popover {
+  position: absolute;
+  z-index: 10000;
+  background: #18181b;
+  border: 1px solid #3f3f46;
+  border-radius: 10px;
+  padding: 12px 14px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  min-width: 250px;
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  animation: popoverFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #f1f5f9;
+}
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translateY(4px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Girionix AI Quick Menu on Floating Toolbar */
+.girionix-quick-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 6px;
+  background: #18181b;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 16px rgba(56, 189, 248, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 220px;
+  z-index: 10010;
+}
+.girionix-quick-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #f1f5f9;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+.girionix-quick-item:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+/* Strategic Partner Badge */
+.girionix-partner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.15));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #38bdf8;
+  letter-spacing: 0.2px;
+}
+.girionix-partner-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+  animation: partnerPulse 2s infinite;
+}
+@keyframes partnerPulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(56, 189, 248, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+}
+
+/* Sovereign Version History Modal */
+.orbit-version-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(5px);
+}
+.orbit-version-modal {
+  background: #18181b;
+  border: 1px solid #3f3f46;
+  border-radius: 16px;
+  width: 580px;
+  max-width: 94vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+  overflow: hidden;
+}
+
 .girionix-quick-cards {
   flex: 1;
   overflow-y: auto;

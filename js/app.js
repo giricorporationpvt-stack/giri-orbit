@@ -12,15 +12,15 @@
  * - Universal Import/Export, Command Palette (Ctrl+K), and AI Copilot (Ctrl+J)
  */
 
-import { renderDriftApp } from './modules/drift.js?v=10.0';
-import { renderAxisApp } from './modules/axis.js?v=10.0';
-import { renderKineticApp } from './modules/kinetic.js?v=10.0';
-import { renderPdfStudioApp } from './modules/pdfStudio.js?v=10.0';
-import { LauncherPhysicsEngine } from './physics.js?v=10.0';
-import { PrintStudioManager } from './components/printManager.js?v=10.0';
-import { syncManager } from './modules/syncManager.js?v=10.0';
-import { localSync } from './components/localFileDirectSync.js?v=10.0';
-import { driveSyncManager } from './modules/driveSyncManager.js?v=10.1';
+import { renderDriftApp } from './modules/drift.js?v=10.2';
+import { renderAxisApp } from './modules/axis.js?v=10.2';
+import { renderKineticApp } from './modules/kinetic.js?v=10.2';
+import { renderPdfStudioApp } from './modules/pdfStudio.js?v=10.2';
+import { LauncherPhysicsEngine } from './physics.js?v=10.2';
+import { PrintStudioManager } from './components/printManager.js?v=10.2';
+import { syncManager } from './modules/syncManager.js?v=10.2';
+import { localSync } from './components/localFileDirectSync.js?v=10.2';
+import { driveSyncManager } from './modules/driveSyncManager.js?v=10.2';
 
 class GiriOrbitPlatform {
   constructor() {
@@ -477,28 +477,31 @@ class GiriOrbitPlatform {
             </div>
           </div>
 
-          <!-- Girionix AI Sovereign Showcase Card -->
-          <div class="girionix-hero-banner" style="margin-top:16px; padding:14px 18px; background:linear-gradient(135deg, rgba(6,182,212,0.08), rgba(59,130,246,0.12)); border:1px solid rgba(56,189,248,0.3); border-radius:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <div style="width:36px; height:36px; border-radius:8px; background:linear-gradient(135deg, #06b6d4, #2563eb); display:flex; align-items:center; justify-content:center; box-shadow:0 0 12px rgba(6,182,212,0.5); flex-shrink:0;">
-                <img src="assets/girionix-logo.png" style="width:24px; height:24px; object-fit:contain; border-radius:4px;" alt="Girionix AI">
+          <!-- Girionix AI Official Strategic Enterprise Partnership Showcase Card -->
+          <div class="girionix-hero-banner" style="margin-top:16px; padding:16px 20px; background:linear-gradient(135deg, rgba(6,182,212,0.1), rgba(59,130,246,0.15)); border:1px solid rgba(56,189,248,0.4); border-radius:12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; box-shadow:0 4px 20px rgba(6,182,212,0.12);">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, #06b6d4, #2563eb); display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px rgba(6,182,212,0.6); flex-shrink:0;">
+                <img src="assets/girionix-logo.png" style="width:26px; height:26px; object-fit:contain; border-radius:4px;" alt="Girionix AI">
               </div>
               <div>
-                <div style="display:flex; align-items:center; gap:6px;">
-                  <strong style="font-size:13.5px; color:#0f172a;">Girionix AI — Sovereign Polymath Workspace</strong>
-                  <span style="font-size:9.5px; font-weight:700; background:rgba(6,182,212,0.18); color:#0284c7; padding:1px 6px; border-radius:10px; border:1px solid rgba(6,182,212,0.3);">NEW AI SUITE</span>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <strong style="font-size:14px; color:#0f172a;">Giri Orbit × Girionix AI | Official Strategic AI Partner</strong>
+                  <span class="girionix-partner-badge" style="font-size:10px; padding:2px 8px;">
+                    <span class="girionix-partner-pulse"></span>
+                    VERIFIED PARTNERSHIP
+                  </span>
                 </div>
-                <p style="font-size:11.5px; color:#64748b; margin:2px 0 0 0;">
-                  Live React coding, screenplay, Olympiad math, 8K art &amp; offline Titan compute. Envisioned by Abhinav Giri.
+                <p style="font-size:12px; color:#475569; margin:3px 0 0 0; line-height:1.4;">
+                  Sovereign client computing paired with autonomous polymath intelligence. 2-way seamless bridge across Drift, Axis, Kinetic &amp; Aegis with zero telemetry.
                 </p>
               </div>
             </div>
-            <div style="display:flex; align-items:center; gap:6px;">
-              <button class="btn-giri-primary" id="btn-banner-launch-girionix" style="padding:5px 14px; font-size:11.5px; background:linear-gradient(135deg, #06b6d4, #2563eb); border:none;">
-                <span>Launch Studio ⚡</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button class="btn-giri-primary" id="btn-banner-launch-girionix" style="padding:7px 16px; font-size:12px; background:linear-gradient(135deg, #06b6d4, #2563eb); border:none; font-weight:700;">
+                <span>Launch Girionix AI ⚡</span>
               </button>
-              <button class="girionix-mini-btn" id="btn-banner-assistant-girionix" style="padding:5px 10px; font-size:11.5px;">
-                <span>💬 Ask Assistant</span>
+              <button class="girionix-mini-btn" id="btn-banner-assistant-girionix" style="padding:7px 12px; font-size:12px;">
+                <span>💬 Ask Copilot</span>
               </button>
             </div>
           </div>
