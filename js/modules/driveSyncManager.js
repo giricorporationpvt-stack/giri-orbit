@@ -524,17 +524,17 @@ export class GiriDriveSyncManager {
   }
 
   /**
-   * Google Direct Login Dialog & Authentication
+   * Google OAuth 2.0 Integration & Direct Login
    */
   promptGoogleDirectLogin() {
-    // If we have a Google Client ID and GIS is ready, trigger native Google OAuth popup directly!
-    if (this.googleClientId && window.google?.accounts?.oauth2) {
-      if (!this.tokenClient) {
+    // 1. If we have a Google Client ID, trigger native Google accounts popup directly!
+    if (this.googleClientId) {
+      if (!this.tokenClient && window.google?.accounts?.oauth2) {
         this.initGoogleTokenClient(this.googleClientId);
       }
       if (this.tokenClient) {
         try {
-          this.tokenClient.requestAccessToken({ prompt: '' });
+          this.tokenClient.requestAccessToken({ prompt: 'select_account' });
           return;
         } catch (err) {
           console.warn('[Google OAuth] Direct token request error:', err);
@@ -542,129 +542,79 @@ export class GiriDriveSyncManager {
       }
     }
 
-    let modal = document.getElementById('google-direct-login-modal');
-    const savedEmail = this.googleUser?.email || localStorage.getItem('giri_last_google_email') || '';
-    const savedName = this.googleUser?.name || '';
-
+    // 2. If no Client ID is configured, show authentic Google Cloud project setup dialog
+    let modal = document.getElementById('google-clientid-setup-modal');
     if (!modal) {
       const modalHtml = `
-        <div class="google-direct-login-modal" id="google-direct-login-modal" style="display:none;">
-          <div class="google-login-dialog-card" role="dialog" aria-modal="true" aria-label="Sign in with Google">
-            <div class="google-login-header">
-              <button class="google-login-close" id="btn-close-google-dialog" title="Close">✕</button>
-              <svg width="34" height="34" viewBox="0 0 24 24">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-              </svg>
-              <h3>Sign in with Google</h3>
-              <p>Choose an account to continue to <strong>Giri Orbit Cloud Drive</strong>. Your session is saved in this browser.</p>
+        <div class="google-direct-login-modal" id="google-clientid-setup-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
+          <div class="google-login-dialog-card" role="dialog" aria-modal="true" aria-label="Connect Google Cloud OAuth" style="background:#ffffff; border-radius:12px; max-width:480px; width:92%; padding:28px 24px; box-shadow:0 20px 50px rgba(0,0,0,0.3); font-family:'Google Sans',Roboto,Arial,sans-serif; color:#202124;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <svg width="28" height="28" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+                </svg>
+                <h3 style="margin:0; font-size:17px; font-weight:600; color:#202124;">Connect Google Drive</h3>
+              </div>
+              <button id="btn-close-google-setup-dialog" style="background:transparent; border:none; color:#5f6368; font-size:18px; cursor:pointer;">✕</button>
             </div>
 
-            <div class="google-accounts-list" style="padding:0 24px 20px 24px;">
-              <!-- 1-Click Fast Connect -->
-              <div class="google-account-item" id="btn-quick-google-account" style="cursor:pointer; margin-bottom:14px; border:1px solid #e5e7eb; border-radius:8px; padding:10px 14px; display:flex; align-items:center; gap:12px; transition:background 0.15s;">
-                <div class="google-acc-avatar" style="width:36px; height:36px; border-radius:50%; background:#1a73e8; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px;">G</div>
-                <div class="google-acc-info" style="flex:1;">
-                  <strong style="display:block; font-size:13px; color:#1f2937;">Fast 1-Click Connect</strong>
-                  <span style="font-size:12px; color:#6b7280;" id="quick-connect-email-hint">Connect with Google Account</span>
-                </div>
-                <span class="google-acc-badge" style="background:#e8f0fe; color:#1a73e8; font-size:11px; font-weight:700; padding:3px 8px; border-radius:12px;">Instant</span>
+            <p style="font-size:13px; color:#5f6368; line-height:1.6; margin:0 0 16px 0;">
+              To enable authentic Google Sign-In and Google Drive syncing on this public domain, enter your <strong>Google OAuth 2.0 Client ID</strong> created in Google Cloud Console.
+            </p>
+
+            <form id="google-setup-form" style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label style="display:block; font-size:12px; font-weight:600; color:#3c4043; margin-bottom:6px;">Google Cloud OAuth Client ID</label>
+                <input type="text" id="google-setup-clientid-input" placeholder="e.g. 123456789-xyz.apps.googleusercontent.com" required style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #dadce0; border-radius:6px; font-size:13px; font-family:monospace; outline:none;">
               </div>
 
-              <!-- Custom Account Entry Form -->
-              <div class="google-custom-account-section">
-                <form id="google-direct-login-form" style="display:flex; flex-direction:column; gap:10px;">
-                  <div>
-                    <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">Google Email Address</label>
-                    <input type="email" id="google-login-email-input" placeholder="e.g. name@gmail.com" required style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; outline:none;">
-                  </div>
-
-                  <div>
-                    <label style="font-size:12px; font-weight:600; color:#374151; display:block; margin-bottom:4px;">Account Name (Optional)</label>
-                    <input type="text" id="google-login-name-input" placeholder="e.g. Abhinav Giri" style="width:100%; box-sizing:border-box; padding:9px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:13px; outline:none;">
-                  </div>
-
-                  <button type="submit" class="btn-continue-with-google" style="width:100%; max-width:none; background:#1a73e8; color:#ffffff; border-color:#1a73e8; justify-content:center; border-radius:8px; padding:10px; font-weight:700; margin-top:4px;">
-                    <span>Continue with Google</span>
-                  </button>
-
-                  <!-- Collapsible Google Cloud OAuth Client ID for Real Google API Sync -->
-                  <details style="margin-top:6px; font-size:12px; color:#6b7280; cursor:pointer;">
-                    <summary style="font-weight:600; color:#4b5563; user-select:none;">⚙️ Google Cloud OAuth Client ID (Optional)</summary>
-                    <div style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-                      <p style="margin:0; font-size:11.5px; color:#6b7280; line-height:1.4;">Paste your Google Cloud OAuth Client ID for live Drive API synchronization:</p>
-                      <input type="text" id="google-login-clientid-input" placeholder="e.g. 12345-xxx.apps.googleusercontent.com" style="width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #d1d5db; border-radius:6px; font-size:11.5px; font-family:monospace; outline:none;">
-                    </div>
-                  </details>
-                </form>
+              <div style="background:#f8fafd; border:1px solid #e8f0fe; border-radius:6px; padding:10px 12px; font-size:11.5px; color:#1a73e8; line-height:1.5;">
+                ℹ️ Make sure <code>https://giri-orbit.pages.dev</code> is listed under <strong>Authorized JavaScript origins</strong> in your Google Cloud Console.
+                <br>
+                <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener" style="color:#1a73e8; font-weight:600; text-decoration:underline; display:inline-block; margin-top:4px;">Open Google Cloud Console ↗</a>
               </div>
-            </div>
 
-            <div class="google-login-footer">
-              <p>🔒 Sovereign local storage • Your authentication is saved securely in your browser.</p>
-            </div>
+              <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:6px;">
+                <button type="button" id="btn-cancel-google-setup" style="background:transparent; border:1px solid #dadce0; color:#3c4043; border-radius:4px; padding:8px 16px; font-size:13px; font-weight:500; cursor:pointer;">Cancel</button>
+                <button type="submit" style="background:#1a73e8; border:none; color:#ffffff; border-radius:4px; padding:8px 20px; font-size:13px; font-weight:500; cursor:pointer;">Save &amp; Continue with Google</button>
+              </div>
+            </form>
           </div>
         </div>
       `;
       document.body.insertAdjacentHTML('beforeend', modalHtml);
-      modal = document.getElementById('google-direct-login-modal');
+      modal = document.getElementById('google-clientid-setup-modal');
 
-      modal.querySelector('#btn-close-google-dialog')?.addEventListener('click', () => {
+      modal.querySelector('#btn-close-google-setup-dialog')?.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+      modal.querySelector('#btn-cancel-google-setup')?.addEventListener('click', () => {
         modal.style.display = 'none';
       });
       modal.addEventListener('click', (e) => {
         if (e.target === modal) modal.style.display = 'none';
       });
 
-      // Quick 1-click connect button
-      modal.querySelector('#btn-quick-google-account')?.addEventListener('click', () => {
-        const emailInput = modal.querySelector('#google-login-email-input');
-        const defaultEmail = emailInput?.value.trim() || savedEmail || 'orbit.user@gmail.com';
-        const nameInput = modal.querySelector('#google-login-name-input');
-        const defaultName = nameInput?.value.trim() || savedName || defaultEmail.split('@')[0];
-        this.performGoogleLogin(defaultName, defaultEmail);
-        modal.style.display = 'none';
-      });
-
-      // Form submit connect
-      modal.querySelector('#google-direct-login-form')?.addEventListener('submit', (e) => {
+      modal.querySelector('#google-setup-form')?.addEventListener('submit', (e) => {
         e.preventDefault();
-        const email = modal.querySelector('#google-login-email-input')?.value.trim();
-        const name = modal.querySelector('#google-login-name-input')?.value.trim() || (email ? email.split('@')[0] : 'Orbit User');
-        const customClientId = modal.querySelector('#google-login-clientid-input')?.value.trim();
-
-        if (customClientId) {
-          this.googleClientId = customClientId;
+        const cid = modal.querySelector('#google-setup-clientid-input')?.value.trim();
+        if (cid) {
+          this.googleClientId = cid;
           this.saveSettings();
-          this.initGoogleTokenClient(customClientId);
-          if (this.tokenClient) {
-            modal.style.display = 'none';
-            this.tokenClient.requestAccessToken({ prompt: '' });
-            return;
-          }
-        }
-
-        if (email) {
-          localStorage.setItem('giri_last_google_email', email);
-          this.performGoogleLogin(name, email);
           modal.style.display = 'none';
+          this.initGoogleTokenClient(cid);
+          if (this.tokenClient) {
+            this.tokenClient.requestAccessToken({ prompt: 'select_account' });
+          }
         }
       });
     }
 
-    // Populate saved defaults when showing
-    const emailInput = modal.querySelector('#google-login-email-input');
-    const nameInput = modal.querySelector('#google-login-name-input');
-    const clientIdInput = modal.querySelector('#google-login-clientid-input');
-    const hint = modal.querySelector('#quick-connect-email-hint');
-
-    if (emailInput && !emailInput.value && savedEmail) emailInput.value = savedEmail;
-    if (nameInput && !nameInput.value && savedName) nameInput.value = savedName;
-    if (clientIdInput && !clientIdInput.value && this.googleClientId) clientIdInput.value = this.googleClientId;
-    if (hint && savedEmail) hint.textContent = `Sign in as ${savedEmail}`;
-
+    const input = modal.querySelector('#google-setup-clientid-input');
+    if (input && this.googleClientId) input.value = this.googleClientId;
     modal.style.display = 'flex';
   }
 

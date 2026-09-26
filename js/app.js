@@ -20,7 +20,7 @@ import { LauncherPhysicsEngine } from './physics.js?v=10.0';
 import { PrintStudioManager } from './components/printManager.js?v=10.0';
 import { syncManager } from './modules/syncManager.js?v=10.0';
 import { localSync } from './components/localFileDirectSync.js?v=10.0';
-import { driveSyncManager } from './modules/driveSyncManager.js?v=10.0';
+import { driveSyncManager } from './modules/driveSyncManager.js?v=10.1';
 
 class GiriOrbitPlatform {
   constructor() {
