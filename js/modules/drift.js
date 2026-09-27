@@ -921,11 +921,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
     // Create Blank Document
     rootEl.querySelector('#btn-hub-create-blank')?.addEventListener('click', () => {
       try { localStorage.removeItem('giri_orbit_drift_doc'); } catch {}
-      mountEditor(rootEl, '<p style="font-family: Calibri, \'Segoe UI\', Arial, sans-serif; font-size: 11pt;"><br></p>', 'Document 1 - Giri Drift', onUpdate);
+      mountEditor(rootEl, '<div class="drift-page-sheet active-sheet" contenteditable="true" spellcheck="true" data-page="1" style="font-family: Calibri, \'Segoe UI\', Arial, sans-serif; font-size: 11pt;"><p><br></p></div>', 'Document 1 - Giri Drift', onUpdate);
     });
     rootEl.querySelector('#hub-nav-blank')?.addEventListener('click', () => {
       try { localStorage.removeItem('giri_orbit_drift_doc'); } catch {}
-      mountEditor(rootEl, '<p style="font-family: Calibri, \'Segoe UI\', Arial, sans-serif; font-size: 11pt;"><br></p>', 'Document 1 - Giri Drift', onUpdate);
+      mountEditor(rootEl, '<div class="drift-page-sheet active-sheet" contenteditable="true" spellcheck="true" data-page="1" style="font-family: Calibri, \'Segoe UI\', Arial, sans-serif; font-size: 11pt;"><p><br></p></div>', 'Document 1 - Giri Drift', onUpdate);
     });
 
     // Nav switch to Custom Templates
@@ -1171,7 +1171,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
   function mountEditor(rootEl, templateContent = null, docTitle = 'Document 1 - Giri Drift', onUpdate = null) {
     let currentDocTitle = docTitle;
     const defaultBlankDoc = '<p style="font-family: Calibri, \'Segoe UI\', Arial, sans-serif; font-size: 11pt;"><br></p>';
-    const savedDoc = templateContent !== null ? templateContent : (localStorage.getItem('giri_orbit_drift_doc') || defaultBlankDoc);
+    let initialDocHtml = templateContent !== null ? templateContent : (localStorage.getItem('giri_orbit_drift_doc') || defaultBlankDoc);
+    if (!initialDocHtml.includes('drift-page-sheet')) {
+      initialDocHtml = `<div class="drift-page-sheet active-sheet" contenteditable="true" spellcheck="true" data-page="1" style="font-family: Calibri, 'Segoe UI', Arial, sans-serif; font-size: 11pt;">${initialDocHtml.trim() || '<p><br></p>'}</div>`;
+    }
+    const savedDoc = initialDocHtml;
     if (templateContent !== null) {
       try { localStorage.setItem('giri_orbit_drift_doc', savedDoc); } catch {}
     }
@@ -3283,6 +3287,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
     initEditorWorkspace(rootEl, onUpdate);
 
     function initEditorWorkspace(container, onUpdate) {
+      let miniToolbar = null;
       const paper = container.querySelector('#drift-paper-canvas');
       const wordCountEl = container.querySelector('#drift-word-count');
       const charCountEl = container.querySelector('#drift-char-count');
@@ -3466,9 +3471,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
             case 'new': {
               const choice = confirm('Create a new blank document? (Click OK for Blank, Cancel to open Templates Hub)');
               if (choice) {
-                paper.innerHTML = '<p></p>';
+                paper.innerHTML = '<div class="drift-page-sheet active-sheet" contenteditable="true" spellcheck="true" data-page="1" style="font-family: Calibri, \'Segoe UI\', Arial, sans-serif; font-size: 11pt;"><p><br></p></div>';
                 currentDocTitle = 'Untitled Document';
+                ensurePagesStructure(paper);
                 saveDocument();
+                renderPageThumbnails();
                 if (window.orbitPlatform) window.orbitPlatform.triggerToast('Created new blank document');
               } else {
                 mountHub(container, onUpdate);
@@ -3478,15 +3485,21 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
             case 'open': {
               const fileInput = document.createElement('input');
               fileInput.type = 'file';
-              fileInput.accept = '.docx,.doc,.txt,.md,.html';
+              fileInput.accept = '.docx,.doc,.txt,.md,.html,.gdrift';
               fileInput.onchange = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
                 reader.onload = (evt) => {
-                  paper.innerHTML = evt.target.result;
+                  let content = evt.target.result || '';
+                  if (!content.includes('drift-page-sheet')) {
+                    content = `<div class="drift-page-sheet active-sheet" contenteditable="true" spellcheck="true" data-page="1" style="font-family: Calibri, \'Segoe UI\', Arial, sans-serif; font-size: 11pt;">${content.trim() || '<p><br></p>'}</div>`;
+                  }
+                  paper.innerHTML = content;
+                  ensurePagesStructure(paper);
                   currentDocTitle = file.name.replace(/\.[^/.]+$/, '');
                   saveDocument();
+                  renderPageThumbnails();
                   if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Loaded "${file.name}"`);
                 };
                 reader.readAsText(file);
@@ -3539,9 +3552,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
             case 'delete': {
               if (confirm(`Are you sure you want to delete "${currentDocTitle}"? This will reset the workspace.`)) {
                 localStorage.removeItem('giri_orbit_drift_doc');
-                paper.innerHTML = '<p></p>';
+                paper.innerHTML = '<div class="drift-page-sheet active-sheet" contenteditable="true" spellcheck="true" data-page="1" style="font-family: Calibri, \'Segoe UI\', Arial, sans-serif; font-size: 11pt;"><p><br></p></div>';
                 currentDocTitle = 'Untitled Document';
+                ensurePagesStructure(paper);
                 saveDocument();
+                renderPageThumbnails();
                 if (window.orbitPlatform) window.orbitPlatform.triggerToast('Document deleted and reset.');
               }
               break;
@@ -4314,7 +4329,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
               sheet.innerHTML = '<p><br></p>';
             }
             // Ensure nextSheet still has at least one paragraph
-            if (nextSheet.children.length === 0) {
+            if (nextSheet && nextSheet.children.length === 0) {
               nextSheet.innerHTML = '<p><br></p>';
             }
           }
@@ -4349,6 +4364,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         const existingSheets = paperEl.querySelectorAll('.drift-page-sheet');
         if (existingSheets.length > 0) {
           renumberDocPages();
+          renderPageThumbnails();
           setTimeout(() => autoPaginateDriftPages(paperEl), 50);
           setTimeout(() => autoPaginateDriftPages(paperEl), 250);
           return;
@@ -4374,6 +4390,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
             paperEl.appendChild(sheet);
           });
           renumberDocPages();
+          renderPageThumbnails();
           setTimeout(() => autoPaginateDriftPages(paperEl), 50);
           setTimeout(() => autoPaginateDriftPages(paperEl), 250);
           return;
@@ -4390,6 +4407,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
         sheet.innerHTML = existingContent || '<p><br></p>';
         paperEl.appendChild(sheet);
         renumberDocPages();
+        renderPageThumbnails();
         // Automatically paginate into Page 2, Page 3, etc. if content overflows
         setTimeout(() => autoPaginateDriftPages(paperEl), 50);
         setTimeout(() => autoPaginateDriftPages(paperEl), 250);
@@ -4397,6 +4415,20 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
       // Ensure pages structure on initialization
       ensurePagesStructure(paper);
+      renderPageThumbnails();
+
+      // Click delegation: clicking anywhere on a sheet focuses the editable paragraph
+      paper.addEventListener('click', (e) => {
+        const sheet = e.target.closest('.drift-page-sheet');
+        if (sheet && e.target === sheet) {
+          const firstP = sheet.querySelector('p, h1, h2, h3') || sheet.firstElementChild;
+          if (firstP) {
+            firstP.focus();
+          } else {
+            sheet.focus();
+          }
+        }
+      });
 
       // Auto-recheck pagination on viewport/paper resize (e.g. view switch from launcher to Drift)
       if (typeof ResizeObserver !== 'undefined' && paper) {
@@ -5779,7 +5811,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
       }
 
       // Floating Mini Formatting Toolbar (Quick Floating Format Style)
-      let miniToolbar = document.getElementById('drift-mini-toolbar');
+      miniToolbar = document.getElementById('drift-mini-toolbar');
       if (!miniToolbar) {
         miniToolbar = document.createElement('div');
         miniToolbar.id = 'drift-mini-toolbar';

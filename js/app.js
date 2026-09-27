@@ -12,17 +12,17 @@
  * - Universal Import/Export, Command Palette (Ctrl+K), and AI Copilot (Ctrl+J)
  */
 
-import { renderDriftApp } from './modules/drift.js?v=10.2';
-import { renderAxisApp } from './modules/axis.js?v=10.2';
-import { renderKineticApp } from './modules/kinetic.js?v=10.2';
-import { renderPdfStudioApp } from './modules/pdfStudio.js?v=10.2';
-import { LauncherPhysicsEngine } from './physics.js?v=10.2';
-import { PrintStudioManager } from './components/printManager.js?v=10.2';
-import { syncManager } from './modules/syncManager.js?v=10.2';
-import { localSync } from './components/localFileDirectSync.js?v=10.2';
-import { driveSyncManager } from './modules/driveSyncManager.js?v=10.2';
-import { GirionixAgentManager } from './components/girionixAgent.js?v=10.9';
-import girionixEngine from './modules/girionixEngine.js?v=10.9';
+import { renderDriftApp } from './modules/drift.js?v=11.6';
+import { renderAxisApp } from './modules/axis.js?v=11.6';
+import { renderKineticApp } from './modules/kinetic.js?v=11.6';
+import { renderPdfStudioApp } from './modules/pdfStudio.js?v=11.6';
+import { LauncherPhysicsEngine } from './physics.js?v=11.6';
+import { PrintStudioManager } from './components/printManager.js?v=11.6';
+import { syncManager } from './modules/syncManager.js?v=11.6';
+import { localSync } from './components/localFileDirectSync.js?v=11.6';
+import { driveSyncManager } from './modules/driveSyncManager.js?v=11.6';
+import { GirionixAgentManager } from './components/girionixAgent.js?v=11.6';
+import girionixEngine from './modules/girionixEngine.js?v=11.6';
 
 class GiriOrbitPlatform {
   constructor() {

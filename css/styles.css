@@ -1102,6 +1102,22 @@ body.in-tool .orbit-workspace {
   box-sizing: border-box;
 }
 
+/* Safety fallback: if drift-paper-canvas has direct non-sheet children or is empty, render like a sheet */
+#drift-paper-canvas:not(:has(.drift-page-sheet)) {
+  width: 816px !important;
+  min-height: 1056px !important;
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 2px !important;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.12), 0 0 2px rgba(0, 0, 0, 0.15) !important;
+  padding: 72px 80px !important;
+  font-family: Calibri, 'Segoe UI', Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.25;
+  color: #000000;
+  box-sizing: border-box !important;
+}
+
 /* Individual MS Word Authentic White Page Sheets */
 .drift-page-sheet {
   width: 816px !important;
