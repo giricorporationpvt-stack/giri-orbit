@@ -148,6 +148,7 @@ export class GirionixAgentManager {
               <button id="btn-agent-header-settings" class="agent-header-settings-btn" title="Configure Gemini API or OpenAI API Keys">
                 <span>⚙️</span> <span>API Config</span>
               </button>
+              <button id="btn-minimize-girionix-agent" class="girionix-agent-minimize-btn" title="Minimize Agent to bottom chip" style="background:#1e293b; border:1px solid #334155; color:#94a3b8; border-radius:6px; width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; font-weight:700;">—</button>
               <span class="agent-shortcut-tag" title="Keyboard shortcut">Alt+A</span>
               <button id="btn-close-girionix-agent" class="girionix-agent-close-btn" title="Close Agent (Esc)">✕</button>
             </div>
@@ -436,7 +437,9 @@ export class GirionixAgentManager {
     const copyBtn = document.getElementById('btn-agent-copy');
     const downloadBtn = document.getElementById('btn-agent-download');
 
-    // Close handlers
+    // Close & Minimize handlers
+    const minimizeBtn = document.getElementById('btn-minimize-girionix-agent');
+    minimizeBtn?.addEventListener('click', () => this.minimizeAgent());
     closeBtn?.addEventListener('click', () => this.closeAgent());
     backdrop?.addEventListener('click', (e) => {
       if (e.target === backdrop && !this.isExecuting) this.closeAgent();
@@ -634,6 +637,9 @@ export class GirionixAgentManager {
       input.value = prefillPrompt;
     }
 
+    const chip = document.getElementById('girionix-agent-minimized-chip');
+    if (chip) chip.style.display = 'none';
+
     this.updateConnectionBadge();
     backdrop.style.display = 'flex';
     this.isOpen = true;
@@ -645,7 +651,56 @@ export class GirionixAgentManager {
   closeAgent() {
     const backdrop = document.getElementById('girionix-agent-modal-backdrop');
     if (backdrop) backdrop.style.display = 'none';
+    const chip = document.getElementById('girionix-agent-minimized-chip');
+    if (chip) chip.style.display = 'none';
     this.isOpen = false;
+  }
+
+  minimizeAgent() {
+    const backdrop = document.getElementById('girionix-agent-modal-backdrop');
+    if (backdrop) backdrop.style.display = 'none';
+    this.isOpen = false;
+
+    let chip = document.getElementById('girionix-agent-minimized-chip');
+    if (!chip) {
+      chip = document.createElement('div');
+      chip.id = 'girionix-agent-minimized-chip';
+      chip.className = 'girionix-agent-minimized-chip';
+      chip.innerHTML = `
+        <div class="agent-chip-avatar">🤖</div>
+        <div class="agent-chip-content">
+          <span class="agent-chip-title">Autonomous Agent</span>
+          <span class="agent-chip-status" id="agent-chip-status-text">${this.isExecuting ? '⚡ Working...' : 'Ready'}</span>
+        </div>
+        <button id="btn-restore-agent-chip" class="agent-chip-btn-restore" title="Restore Agent Window">🗖 Restore</button>
+        <button id="btn-close-agent-chip" class="agent-chip-btn-close" title="Close Agent">✕</button>
+      `;
+      document.body.appendChild(chip);
+
+      chip.querySelector('#btn-restore-agent-chip')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.restoreAgent();
+      });
+      chip.addEventListener('click', () => {
+        this.restoreAgent();
+      });
+      chip.querySelector('#btn-close-agent-chip')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.closeAgent();
+      });
+    }
+
+    chip.style.display = 'flex';
+    const statusText = chip.querySelector('#agent-chip-status-text');
+    if (statusText) statusText.textContent = this.isExecuting ? '⚡ Working on plan...' : 'Ready / Minimized';
+  }
+
+  restoreAgent() {
+    const chip = document.getElementById('girionix-agent-minimized-chip');
+    if (chip) chip.style.display = 'none';
+    const backdrop = document.getElementById('girionix-agent-modal-backdrop');
+    if (backdrop) backdrop.style.display = 'flex';
+    this.isOpen = true;
   }
 
   toggleAgent(defaultMode = null) {

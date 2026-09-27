@@ -909,6 +909,10 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
               <span class="sync-dot-live"></span>
               <span id="txt-axis-browser-sync-status">Synced to Browser</span>
             </button>
+            <button class="fluent-top-action-pill ai-agent-btn" id="btn-axis-top-ai-agent" title="Girionix Autonomous AI Agent (Alt+A)" style="background:linear-gradient(135deg, rgba(168,85,247,0.22), rgba(37,99,235,0.22)); border:1px solid rgba(168,85,247,0.45); color:#c084fc; font-weight:700;">
+              <span style="font-size:12px;">🤖</span>
+              <span>AI Agent</span>
+            </button>
             <button class="fluent-top-action-pill" id="btn-axis-comments" title="Comments & Notes">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               <span>Comments</span>
@@ -930,6 +934,11 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
 
         <!-- Dark Office 365 File Dropdown Menu -->
         <div class="office-file-menu-dropdown" id="axis-file-menu-dropdown">
+          <div class="file-menu-item" data-action="ai-agent" id="file-menu-axis-ai-agent" style="background:rgba(168,85,247,0.12); color:#c084fc; font-weight:700;">
+            <span class="file-menu-icon">🤖</span>
+            <span>Girionix AI Agent...</span>
+            <span class="file-menu-shortcut" style="margin-left:auto; font-size:10px; color:#94a3b8;">Alt+A</span>
+          </div>
           <div class="file-menu-item" data-action="drive-sync" id="file-menu-axis-drive-sync" style="background:rgba(66,133,244,0.15); color:#60a5fa; font-weight:600;">
             <span class="file-menu-icon">☁️</span>
             <span>Google Drive Cloud Sync...</span>
@@ -2074,6 +2083,14 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       const action = item.dataset.action;
       fileMenuDropdown.classList.remove('open');
       switch (action) {
+        case 'ai-agent': {
+          if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAgent === 'function') {
+            window.orbitPlatform.openGirionixAgent('axis');
+          } else if (window.orbitAgent) {
+            window.orbitAgent.openAgent('axis');
+          }
+          break;
+        }
         case 'save-template': {
           const name = prompt('Enter custom template name:', 'Custom Spreadsheet ' + new Date().toLocaleDateString());
           if (!name) break;
@@ -7017,6 +7034,13 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     }
 
     // Connect trigger buttons
+    container.querySelector('#btn-axis-top-ai-agent')?.addEventListener('click', () => {
+      if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAgent === 'function') {
+        window.orbitPlatform.openGirionixAgent('axis');
+      } else if (window.orbitAgent) {
+        window.orbitAgent.openAgent('axis');
+      }
+    });
     container.querySelector('#btn-axis-ai-agent')?.addEventListener('click', () => {
       if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAgent === 'function') {
         window.orbitPlatform.openGirionixAgent('axis');

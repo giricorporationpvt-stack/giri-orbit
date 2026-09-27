@@ -1249,6 +1249,10 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                 <span style="font-size:12px;">💾</span>
                 <span id="txt-drift-sync-status">Save to Device</span>
               </button>
+              <button class="fluent-top-action-pill ai-agent-btn" id="btn-drift-top-ai-agent" title="Girionix Autonomous AI Agent (Alt+A)" style="background:linear-gradient(135deg, rgba(168,85,247,0.22), rgba(59,130,246,0.22)); border:1px solid rgba(168,85,247,0.45); color:#c084fc; font-weight:700;">
+                <span style="font-size:12px;">🤖</span>
+                <span>AI Agent</span>
+              </button>
               <button class="fluent-top-action-pill" id="btn-toggle-comments-sidebar" title="Comments">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 <span>Comments</span>
@@ -1273,6 +1277,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
 
           <!-- Dark Office 365 File Dropdown Menu (Exact match to screenshot) -->
           <div class="office-file-menu-dropdown" id="drift-file-menu-dropdown">
+            <div class="file-menu-item" data-action="ai-agent" id="file-menu-drift-ai-agent" style="background:rgba(168,85,247,0.12); color:#c084fc; font-weight:700;">
+              <span class="file-menu-icon">🤖</span>
+              <span>Girionix AI Agent...</span>
+              <span class="file-menu-shortcut" style="margin-left:auto; font-size:10px; color:#94a3b8;">Alt+A</span>
+            </div>
             <div class="file-menu-item" data-action="drive-sync" id="file-menu-drift-drive-sync" style="background:rgba(66,133,244,0.15); color:#60a5fa; font-weight:600;">
               <span class="file-menu-icon">☁️</span>
               <span>Google Drive Cloud Sync...</span>
@@ -3433,6 +3442,14 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
           fileMenuDropdown.classList.remove('open');
 
           switch (action) {
+            case 'ai-agent': {
+              if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAgent === 'function') {
+                window.orbitPlatform.openGirionixAgent('drift');
+              } else if (window.orbitAgent) {
+                window.orbitAgent.openAgent('drift');
+              }
+              break;
+            }
             case 'drive-sync': {
               window.orbitDriveSync?.openDriveModal('browser', 'drift');
               break;
@@ -8242,6 +8259,13 @@ function calculateMetrics(records) {
       });
 
       // Triggers across the app
+      container.querySelector('#btn-drift-top-ai-agent')?.addEventListener('click', () => {
+        if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAgent === 'function') {
+          window.orbitPlatform.openGirionixAgent('drift');
+        } else if (window.orbitAgent) {
+          window.orbitAgent.openAgent('drift');
+        }
+      });
       container.querySelector('#btn-drift-ai-agent')?.addEventListener('click', () => {
         if (window.orbitPlatform && typeof window.orbitPlatform.openGirionixAgent === 'function') {
           window.orbitPlatform.openGirionixAgent('drift');

@@ -343,7 +343,7 @@
           <span style="background:rgba(168,85,247,0.18); border:1px solid rgba(168,85,247,0.4); color:#c084fc; font-size:9.5px; font-weight:800; padding:1.5px 5px; border-radius:10px; letter-spacing:0.5px;">PRO</span>
         </div>
         <!-- Active Copilot Indicator matching user screenshot -->
-        <span id="girionix-copilot-title-badge" style="font-size:11px; font-weight:700; color:#38bdf8; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:2px 8px; white-space:nowrap;">✦ Giri Drift Co-Pilot</span>
+        <span id="girionix-copilot-title-badge" style="font-size:11px; font-weight:700; color:#38bdf8; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25); border-radius:12px; padding:2px 8px; white-space:nowrap; max-width:140px; overflow:hidden; text-overflow:ellipsis;">✦ Giri Drift Co-Pilot</span>
       </div>
 
       <div class="girionix-drawer-actions" style="display:flex; align-items:center; gap:6px;">
@@ -357,6 +357,8 @@
           <button id="btn-girionix-mode-instant" class="girionix-mode-btn active" title="Instant Local Sovereign AI (100% Guaranteed Response)" style="background:#2563eb; color:#fff; border:none; border-radius:4px; font-size:10px; font-weight:700; padding:2px 6px; cursor:pointer;">⚡ Instant</button>
           <button id="btn-girionix-mode-cloud" class="girionix-mode-btn" title="Cloud Studio Web App" style="background:transparent; color:#94a3b8; border:none; border-radius:4px; font-size:10px; font-weight:600; padding:2px 6px; cursor:pointer;">🌐 Cloud</button>
         </div>
+        <!-- Minimize Option -->
+        <button class="girionix-icon-btn" id="btn-girionix-minimize" title="Minimize Copilot to bottom dock" style="background:transparent; border:1px solid #27272a; color:#94a3b8; border-radius:6px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:14px; font-weight:700;">—</button>
         <button class="girionix-icon-btn" id="btn-girionix-settings" title="AI Model & API Key Settings" style="background:transparent; border:1px solid #27272a; color:#94a3b8; border-radius:6px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px;">⚙️</button>
         <button class="girionix-icon-btn" id="btn-girionix-expand" title="Adjust Width (Compact / Wide / Full)" style="background:transparent; border:1px solid #27272a; color:#94a3b8; border-radius:6px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px;">⛶</button>
         <button class="girionix-icon-btn" id="btn-girionix-drawer-close" title="Close Copilot (ESC)" style="background:transparent; border:1px solid #27272a; color:#94a3b8; border-radius:6px; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:13px;">✕</button>
@@ -430,11 +432,20 @@
     </div>
   </aside>
 
+  <!-- Minimized Floating Dock Pill for Girionix AI Drawer -->
+  <div id="girionix-dock-minimized-pill" class="girionix-dock-pill" style="display:none;" title="Click to restore Girionix AI Copilot">
+    <div class="dock-pill-indicator"></div>
+    <span class="dock-pill-icon">✨</span>
+    <span class="dock-pill-label" id="girionix-dock-pill-label">Girionix AI (Minimized)</span>
+    <button id="btn-girionix-dock-restore" class="dock-pill-restore-btn" title="Restore Copilot">🗖 Restore</button>
+    <button id="btn-girionix-dock-close" class="dock-pill-close-btn" title="Close Copilot">✕</button>
+  </div>
+
   <!-- Notification Toast Container -->
   <div class="orbit-toast-wrap" id="orbit-toast-wrap" aria-live="polite"></div>
 
   <!-- Main Orchestrator -->
-  <script type="module" src="js/app.js?v=11.6"></script>
+  <script type="module" src="js/app.js?v=11.7"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {

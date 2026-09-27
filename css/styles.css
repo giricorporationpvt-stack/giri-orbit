@@ -4292,6 +4292,159 @@ body.dark .drift-merge-field-chip {
   width: 720px;
   max-width: 98vw;
 }
+.girionix-ai-drawer.minimized {
+  transform: translateX(100%) !important;
+  pointer-events: none;
+}
+
+/* Floating Dock Pill for Minimized Girionix Copilot */
+.girionix-dock-pill {
+  position: fixed;
+  bottom: 20px;
+  right: 22px;
+  z-index: 10020;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #090d16, #111a2e);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 16px rgba(56, 189, 248, 0.25);
+  border-radius: 30px;
+  padding: 8px 14px 8px 16px;
+  cursor: pointer;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+  backdrop-filter: blur(8px);
+}
+.girionix-dock-pill:hover {
+  transform: translateY(-2px);
+  border-color: #38bdf8;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.7), 0 0 24px rgba(56, 189, 248, 0.45);
+}
+.dock-pill-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: girionixPillPulse 2s infinite;
+}
+@keyframes girionixPillPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+.dock-pill-icon {
+  font-size: 14px;
+}
+.dock-pill-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+.dock-pill-restore-btn {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.dock-pill-restore-btn:hover {
+  background: #0284c7;
+  color: #ffffff;
+  border-color: #38bdf8;
+}
+.dock-pill-close-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: color 0.15s ease;
+}
+.dock-pill-close-btn:hover {
+  color: #ef4444;
+}
+
+/* Minimized Chip for Autonomous Agent */
+.girionix-agent-minimized-chip {
+  position: fixed;
+  bottom: 20px;
+  left: 22px;
+  z-index: 10020;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #18181b, #27272a);
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 16px rgba(168, 85, 247, 0.25);
+  border-radius: 30px;
+  padding: 8px 14px 8px 14px;
+  cursor: pointer;
+  user-select: none;
+  backdrop-filter: blur(8px);
+  transition: all 0.22s ease;
+}
+.girionix-agent-minimized-chip:hover {
+  transform: translateY(-2px);
+  border-color: #c084fc;
+}
+.agent-chip-avatar {
+  font-size: 18px;
+}
+.agent-chip-content {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.agent-chip-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+.agent-chip-status {
+  font-size: 10px;
+  font-weight: 600;
+  color: #c084fc;
+}
+.agent-chip-btn-restore {
+  background: rgba(168, 85, 247, 0.2);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.agent-chip-btn-restore:hover {
+  background: #9333ea;
+  color: #fff;
+}
+.agent-chip-btn-close {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 3px 6px;
+}
+.agent-chip-btn-close:hover {
+  color: #ef4444;
+}
+
+/* AI Agent button in .fluent-top-actions */
+.fluent-top-action-pill.ai-agent-btn:hover {
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.35);
+  filter: brightness(1.1);
+}
 
 /* Draggable Resize Handle */
 .girionix-resize-handle {

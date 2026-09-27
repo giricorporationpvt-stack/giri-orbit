@@ -38,8 +38,25 @@ class GiriOrbitPlatform {
     this.printManager = new PrintStudioManager(this);
     this.agent = new GirionixAgentManager(this);
     window.orbitAgent = this.agent;
+    window.openGirionixAgent = (tool, prompt) => this.openGirionixAgent(tool, prompt);
 
     this.init();
+  }
+
+  openGirionixAgent(tool = null, prefillPrompt = '') {
+    if (this.agent && typeof this.agent.openAgent === 'function') {
+      this.agent.openAgent(tool, prefillPrompt);
+    } else if (window.orbitAgent && typeof window.orbitAgent.openAgent === 'function') {
+      window.orbitAgent.openAgent(tool, prefillPrompt);
+    }
+  }
+
+  toggleGirionixAgent(tool = null) {
+    if (this.agent && typeof this.agent.toggleAgent === 'function') {
+      this.agent.toggleAgent(tool);
+    } else if (window.orbitAgent && typeof window.orbitAgent.toggleAgent === 'function') {
+      window.orbitAgent.toggleAgent(tool);
+    }
   }
 
   init() {
@@ -725,6 +742,18 @@ class GiriOrbitPlatform {
                 <span class="app-card-url-badge" style="color:#0891b2; background:#ecfeff;">#girionix</span>
               </div>
             </div>
+
+            <!-- 7. Girionix Autonomous AI Agent -->
+            <div class="zoho-app-card" id="btn-card-launch-agent" role="button" tabindex="0" title="Launch Girionix Autonomous AI Agent (Alt+A)">
+              <div class="app-card-icon" style="background:#fdf4ff; display:flex; align-items:center; justify-content:center;">
+                <span style="font-size:24px;">🤖</span>
+              </div>
+              <div class="app-card-meta">
+                <span class="app-card-prefix">AUTONOMOUS</span>
+                <span class="app-card-title">AI Agent</span>
+                <span class="app-card-url-badge" style="color:#a855f7; background:#faf5ff;">ALT+A</span>
+              </div>
+            </div>
           </div>
 
           <!-- Girionix AI Official Strategic Enterprise Partnership Showcase Card -->
@@ -963,8 +992,11 @@ class GiriOrbitPlatform {
     landingContainer.querySelector('#btn-hero-launch-girionix')?.addEventListener('click', () => {
       this.navigateTo('girionix');
     });
+    landingContainer.querySelector('#btn-card-launch-agent')?.addEventListener('click', () => {
+      this.openGirionixAgent();
+    });
     landingContainer.querySelector('#btn-banner-launch-agent')?.addEventListener('click', () => {
-      if (this.agent) this.agent.openAgent();
+      this.openGirionixAgent();
     });
     landingContainer.querySelector('#btn-banner-launch-girionix')?.addEventListener('click', () => {
       this.navigateTo('girionix');
@@ -2725,8 +2757,54 @@ class GiriOrbitPlatform {
       }
     });
 
-    // Open & Close Drawer API
+    // Open, Close, Minimize & Restore Drawer API
+    const minimizeBtn = document.getElementById('btn-girionix-minimize');
+    const dockPill = document.getElementById('girionix-dock-minimized-pill');
+    const dockRestoreBtn = document.getElementById('btn-girionix-dock-restore');
+    const dockCloseBtn = document.getElementById('btn-girionix-dock-close');
+    const dockLabel = document.getElementById('girionix-dock-pill-label');
+
+    this.minimizeGirionixAiDrawer = () => {
+      drawer.classList.remove('open');
+      drawer.classList.add('minimized');
+      drawer.setAttribute('aria-hidden', 'true');
+      this.isGirionixDrawerOpen = false;
+      if (dockPill) {
+        dockPill.style.display = 'flex';
+        const meta = toolMeta[activeCopilotTool] || { name: 'Girionix AI' };
+        if (dockLabel) dockLabel.textContent = `${meta.name} Copilot (Minimized)`;
+      }
+    };
+
+    this.restoreGirionixAiDrawer = () => {
+      drawer.classList.remove('minimized');
+      if (dockPill) dockPill.style.display = 'none';
+      this.openGirionixAiDrawer(activeCopilotTool);
+    };
+
+    minimizeBtn?.addEventListener('click', () => {
+      this.minimizeGirionixAiDrawer();
+    });
+
+    dockRestoreBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.restoreGirionixAiDrawer();
+    });
+
+    dockPill?.addEventListener('click', () => {
+      this.restoreGirionixAiDrawer();
+    });
+
+    dockCloseBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      drawer.classList.remove('minimized');
+      if (dockPill) dockPill.style.display = 'none';
+      this.closeGirionixAiDrawer();
+    });
+
     this.openGirionixAiDrawer = (initialTool = null) => {
+      drawer.classList.remove('minimized');
+      if (dockPill) dockPill.style.display = 'none';
       drawer.classList.add('open');
       drawer.setAttribute('aria-hidden', 'false');
       this.isGirionixDrawerOpen = true;
@@ -2738,6 +2816,8 @@ class GiriOrbitPlatform {
 
     this.closeGirionixAiDrawer = () => {
       drawer.classList.remove('open');
+      drawer.classList.remove('minimized');
+      if (dockPill) dockPill.style.display = 'none';
       drawer.setAttribute('aria-hidden', 'true');
       this.isGirionixDrawerOpen = false;
     };
