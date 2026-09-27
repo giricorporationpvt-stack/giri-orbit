@@ -2448,12 +2448,6 @@ class GiriOrbitPlatform {
         }
       }
     };
-        } else {
-          modeBtn.innerHTML = '⚡ Sovereign';
-          modeBtn.title = 'Sovereign Local Intelligence (100% private, 0ms latency)';
-        }
-      }
-    };
     updateEngineBadge();
 
     // Wire settings button
