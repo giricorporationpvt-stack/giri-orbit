@@ -1039,16 +1039,22 @@ class GiriOrbitPlatform {
 
     if (items.length === 0) {
       grid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 40px 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; color: #64748b;">
-          <div style="font-size: 28px; margin-bottom: 8px;">📂</div>
-          <strong style="color: #0f172a; font-size: 14px; display: block; margin-bottom: 4px;">No Saved Browser Work Yet</strong>
-          <p style="font-size: 12px; margin: 0 0 14px 0;">All edits in Drift, Axis, Kinetic, and Aegis PDF automatically sync here in your browser.</p>
-          <button class="btn-giri-primary" id="btn-create-sample-work" style="padding: 6px 16px; font-size: 12px; margin: 0 auto;">
-            Launch Giri Drift Docs
-          </button>
+        <div style="grid-column: 1 / -1; text-align: center; padding: 44px 20px; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 12px; color: #64748b;">
+          <div style="font-size: 32px; margin-bottom: 8px;">📄</div>
+          <strong style="color: #0f172a; font-size: 15px; display: block; margin-bottom: 4px;">No Saved Documents Yet</strong>
+          <p style="font-size: 12.5px; margin: 0 0 16px 0; max-width:440px; margin-left:auto; margin-right:auto; line-height:1.5;">Documents you create or edit in Writer, Sheet, Show, and PDF will automatically appear here.</p>
+          <div style="display:flex; justify-content:center; gap:8px; flex-wrap:wrap;">
+            <button class="btn-giri-primary" id="btn-empty-new-drift" style="padding: 7px 15px; font-size: 12px;">+ New Writer Doc</button>
+            <button class="btn-giri-primary" id="btn-empty-new-axis" style="padding: 7px 15px; font-size: 12px; background:#16a34a; border-color:#15803d;">+ New Sheet</button>
+            <button class="btn-giri-primary" id="btn-empty-new-kinetic" style="padding: 7px 15px; font-size: 12px; background:#dc2626; border-color:#b91c1c;">+ New Presentation</button>
+            <button class="btn-giri-primary" id="btn-empty-new-pdf" style="padding: 7px 15px; font-size: 12px; background:#ea580c; border-color:#c2410c;">+ Open PDF</button>
+          </div>
         </div>
       `;
-      grid.querySelector('#btn-create-sample-work')?.addEventListener('click', () => this.navigateTo('drift'));
+      grid.querySelector('#btn-empty-new-drift')?.addEventListener('click', () => this.navigateTo('drift'));
+      grid.querySelector('#btn-empty-new-axis')?.addEventListener('click', () => this.navigateTo('axis'));
+      grid.querySelector('#btn-empty-new-kinetic')?.addEventListener('click', () => this.navigateTo('kinetic'));
+      grid.querySelector('#btn-empty-new-pdf')?.addEventListener('click', () => this.navigateTo('pdf'));
       return;
     }
 
@@ -1177,13 +1183,48 @@ class GiriOrbitPlatform {
     const grid = container.querySelector('#hub-drive-files-grid');
     if (!grid) return;
 
+    const isConnected = !!(driveSyncManager.isConnectedToGoogle && driveSyncManager.googleUser && driveSyncManager.googleUser.email);
+
+    if (!isConnected) {
+      grid.innerHTML = `
+        <div style="grid-column: 1 / -1; display:flex; align-items:center; justify-content:space-between; padding: 22px 26px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); flex-wrap:wrap; gap:16px;">
+          <div style="display:flex; align-items:center; gap:16px;">
+            <div style="width:48px; height:48px; border-radius:12px; background:#eff6ff; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M7.71 3.5L1.15 15l3.43 6 6.56-11.5L7.71 3.5z" fill="#0066DA"/>
+                <path d="M16.29 3.5h-8.58l6.56 11.5h8.58l-6.56-11.5z" fill="#00AC47"/>
+                <path d="M22.85 15H9.71l-3.43 6h13.14l3.43-6z" fill="#EA4335"/>
+                <path d="M14.27 15l-3.42 6-3.43-6h6.85z" fill="#FFBA00"/>
+              </svg>
+            </div>
+            <div>
+              <h3 style="font-size:15px; font-weight:700; color:#0f172a; margin:0 0 4px 0;">Connect your Google Drive</h3>
+              <p style="font-size:12.5px; color:#64748b; margin:0 0 6px 0; max-width:580px; line-height:1.45;">Directly sync, open, and auto-save your Docs, Sheets, Slides, and PDFs in Google Drive with client-side privacy.</p>
+              <div style="font-size:11px; color:#b45309; display:inline-flex; align-items:center; gap:5px; background:#fffbeb; padding:2px 8px; border-radius:4px; border:1px solid #fef3c7;">
+                <span>ℹ️</span> When Google prompts <em>"Google hasn't verified this app"</em>, click <strong>"Advanced" ➔ "Go to Giri Orbit (unsafe)"</strong> to connect.
+              </div>
+            </div>
+          </div>
+          <button class="btn-giri-primary" id="btn-hub-connect-drive-action" style="padding: 10px 20px; font-size: 13px; font-weight:600; display:flex; align-items:center; gap:8px;">
+            <span>Continue with Google ➔</span>
+          </button>
+        </div>
+      `;
+      grid.querySelector('#btn-hub-connect-drive-action')?.addEventListener('click', () => {
+        driveSyncManager.promptGoogleDirectLogin();
+      });
+      return;
+    }
+
     const files = driveSyncManager.getDriveFiles();
     if (files.length === 0) {
       grid.innerHTML = `
-        <div style="grid-column: 1 / -1; text-align: center; padding: 30px 20px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; color: #64748b;">
-          <p style="font-size: 13px; margin: 0 0 10px 0;">No files in your Google Drive cloud yet.</p>
-          <button class="btn-giri-primary" id="btn-create-sample-drive-file" style="padding: 6px 14px; font-size: 12px; margin: 0 auto;">
-            + Create New Drive File
+        <div style="grid-column: 1 / -1; text-align: center; padding: 32px 20px; background: #ffffff; border: 1px dashed #cbd5e1; border-radius: 12px; color: #64748b;">
+          <div style="font-size: 26px; margin-bottom: 8px;">☁️</div>
+          <strong style="color: #0f172a; font-size: 14px; display: block; margin-bottom: 4px;">Connected as ${this.escapeHtml(driveSyncManager.googleUser.email)}</strong>
+          <p style="font-size: 12px; margin: 0 0 14px 0;">No documents saved to your Google Drive cloud yet. Save any open document or create a new file.</p>
+          <button class="btn-giri-primary" id="btn-create-sample-drive-file" style="padding: 6px 16px; font-size: 12px; margin: 0 auto;">
+            + New Drive File
           </button>
         </div>
       `;

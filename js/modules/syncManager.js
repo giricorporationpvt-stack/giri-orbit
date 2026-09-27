@@ -84,47 +84,19 @@ class GiriSyncManager {
 
   init() {
     if (typeof localStorage === 'undefined') return;
-    // Ensure default registry exists if first time
-    const existing = localStorage.getItem(this.registryKey);
-    if (!existing) {
-      const initialRegistry = [
-        {
-          tool: 'drift',
-          title: TOOL_DEFAULTS.drift.defaultTitle,
-          snippet: TOOL_DEFAULTS.drift.defaultSnippet,
-          stats: TOOL_DEFAULTS.drift.defaultStats,
-          updatedAt: Date.now() - (12 * 60 * 1000), // 12m ago
-          customized: false
-        },
-        {
-          tool: 'axis',
-          title: TOOL_DEFAULTS.axis.defaultTitle,
-          snippet: TOOL_DEFAULTS.axis.defaultSnippet,
-          stats: TOOL_DEFAULTS.axis.defaultStats,
-          updatedAt: Date.now() - (60 * 60 * 1000), // 1h ago
-          customized: false
-        },
-        {
-          tool: 'kinetic',
-          title: TOOL_DEFAULTS.kinetic.defaultTitle,
-          snippet: TOOL_DEFAULTS.kinetic.defaultSnippet,
-          stats: TOOL_DEFAULTS.kinetic.defaultStats,
-          updatedAt: Date.now() - (3 * 60 * 60 * 1000), // 3h ago
-          customized: false
-        },
-        {
-          tool: 'pdf',
-          title: TOOL_DEFAULTS.pdf.defaultTitle,
-          snippet: TOOL_DEFAULTS.pdf.defaultSnippet,
-          stats: TOOL_DEFAULTS.pdf.defaultStats,
-          updatedAt: Date.now() - (24 * 60 * 60 * 1000), // Yesterday
-          customized: false
+    try {
+      const existing = localStorage.getItem(this.registryKey);
+      if (existing) {
+        let registry = JSON.parse(existing);
+        if (Array.isArray(registry)) {
+          // Purge all mock uncustomized legacy items — ONLY keep real documents
+          registry = registry.filter(r => r && r.customized === true && this.hasSavedWork(r.tool));
+          localStorage.setItem(this.registryKey, JSON.stringify(registry));
         }
-      ];
-      try {
-        localStorage.setItem(this.registryKey, JSON.stringify(initialRegistry));
-      } catch {}
-    }
+      } else {
+        localStorage.setItem(this.registryKey, JSON.stringify([]));
+      }
+    } catch {}
   }
 
   /**
@@ -180,30 +152,78 @@ class GiriSyncManager {
   }
 
   /**
-   * Check if tool has non-empty saved work in browser
+   * Check if tool has non-empty real user-saved work in browser
    */
   hasSavedWork(tool) {
     const config = TOOL_DEFAULTS[tool];
     if (!config) return false;
     const raw = localStorage.getItem(config.dataKey);
     if (!raw) return false;
-    if (raw === '[]' || raw === '{}' || raw === '<p><br></p>') return false;
+    const trimmed = raw.trim();
+    if (!trimmed || trimmed === '[]' || trimmed === '{}' || trimmed === '<p><br></p>' || trimmed === '<p></p>') return false;
+
+    // Check registry: if explicitly marked customized === false, it's mock
+    const registry = this.getRegistry();
+    const entry = registry.find(r => r.tool === tool);
+    if (entry && entry.customized === false) return false;
+
+    if (tool === 'drift') {
+      const text = trimmed.replace(/<[^>]*>/g, ' ').trim();
+      if (!text || text.length < 5) return false;
+    } else if (tool === 'axis') {
+      try {
+        const parsed = JSON.parse(trimmed);
+        const sheets = Array.isArray(parsed) ? parsed : (typeof parsed === 'object' ? Object.values(parsed) : []);
+        let cellCount = 0;
+        sheets.forEach(s => {
+          if (s && s.data && typeof s.data === 'object') {
+            cellCount += Object.keys(s.data).length;
+          } else if (Array.isArray(s)) {
+            cellCount += s.length;
+          } else if (typeof s === 'object' && s) {
+            cellCount += Object.keys(s).length;
+          }
+        });
+        if (cellCount === 0) return false;
+      } catch {
+        return false;
+      }
+    } else if (tool === 'kinetic') {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (!Array.isArray(parsed) || parsed.length === 0) return false;
+        if (!entry || entry.customized !== true) return false;
+      } catch {
+        return false;
+      }
+    } else if (tool === 'pdf') {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (!Array.isArray(parsed) || parsed.length === 0) return false;
+        if (!entry || entry.customized !== true) return false;
+      } catch {
+        return false;
+      }
+    }
+
     return true;
   }
 
   /**
-   * Get sync metadata for a specific tool
+   * Get sync metadata for a specific tool (returns null if no real user-saved work)
    */
   getToolSyncInfo(tool) {
     const config = TOOL_DEFAULTS[tool];
     if (!config) return null;
 
+    if (!this.hasSavedWork(tool)) return null;
+
     const registry = this.getRegistry();
-    const entry = registry.find(r => r.tool === tool) || {};
+    const entry = registry.find(r => r.tool === tool);
+    if (!entry || entry.customized !== true) return null;
 
     const savedTitle = localStorage.getItem(config.titleKey);
     const savedTime = localStorage.getItem(config.timeKey);
-    const hasData = this.hasSavedWork(tool);
     const rawData = localStorage.getItem(config.dataKey) || '';
 
     // Calculate smart stats based on real data
@@ -211,56 +231,44 @@ class GiriSyncManager {
     const sizeKb = rawData ? (rawData.length / 1024).toFixed(1) : '0.0';
 
     if (tool === 'drift') {
-      if (hasData && rawData && rawData !== '<p><br></p>') {
-        const text = rawData.replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
-        const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
-        const chars = text.length;
-        if (words > 0) {
-          stats = `${words.toLocaleString()} words • ${chars.toLocaleString()} chars • ${sizeKb} KB`;
-        } else {
-          stats = `Draft Document • Ready for AI Assist • ${sizeKb} KB`;
-        }
-      } else {
-        stats = `New Document • Blank Canvas • 0.0 KB`;
-      }
+      const text = rawData.replace(/<[^>]*>/g, ' ').replace(/&[a-z]+;/gi, ' ').replace(/\s+/g, ' ').trim();
+      const words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+      const chars = text.length;
+      stats = `${words.toLocaleString()} words • ${chars.toLocaleString()} chars • ${sizeKb} KB`;
     } else if (tool === 'axis') {
-      if (hasData && rawData) {
-        try {
-          const parsed = JSON.parse(rawData);
-          const sheets = Array.isArray(parsed) ? parsed : (typeof parsed === 'object' ? Object.values(parsed) : []);
-          let cellCount = 0;
-          sheets.forEach(s => {
-            if (s && s.data && typeof s.data === 'object') {
-              cellCount += Object.keys(s.data).length;
-            } else if (Array.isArray(s)) {
-              cellCount += s.length;
-            }
-          });
-          const sheetCount = sheets.length || 1;
-          stats = `${sheetCount} ${sheetCount === 1 ? 'Sheet' : 'Sheets'} • ${cellCount} Cells • ${sizeKb} KB`;
-        } catch (e) {
-          stats = `${config.defaultStats} • ${sizeKb} KB`;
-        }
+      try {
+        const parsed = JSON.parse(rawData);
+        const sheets = Array.isArray(parsed) ? parsed : (typeof parsed === 'object' ? Object.values(parsed) : []);
+        let cellCount = 0;
+        sheets.forEach(s => {
+          if (s && s.data && typeof s.data === 'object') {
+            cellCount += Object.keys(s.data).length;
+          } else if (Array.isArray(s)) {
+            cellCount += s.length;
+          } else if (typeof s === 'object' && s) {
+            cellCount += Object.keys(s).length;
+          }
+        });
+        const sheetCount = sheets.length || 1;
+        stats = `${sheetCount} ${sheetCount === 1 ? 'Sheet' : 'Sheets'} • ${cellCount} Cells • ${sizeKb} KB`;
+      } catch (e) {
+        stats = `${config.defaultStats} • ${sizeKb} KB`;
       }
     } else if (tool === 'kinetic') {
-      if (hasData && rawData) {
-        try {
-          const parsed = JSON.parse(rawData);
-          const slides = Array.isArray(parsed) ? parsed : [];
-          stats = `${slides.length} ${slides.length === 1 ? 'Slide' : 'Slides'} • 16:9 Widescreen • ${sizeKb} KB`;
-        } catch (e) {
-          stats = `${config.defaultStats} • ${sizeKb} KB`;
-        }
+      try {
+        const parsed = JSON.parse(rawData);
+        const slides = Array.isArray(parsed) ? parsed : [];
+        stats = `${slides.length} ${slides.length === 1 ? 'Slide' : 'Slides'} • 16:9 Widescreen • ${sizeKb} KB`;
+      } catch (e) {
+        stats = `${config.defaultStats} • ${sizeKb} KB`;
       }
     } else if (tool === 'pdf') {
-      if (hasData && rawData) {
-        try {
-          const parsed = JSON.parse(rawData);
-          const pages = Array.isArray(parsed) ? parsed : [];
-          stats = `${pages.length} ${pages.length === 1 ? 'Page' : 'Pages'} • PKI Validated • ${sizeKb} KB`;
-        } catch (e) {
-          stats = `${config.defaultStats} • ${sizeKb} KB`;
-        }
+      try {
+        const parsed = JSON.parse(rawData);
+        const pages = Array.isArray(parsed) ? parsed : [];
+        stats = `${pages.length} ${pages.length === 1 ? 'Page' : 'Pages'} • PKI Validated • ${sizeKb} KB`;
+      } catch (e) {
+        stats = `${config.defaultStats} • ${sizeKb} KB`;
       }
     }
 
@@ -272,11 +280,11 @@ class GiriSyncManager {
       badgeBg: config.badgeBg,
       badgeText: config.badgeText,
       url: config.url,
-      title: savedTitle || entry.title || config.defaultTitle,
-      snippet: entry.snippet || config.defaultSnippet,
+      title: savedTitle || entry.title || 'Untitled Document',
+      snippet: entry.snippet || 'Sovereign saved document in Giri Orbit.',
       stats: stats,
       updatedAt: savedTime ? parseInt(savedTime, 10) : (entry.updatedAt || Date.now()),
-      hasSavedData: hasData
+      hasSavedData: true
     };
   }
 

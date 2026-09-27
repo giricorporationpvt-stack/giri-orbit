@@ -2530,17 +2530,7 @@ function initPdfStudioWorkspace(container, pages, activePageIndex, watermarkText
     const mobilePagePill = container.querySelector('#pdf-mobile-page-pill');
     if (mobilePagePill) mobilePagePill.textContent = `${activePageIndex + 1} / ${pages.length}`;
 
-    try {
-      localStorage.setItem('giri_orbit_pdf_pages', JSON.stringify(pages));
-      if (typeof window !== 'undefined' && window.giriSyncManager) {
-        const pageCount = Array.isArray(pages) ? pages.length : 0;
-        const title = pages[0]?.title || 'Certified Executive Memorandum';
-        window.giriSyncManager.recordSync('pdf', pages, title, {
-          snippet: 'Official binding corporate authorization with SHA-256 digital verification and approved stamp.',
-          stats: `${pageCount} Page${pageCount > 1 ? 's' : ''} • Approved Seal • PKI Signed`
-        });
-      }
-    } catch {}
+    // Sidebar render only — actual user save happens via performPdfDirectSave or export
 
     pages.forEach((p, idx) => {
       const thumb = document.createElement('div');

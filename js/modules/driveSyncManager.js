@@ -29,7 +29,7 @@ export class GiriDriveSyncManager {
   }
 
   init() {
-    this.ensureDefaultDriveFiles();
+    this.cleanLegacyMockFiles();
     this.loadSettings();
     this.bindWindowEvents();
     setTimeout(() => {
@@ -110,86 +110,19 @@ export class GiriDriveSyncManager {
     } catch (_) {}
   }
 
-  ensureDefaultDriveFiles() {
+  cleanLegacyMockFiles() {
     try {
-      const existing = localStorage.getItem(DRIVE_STORAGE_KEY);
-      if (!existing || JSON.parse(existing).length === 0) {
-        const now = Date.now();
-        const defaultFiles = [
-          {
-            id: 'gdrive-doc-01',
-            name: 'Q4 Enterprise Strategic Charter.docx',
-            tool: 'drift',
-            folder: 'My Drive',
-            format: 'docx',
-            size: '28.4 KB',
-            lastModified: now - 3600000,
-            synced: true,
-            isGoogleDrive: true,
-            content: `# Q4 Enterprise Strategic Charter\n\n> Comprehensive operational evaluation confirms that transitioning enterprise workflows to sovereign local client models achieves an **88% reduction in latency** and eliminates third-party telemetry exposure.\n\n### Strategic Pillars\n- **Continuous Ambient Physics:** 60 FPS fluid rendering with sub-millisecond document discovery.\n- **Sovereign Privacy:** Client-side cryptographic execution with Zero Outbound Leaks.\n- **Universal Interoperability:** Complete parity with standard Office formats (.docx, .xlsx, .pptx, .pdf).\n\n### Quantitative Milestones\n| Operational Vector | Baseline | Giri Orbit | Net Advantage |\n| Latency to First Render | 240 ms | 0.4 ms | 99.8% Faster |\n| Network Telemetry | 450 KB/req | 0 KB | 100% Sealed |\n| Cross-Tool Context Switch | 18 sec | < 1 sec | 18x Velocity |\n\n*Synchronized with Google Drive Cloud Storage.*`
-          },
-          {
-            id: 'gdrive-sheet-02',
-            name: 'Annual Revenue & Capital Matrix.xlsx',
-            tool: 'axis',
-            folder: 'My Drive',
-            format: 'xlsx',
-            size: '42.1 KB',
-            lastModified: now - 7200000,
-            synced: true,
-            isGoogleDrive: true,
-            content: `| Line Item | Q1 FY26 | Q2 FY26 | Q3 FY26 | Q4 FY26 | FY26 Total |\n| Enterprise SaaS Revenue | 420000 | 495000 | 580000 | 690000 | =SUM(B2:E2) |\n| Cloud & AI Compute Solutions | 210000 | 265000 | 320000 | 395000 | =SUM(B3:E3) |\n| Professional Advisory Services | 95000 | 110000 | 125000 | 145000 | =SUM(B4:E4) |\n| Total Gross Revenue | =SUM(B2:B4) | =SUM(C2:C4) | =SUM(D2:D4) | =SUM(E2:E4) | =SUM(F2:F4) |\n| Cost of Goods Sold (COGS) | 185000 | 215000 | 245000 | 285000 | =SUM(B6:E6) |\n| Gross Profit | =B5-B6 | =C5-C6 | =D5-D6 | =E5-E6 | =F5-F6 |\n| Operating Expenses | 315000 | 350000 | 385000 | 430000 | =SUM(B8:E8) |\n| Operating Income (EBITDA) | =B7-B8 | =C7-C8 | =D7-D8 | =E7-E8 | =F7-F8 |`
-          },
-          {
-            id: 'gdrive-slide-03',
-            name: 'Corporate Business Annual Report.pptx',
-            tool: 'kinetic',
-            folder: 'Giri Orbit Cloud',
-            format: 'pptx',
-            size: '1.2 MB',
-            lastModified: now - 18000000,
-            synced: true,
-            isGoogleDrive: true,
-            content: JSON.stringify([
-              {
-                id: 1,
-                tag: 'EXECUTIVE VISION 01',
-                title: 'Sovereign AI Enterprise Infrastructure',
-                desc: 'Next-generation distributed office architecture engineered by Giri Corporation.',
-                features: [
-                  { num: '0.4 ms', title: 'Compile Latency', desc: 'Local in-memory client rendering' },
-                  { num: '100%', title: 'Data Sovereignty', desc: 'Zero outbound telemetry leaks' },
-                  { num: '4 Tools', title: 'Native Suite', desc: 'Drift, Axis, Kinetic, and Aegis PDF' }
-                ]
-              },
-              {
-                id: 2,
-                tag: 'CORE PILLARS 02',
-                title: 'Enterprise Vector Capabilities',
-                desc: 'Four unified pillars running concurrently with instant data portability.',
-                features: [
-                  { num: '01', title: 'Giri Drift', desc: 'High-velocity typography & markdown document suite' },
-                  { num: '02', title: 'Giri Axis', desc: 'Multi-sheet matrix calculation & XLOOKUP formulas' },
-                  { num: '03', title: 'Giri Kinetic', desc: 'Cinematic presentation show deck with live export' },
-                  { num: '04', title: 'Giri Aegis', desc: 'Cryptographic PDF seal with SHA-256 validation' }
-                ]
-              }
-            ])
-          },
-          {
-            id: 'gdrive-pdf-04',
-            name: 'Certified Executive Memorandum.pdf',
-            tool: 'pdf',
-            folder: 'Shared with me',
-            format: 'pdf',
-            size: '86.5 KB',
-            lastModified: now - 86400000,
-            synced: true,
-            isGoogleDrive: true,
-            content: `**Cryptographic Security Audit Certificate**\n\nSHA-256 Hash Verification: \`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\`\nZero-Telemetry Sealed: Passed (0 bytes outbound transmission detected).\nIntegrity Standard: Enterprise Sovereign Core v9.0 • Audit Timestamp: ${new Date().toISOString()}`
-          }
-        ];
-        localStorage.setItem(DRIVE_STORAGE_KEY, JSON.stringify(defaultFiles));
+      const stored = localStorage.getItem(DRIVE_STORAGE_KEY);
+      if (stored) {
+        let files = JSON.parse(stored);
+        if (Array.isArray(files)) {
+          // Purge mock dummy files
+          const mockIds = new Set(['gdrive-doc-01', 'gdrive-sheet-02', 'gdrive-slide-03', 'gdrive-pdf-04']);
+          files = files.filter(f => f && !mockIds.has(f.id));
+          localStorage.setItem(DRIVE_STORAGE_KEY, JSON.stringify(files));
+        }
+      } else {
+        localStorage.setItem(DRIVE_STORAGE_KEY, JSON.stringify([]));
       }
     } catch (_) {}
   }
@@ -756,8 +689,16 @@ export class GiriDriveSyncManager {
             <span style="font-size:11px; background:#dbeafe; color:#1d4ed8; padding:3px 8px; border-radius:999px; font-weight:600;">Active</span>
           </div>
 
+          <!-- Google Verification Guidance Notice -->
+          <div style="background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:10px 12px; margin-top:14px; font-size:11.5px; color:#92400e; line-height:1.45; text-align:left; display:flex; gap:8px;">
+            <span style="font-size:14px; flex-shrink:0;">ℹ️</span>
+            <div>
+              <strong>Google Verification Note:</strong> Because Giri Orbit is a sovereign browser app in developer mode, Google will show <em>"Google hasn't verified this app"</em>. Simply click <strong>"Advanced"</strong> (bottom-left) ➔ <strong>"Go to Giri Orbit (unsafe)"</strong> to proceed. Your data is 100% private in your own browser.
+            </div>
+          </div>
+
           <!-- Single Primary Continue Button -->
-          <button id="btn-single-continue-action" style="width:100%; margin-top:20px; background:#0b57d0; color:#ffffff; border:none; border-radius:100px; padding:12px 24px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Google Sans',Roboto,sans-serif; box-shadow:0 2px 6px rgba(11,87,208,0.3); transition:all 0.15s ease; display:flex; align-items:center; justify-content:center; gap:10px;">
+          <button id="btn-single-continue-action" style="width:100%; margin-top:16px; background:#0b57d0; color:#ffffff; border:none; border-radius:100px; padding:12px 24px; font-size:14px; font-weight:600; cursor:pointer; font-family:'Google Sans',Roboto,sans-serif; box-shadow:0 2px 6px rgba(11,87,208,0.3); transition:all 0.15s ease; display:flex; align-items:center; justify-content:center; gap:10px;">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
               <path d="M7.71 3.5L1.15 15l3.43 6 6.56-11.5L7.71 3.5z" fill="#ffffff" opacity="0.9"/>
               <path d="M16.29 3.5h-8.58l6.56 11.5h8.58l-6.56-11.5z" fill="#ffffff"/>
@@ -767,8 +708,8 @@ export class GiriDriveSyncManager {
           </button>
 
           <!-- Disclaimer text with pre-bundled consent confirmation -->
-          <p style="font-size:11.5px; color:#5f6368; line-height:1.5; margin:20px 0 0 0; text-align:center;">
-            Google Drive scopes are pre-selected to sync your files directly in this browser. Zero tracking • 100% sovereign.
+          <p style="font-size:11px; color:#5f6368; line-height:1.5; margin:16px 0 0 0; text-align:center;">
+            Google Drive scopes sync your files directly in this browser. Zero tracking • 100% sovereign.
           </p>
         </div>
       </div>
@@ -984,6 +925,14 @@ export class GiriDriveSyncManager {
             </svg>
             <span>Continue with Google</span>
           </button>
+
+          <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:10px; padding:10px 14px; max-width:460px; font-size:11.5px; color:#fbbf24; text-align:left; line-height:1.45; display:flex; gap:8px;">
+            <span style="font-size:14px; flex-shrink:0;">ℹ️</span>
+            <div>
+              <strong>Google Verification Note:</strong> Because Giri Orbit is a sovereign client-side app in developer mode, Google will show <em>"Google hasn't verified this app"</em>. Simply click <strong>"Advanced"</strong> (bottom-left) ➔ <strong>"Go to Giri Orbit (unsafe)"</strong> to authorize your Drive files.
+            </div>
+          </div>
+
           <span style="font-size:11.5px; color:#64748b;">🔒 1-Click Fast Sign-In • Sovereign &amp; Secure</span>
 
           <div class="drive-google-features-list" style="margin-top:20px; width:100%; max-width:540px;">
