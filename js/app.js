@@ -496,6 +496,7 @@ class GiriOrbitPlatform {
     this.workspace.innerHTML = '';
 
     // Update active tab highlight in header
+    this.suiteNavPills = document.querySelectorAll('.suite-nav-pill');
     this.suiteNavPills.forEach(pill => {
       pill.classList.toggle('active', pill.dataset.view === view);
     });
@@ -518,11 +519,11 @@ class GiriOrbitPlatform {
     if (view === 'launcher') {
       document.body.classList.remove('in-tool');
       suiteHeader?.classList.remove('in-tool');
-      if (pillBar) { pillBar.style.display = ''; pillBar.style.opacity = '1'; }
+      if (pillBar) { pillBar.style.display = 'flex'; pillBar.style.opacity = '1'; }
     } else {
       document.body.classList.add('in-tool');
       suiteHeader?.classList.add('in-tool');
-      if (pillBar) { pillBar.style.display = 'none'; }
+      if (pillBar) { pillBar.style.display = 'flex'; pillBar.style.opacity = '1'; }
     }
 
     const startEditor = forceEditor || !!docTitle;
@@ -1413,11 +1414,18 @@ class GiriOrbitPlatform {
    * Header Navigation Bindings
    */
   bindHeaderNavigation() {
+    this.suiteNavPills = document.querySelectorAll('.suite-nav-pill');
     this.suiteNavPills.forEach(pill => {
       pill.addEventListener('click', (e) => {
         e.preventDefault();
         const view = pill.dataset.view;
-        this.navigateTo(view);
+        if (view === 'converter') {
+          this.mountFileConverterTool();
+        } else if (view === 'agent') {
+          this.openGirionixAgent();
+        } else if (view) {
+          this.navigateTo(view);
+        }
       });
     });
 
@@ -1497,7 +1505,13 @@ class GiriOrbitPlatform {
     document.querySelectorAll('.dropdown-product-row').forEach(row => {
       row.addEventListener('click', () => {
         const tool = row.dataset.launch;
-        this.navigateTo(tool);
+        if (tool === 'converter') {
+          this.mountFileConverterTool();
+        } else if (tool === 'agent') {
+          this.openGirionixAgent();
+        } else if (tool) {
+          this.navigateTo(tool);
+        }
       });
     });
   }

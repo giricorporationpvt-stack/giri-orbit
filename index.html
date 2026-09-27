@@ -38,7 +38,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="assets/giri-logo-symbol.png">
   <link rel="apple-touch-icon" href="assets/giri-logo-symbol.png">
-  <link rel="stylesheet" href="css/styles.css?v=10.9">
+  <link rel="stylesheet" href="css/styles.css?v=11.8">
   <link rel="stylesheet" href="css/hub.css?v=10.2">
   <link rel="stylesheet" href="css/fontsAndSelection.css?v=10.2">
   <link rel="stylesheet" href="css/sync.css?v=10.9">
@@ -51,8 +51,10 @@
 <body>
 
   <!-- TIER 2: GIRI ORBIT SUITE SUB-HEADER -->
+  <!-- TIER 2: GIRI ORBIT SUITE SUB-HEADER -->
   <header class="tier2-suite-header">
     <div class="tier2-inner">
+      <!-- 1. Left: Brand & Workspace Menu -->
       <div class="tier2-left">
         <!-- Giri Orbit Dual-Ring Gyroscope / Giri Group Master Mark (Provided by User) -->
         <div class="suite-product-brand" id="suite-product-brand" role="button" tabindex="0" title="Return to Suite Hub">
@@ -92,6 +94,14 @@
                 </span>
                 <div><strong>Girionix AI</strong><p>Sovereign Polymath AI Workspace</p></div>
               </div>
+              <div class="dropdown-product-row" data-launch="converter">
+                <span class="icon-sq" style="background:#9333ea; display:flex; align-items:center; justify-content:center; font-size:13px;">🔄</span>
+                <div><strong>File Converter</strong><p>Universal Format Transcoder</p></div>
+              </div>
+              <div class="dropdown-product-row" data-launch="agent">
+                <span class="icon-sq" style="background:linear-gradient(135deg, #8b5cf6, #3b82f6); display:flex; align-items:center; justify-content:center; font-size:13px;">🤖</span>
+                <div><strong>Autonomous Agent</strong><p>Multi-Turn Autonomous Office Worker</p></div>
+              </div>
               <div style="height:1px; background:rgba(255,255,255,0.1); margin:4px 0;"></div>
               <a href="https://giri-corporation.pages.dev/" target="_blank" rel="noopener" class="dropdown-product-row" style="text-decoration:none; color:inherit;">
                 <span class="icon-sq" style="background:#0f172a; border:1px solid #38bdf8; display:flex; align-items:center; justify-content:center;">
@@ -104,7 +114,67 @@
         </nav>
       </div>
 
-      <!-- Suite View Switcher Tabs & Actions -->
+      <!-- 2. Center: All 8 Suite Tools Tab Bar (Prominently Center-Aligned, Never Cut Off) -->
+      <div class="tier2-center">
+        <nav class="suite-switcher-pill-bar" role="tablist" aria-label="Giri Orbit Tools">
+          <!-- 1. Hub -->
+          <a href="#hub" class="suite-nav-pill active" data-view="launcher" id="tab-nav-launcher" title="Orbit Hub: Document Station & Launcher (#hub)">
+            <span class="pill-icon">🏠</span>
+            <span class="pill-name">Hub</span>
+          </a>
+
+          <!-- 2. Drift Docs -->
+          <a href="#drift" class="suite-nav-pill" data-view="drift" id="tab-nav-drift" title="Giri Drift: Word Processor & Docs (#drift)">
+            <span class="pill-icon" style="color:#2563eb;">✍️</span>
+            <span class="pill-name">Drift</span>
+            <span class="pill-sub" style="color:#2563eb; background:rgba(37,99,235,0.1);">Docs</span>
+          </a>
+
+          <!-- 3. Axis Sheets -->
+          <a href="#axis" class="suite-nav-pill" data-view="axis" id="tab-nav-axis" title="Giri Axis: Spreadsheet & Data Matrix (#axis)">
+            <span class="pill-icon" style="color:#107c41;">📊</span>
+            <span class="pill-name">Axis</span>
+            <span class="pill-sub" style="color:#107c41; background:rgba(16,124,65,0.1);">Sheets</span>
+          </a>
+
+          <!-- 4. Kinetic Slides -->
+          <a href="#kinetic" class="suite-nav-pill" data-view="kinetic" id="tab-nav-kinetic" title="Giri Kinetic: Presentation & Slide Show (#kinetic)">
+            <span class="pill-icon" style="color:#ea580c;">🎞️</span>
+            <span class="pill-name">Kinetic</span>
+            <span class="pill-sub" style="color:#ea580c; background:rgba(234,88,12,0.1);">Slides</span>
+          </a>
+
+          <!-- 5. Aegis PDF -->
+          <a href="#pdf" class="suite-nav-pill" data-view="pdf" id="tab-nav-pdf" title="Giri Aegis: PDF Studio, Seal & Sign (#pdf)">
+            <span class="pill-icon" style="color:#dc2626;">🛡️</span>
+            <span class="pill-name">Aegis</span>
+            <span class="pill-sub" style="color:#dc2626; background:rgba(220,38,38,0.1);">PDF</span>
+          </a>
+
+          <!-- 6. Girionix AI -->
+          <a href="#girionix" class="suite-nav-pill" data-view="girionix" id="tab-nav-girionix" title="Girionix AI: Sovereign Polymath Studio (#girionix)">
+            <img src="assets/girionix-logo.png" alt="Girionix AI" class="pill-logo-img">
+            <span class="pill-name">Girionix</span>
+            <span class="pill-sub" style="color:#0891b2; background:rgba(8,145,178,0.1);">AI</span>
+          </a>
+
+          <!-- 7. Universal File Converter -->
+          <a href="#converter" class="suite-nav-pill" data-view="converter" id="tab-nav-converter" title="Universal File Converter: Convert between Word, Excel, PDF, CSV, JSON, Markdown">
+            <span class="pill-icon" style="color:#9333ea;">🔄</span>
+            <span class="pill-name">Converter</span>
+            <span class="pill-sub" style="color:#9333ea; background:rgba(147,51,234,0.1);">Tools</span>
+          </a>
+
+          <!-- 8. Autonomous AI Agent -->
+          <a href="#agent" class="suite-nav-pill" data-view="agent" id="tab-nav-agent" title="Girionix Autonomous Agent: Autonomous Multi-Turn Office Worker (Alt+A)">
+            <span class="pill-icon" style="color:#8b5cf6;">🤖</span>
+            <span class="pill-name">AI Agent</span>
+            <span class="pill-sub" style="color:#8b5cf6; background:rgba(139,92,246,0.1);">Auto</span>
+          </a>
+        </nav>
+      </div>
+
+      <!-- 3. Right: Utility Controls & Actions -->
       <div class="tier2-right">
         <button class="tier1-sync-pill" id="btn-global-sync" title="Browser Sync Status & Storage Manager">
           <span class="sync-dot-live"></span>
@@ -117,40 +187,26 @@
             <path d="M22.85 15H9.71l-3.43 6h13.14l3.43-6z" fill="#EA4335"/>
             <path d="M14.27 15l-3.42 6-3.43-6h6.85z" fill="#FFBA00"/>
           </svg>
-          <span id="txt-global-drive-sync">Google Drive</span>
+          <span id="txt-global-drive-sync">Drive</span>
           <span class="drive-dot-live disconnected"></span>
         </button>
-        <button class="tier1-install-pill" id="btn-pwa-install" style="display:none; margin-right:6px; background:rgba(37,99,235,0.2); border:1px solid #3b82f6; color:#93c5fd; padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:600; cursor:pointer; align-items:center; gap:5px;" title="Install Giri Orbit as Desktop or Mobile App">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          <span>Install App</span>
-        </button>
-        <div class="girionix-partner-badge" title="Official Strategic AI Partner: Girionix AI (Click for details)" style="margin-right:6px; cursor:pointer;">
-          <span class="girionix-partner-pulse"></span>
-          <img src="assets/girionix-logo.png" alt="Girionix AI" style="width:13px; height:13px; object-fit:contain; border-radius:3px;">
-          <span>Girionix AI</span>
-          <span style="opacity:0.7; font-size:9.5px; font-weight:700; text-transform:uppercase; background:rgba(56,189,248,0.2); padding:1px 5px; border-radius:10px;">Partner</span>
-        </div>
-        <button class="tier1-agent-pill" id="btn-open-girionix-agent" style="margin-right:6px;" title="Open Girionix Autonomous Office Agent (Alt+A)">
-          <span>🤖</span>
-          <span>Girionix Agent</span>
-        </button>
-        <button class="tier1-icon-pill" id="btn-open-girionix-ai" style="margin-right:6px; background:linear-gradient(135deg, rgba(6,182,212,0.22), rgba(59,130,246,0.28)); border:1px solid rgba(56,189,248,0.5); color:#38bdf8; padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px; box-shadow:0 0 12px rgba(56,189,248,0.25);" title="Open Girionix AI Assistant (Ctrl+J)">
+        <button class="tier1-icon-pill" id="btn-open-girionix-ai" style="background:linear-gradient(135deg, rgba(6,182,212,0.18), rgba(59,130,246,0.22)); border:1px solid rgba(56,189,248,0.4); color:#38bdf8; padding:3px 10px; border-radius:20px; font-size:11.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:5px;" title="Open Girionix AI Assistant (Ctrl+J)">
           <span style="font-size:13px;">⚡</span>
           <span>Copilot</span>
         </button>
-        <button class="tier1-icon-pill" id="btn-suite-shortcuts" style="margin-right:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#f8fafc; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px;" title="Keyboard Shortcuts (Ctrl+/)">
+        <button class="tier1-icon-pill" id="btn-suite-shortcuts" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#64748b; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px;" title="Keyboard Shortcuts (Ctrl+/)">
           ⌨
         </button>
-        <button class="tier1-icon-pill" id="btn-suite-fullscreen" style="margin-right:6px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#f8fafc; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; cursor:pointer;" title="Toggle Immersive Fullscreen">
+        <button class="tier1-icon-pill" id="btn-suite-fullscreen" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#64748b; width:28px; height:28px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; cursor:pointer;" title="Toggle Immersive Fullscreen">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
         </button>
-        <a href="https://giri-corporation.pages.dev/" target="_blank" rel="noopener" class="tier1-corp-pill" style="margin-right:6px;" title="Visit Giri Corporation Official Website">
+        <a href="https://giri-corporation.pages.dev/" target="_blank" rel="noopener" class="tier1-corp-pill" title="Visit Giri Corporation Official Website">
           <img src="assets/giri-logo-symbol.png" alt="Giri Corporation" style="width:14px; height:14px; border-radius:50%; display:block;">
-          <span>Giri Corporation</span>
+          <span>Giri Corp</span>
         </a>
-        <a href="https://www.instagram.com/abhinavgiri45/" target="_blank" rel="noopener" class="tier1-instagram-pill" style="margin-right:8px;" title="Follow @abhinavgiri45 on Instagram">
+        <a href="https://www.instagram.com/abhinavgiri45/" target="_blank" rel="noopener" class="tier1-instagram-pill" title="Follow @abhinavgiri45 on Instagram">
           <div class="tier1-instagram-pill-icon">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
               <rect x="2.5" y="2.5" width="19" height="19" rx="5.2" stroke="#ffffff" stroke-width="2" fill="none"/>
               <circle cx="12" cy="12" r="4.2" stroke="#ffffff" stroke-width="2" fill="none"/>
               <circle cx="16.8" cy="7.2" r="1.1" fill="#ffffff"/>
@@ -158,34 +214,6 @@
           </div>
           <span>@abhinavgiri45</span>
         </a>
-        <!-- Active Suite Tabs with Specific Tool Links -->
-        <nav class="suite-switcher-pill-bar">
-          <a href="#hub" class="suite-nav-pill active" data-view="launcher" id="tab-nav-launcher" title="Orbit Hub (http://127.0.0.1:5000/#hub)">
-            <span class="pill-full-label">Orbit Hub</span>
-            <span class="pill-short-label">Hub</span>
-          </a>
-          <a href="#drift" class="suite-nav-pill" data-view="drift" id="tab-nav-drift" title="Giri Drift Docs (http://127.0.0.1:5000/#drift)">
-            <span class="pill-full-label">Drift (Docs)</span>
-            <span class="pill-short-label">Drift</span>
-          </a>
-          <a href="#axis" class="suite-nav-pill" data-view="axis" id="tab-nav-axis" title="Giri Axis Sheets (http://127.0.0.1:5000/#axis)">
-            <span class="pill-full-label">Axis (Sheets)</span>
-            <span class="pill-short-label">Axis</span>
-          </a>
-          <a href="#kinetic" class="suite-nav-pill" data-view="kinetic" id="tab-nav-kinetic" title="Giri Kinetic Presentation (http://127.0.0.1:5000/#kinetic)">
-            <span class="pill-full-label">Kinetic (Presentation)</span>
-            <span class="pill-short-label">Kinetic</span>
-          </a>
-          <a href="#pdf" class="suite-nav-pill" data-view="pdf" id="tab-nav-pdf" title="Giri Aegis PDF Studio (http://127.0.0.1:5000/#pdf)">
-            <span class="pill-full-label">Aegis (PDF)</span>
-            <span class="pill-short-label">Aegis</span>
-          </a>
-          <a href="#girionix" class="suite-nav-pill" data-view="girionix" id="tab-nav-girionix" title="Girionix AI Polymath Studio (http://127.0.0.1:5000/#girionix)">
-            <img src="assets/girionix-logo.png" alt="Girionix AI" style="width:14px; height:14px; object-fit:contain; border-radius:3px; vertical-align:middle; margin-right:4px;">
-            <span class="pill-full-label">Girionix (AI)</span>
-            <span class="pill-short-label">Girionix AI</span>
-          </a>
-        </nav>
       </div>
     </div>
   </header>
@@ -445,7 +473,7 @@
   <div class="orbit-toast-wrap" id="orbit-toast-wrap" aria-live="polite"></div>
 
   <!-- Main Orchestrator -->
-  <script type="module" src="js/app.js?v=11.7"></script>
+  <script type="module" src="js/app.js?v=11.8"></script>
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
