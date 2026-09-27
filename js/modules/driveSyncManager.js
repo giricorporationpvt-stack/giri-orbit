@@ -666,22 +666,79 @@ export class GiriDriveSyncManager {
         const errJson = await res.json().catch(() => ({}));
         console.warn('[Google Drive API] Error fetching files:', res.status, errJson);
         const errMsg = errJson?.error?.message || `HTTP ${res.status} Error`;
+
         if (listEl) {
-          listEl.innerHTML = `
-            <div style="padding:36px 20px; text-align:center;">
-              <div style="font-size:32px; margin-bottom:10px;">⚠️</div>
-              <h4 style="color:#f87171; margin:0 0 6px 0; font-size:15px;">Google Drive Authorization Required</h4>
-              <p style="font-size:12.5px; color:#94a3b8; max-width:440px; margin:0 auto 16px auto; line-height:1.5;">${errMsg}</p>
-              <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
-                <button class="btn-giri-primary" id="btn-drive-reauth-inline" style="padding:8px 18px; font-size:12.5px; font-weight:600;">
-                  <span>🔑 Authorize Google Drive Access</span>
-                </button>
-                <button class="btn-giri-secondary" id="btn-drive-local-fallback" style="padding:8px 18px; font-size:12.5px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#f1f5f9; border-radius:6px; cursor:pointer;">
-                  <span>📁 Link Local Drive Folder</span>
-                </button>
+          const isApiDisabled = errMsg.toLowerCase().includes('not been used in project') || 
+                                errMsg.toLowerCase().includes('disabled') || 
+                                errMsg.toLowerCase().includes('drive.googleapis.com') ||
+                                res.status === 403;
+
+          const enableUrlMatch = errMsg.match(/https?:\/\/[^\s]+/);
+          const enableUrl = enableUrlMatch ? enableUrlMatch[0] : `https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=340226227470`;
+
+          if (isApiDisabled) {
+            listEl.innerHTML = `
+              <div style="padding:28px 20px; text-align:center; max-width:540px; margin:0 auto;">
+                <div style="width:54px; height:54px; border-radius:14px; background:rgba(234,67,53,0.12); border:1px solid rgba(234,67,53,0.3); display:inline-flex; align-items:center; justify-content:center; margin-bottom:12px; font-size:26px;">
+                  ⚠️
+                </div>
+                <h3 style="color:#f87171; margin:0 0 8px 0; font-size:17px; font-weight:700;">Google Drive API Must Be Enabled in Google Cloud</h3>
+                <p style="font-size:13px; color:#cbd5e1; line-height:1.55; margin:0 0 16px 0;">
+                  Google Cloud requires the <strong>Google Drive API</strong> to be enabled for your project before files can be synced into Giri Orbit.
+                </p>
+
+                <div style="background:rgba(15,23,42,0.6); border:1px solid rgba(56,189,248,0.25); border-radius:10px; padding:14px 16px; text-align:left; margin-bottom:18px;">
+                  <div style="font-size:12px; font-weight:700; color:#38bdf8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+                    ⚡ How to solve in 30 seconds:
+                  </div>
+                  <ol style="margin:0; padding-left:18px; font-size:12.5px; color:#94a3b8; line-height:1.65;">
+                    <li>Click the blue button below to open the Google Cloud Console enablement page.</li>
+                    <li>Click the blue <strong>"ENABLE"</strong> button on Google's page.</li>
+                    <li>Return here and click <strong>"🔄 Retry Sync"</strong>.</li>
+                  </ol>
+                </div>
+
+                <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+                  <a href="${enableUrl}" target="_blank" rel="noopener noreferrer" class="btn-giri-primary" style="padding:10px 20px; font-size:13px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:8px; box-shadow:0 4px 14px rgba(37,99,235,0.35); border-radius:8px;">
+                    <span>🌐 Enable Google Drive API in Google Cloud ↗</span>
+                  </a>
+                  <button class="btn-giri-secondary" id="btn-drive-retry-after-enable" style="padding:10px 18px; font-size:13px; background:rgba(34,197,94,0.15); border:1px solid rgba(34,197,94,0.35); color:#4ade80; border-radius:8px; cursor:pointer; font-weight:600;">
+                    <span>🔄 Retry Sync</span>
+                  </button>
+                </div>
+
+                <div style="border-top:1px solid rgba(255,255,255,0.08); padding-top:14px; margin-top:8px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
+                  <button id="btn-drive-local-fallback" style="background:transparent; border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; border-radius:6px; padding:6px 14px; font-size:12px; cursor:pointer;">
+                    📁 Link Local Drive Folder Instead (Zero-Setup)
+                  </button>
+                  <button id="btn-drive-custom-client-id" style="background:transparent; border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; border-radius:6px; padding:6px 14px; font-size:12px; cursor:pointer;">
+                    ⚙️ Custom Client ID
+                  </button>
+                </div>
               </div>
-            </div>
-          `;
+            `;
+          } else {
+            listEl.innerHTML = `
+              <div style="padding:36px 20px; text-align:center;">
+                <div style="font-size:32px; margin-bottom:10px;">⚠️</div>
+                <h4 style="color:#f87171; margin:0 0 6px 0; font-size:15px;">Google Drive Authorization Required</h4>
+                <p style="font-size:12.5px; color:#94a3b8; max-width:440px; margin:0 auto 16px auto; line-height:1.5;">${this.escapeHtml(errMsg)}</p>
+                <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                  <button class="btn-giri-primary" id="btn-drive-reauth-inline" style="padding:8px 18px; font-size:12.5px; font-weight:600;">
+                    <span>🔑 Authorize Google Drive Access</span>
+                  </button>
+                  <button class="btn-giri-secondary" id="btn-drive-local-fallback" style="padding:8px 18px; font-size:12.5px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#f1f5f9; border-radius:6px; cursor:pointer;">
+                    <span>📁 Link Local Drive Folder</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }
+
+          listEl.querySelector('#btn-drive-retry-after-enable')?.addEventListener('click', async () => {
+            await this.fetchRealGoogleDriveFiles();
+          });
+
           listEl.querySelector('#btn-drive-reauth-inline')?.addEventListener('click', () => {
             if (this.tokenClient) {
               this.tokenClient.requestAccessToken({ prompt: 'select_account' });
@@ -689,8 +746,21 @@ export class GiriDriveSyncManager {
               this.promptGoogleDirectLogin();
             }
           });
+
           listEl.querySelector('#btn-drive-local-fallback')?.addEventListener('click', () => {
             this.openLocalDriveDirectory();
+          });
+
+          listEl.querySelector('#btn-drive-custom-client-id')?.addEventListener('click', () => {
+            const newCId = prompt('Enter your Google Cloud OAuth Client ID:', this.googleClientId || DEFAULT_GOOGLE_CLIENT_ID);
+            if (newCId && newCId.trim()) {
+              this.googleClientId = newCId.trim();
+              this.saveSettings();
+              this.initGoogleTokenClient(this.googleClientId);
+              if (this.tokenClient) {
+                this.tokenClient.requestAccessToken({ prompt: 'select_account' });
+              }
+            }
           });
         }
         return [];
