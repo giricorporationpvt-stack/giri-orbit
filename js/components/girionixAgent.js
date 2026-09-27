@@ -217,8 +217,21 @@ export class GirionixAgentManager {
                       <option value="creative">🎨 Creative &amp; Modern</option>
                     </select>
 
-                    <label style="font-size:11.5px; color:#94a3b8; font-weight:500; margin-left:6px;">Active Engine:</label>
-                    <span class="agent-model-pill" id="agent-setup-model-pill" title="Configured in API Settings">⚡ Gemini 2.0 Flash</span>
+                    <label style="font-size:11.5px; color:#94a3b8; font-weight:500; margin-left:6px;">Online Model:</label>
+                    <select id="agent-online-model-select" class="agent-select-pill" style="color:#38bdf8; font-weight:600; background:#0f172a; border:1px solid #0284c7; border-radius:6px; padding:3px 8px; font-size:12px; cursor:pointer;" title="Girionix AI Online Cloud Architecture">
+                      <option value="gemini:gemini-2.0-flash">⚡ Girionix Pro (Gemini 2.0 Flash Online)</option>
+                      <option value="gemini:gemini-2.5-pro">🧠 Girionix Ultra (Gemini 2.5 Pro Deep Reasoning)</option>
+                      <option value="gemini:gemini-1.5-pro">🔬 Girionix Research (Gemini 1.5 Pro Online)</option>
+                      <option value="gemini:gemini-1.5-flash">⚡ Girionix Flash (Gemini 1.5 Flash Online)</option>
+                      <option value="groq:llama-3.3-70b-versatile">🚀 Girionix Turbo (Groq Llama 3.3 70B Online)</option>
+                      <option value="groq:deepseek-r1-distill-llama-70b">📐 Girionix R1 (DeepSeek R1 Distill Online)</option>
+                      <option value="openai:gpt-4o">🌐 Girionix Omni (OpenAI GPT-4o Online)</option>
+                      <option value="openai:gpt-4o-mini">⚡ Girionix Mini (OpenAI GPT-4o-mini Online)</option>
+                    </select>
+
+                    <button id="btn-agent-engine-config" title="Configure Cloud AI API Keys &amp; Models" class="agent-mini-action-btn" style="padding:4px 8px; font-size:11.5px; background:rgba(56,189,248,0.12); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; border-radius:6px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:4px;">
+                      <span>⚙️ API Key</span>
+                    </button>
                   </div>
 
                   <div style="display:flex; align-items:center; gap:8px;">
@@ -392,7 +405,7 @@ export class GirionixAgentManager {
   updateConnectionBadge() {
     const status = girionixEngine.getConnectionStatus();
     const headerPill = document.getElementById('agent-header-connection-pill');
-    const setupModelPill = document.getElementById('agent-setup-model-pill');
+    const onlineModelSelect = document.getElementById('agent-online-model-select');
     const thinkingBadge = document.getElementById('agent-thinking-model-badge');
 
     if (headerPill) {
@@ -404,12 +417,18 @@ export class GirionixAgentManager {
       headerPill.style.borderColor = status.statusColor + '60';
     }
 
-    if (setupModelPill) {
-      setupModelPill.textContent = `⚡ ${status.badgeText}`;
+    if (onlineModelSelect) {
+      const targetVal = `${status.provider}:${status.model}`;
+      for (let opt of onlineModelSelect.options) {
+        if (opt.value === targetVal || opt.value.endsWith(`:${status.model}`)) {
+          onlineModelSelect.value = opt.value;
+          break;
+        }
+      }
     }
 
     if (thinkingBadge) {
-      thinkingBadge.textContent = status.isLive ? `${status.provider.toUpperCase()} Reasoning` : 'Sovereign Reasoning';
+      thinkingBadge.textContent = `${status.badgeText} • Online Reasoning`;
     }
   }
 
@@ -461,6 +480,30 @@ export class GirionixAgentManager {
     });
     headerConnPill?.addEventListener('click', () => {
       girionixEngine.openSettingsModal(() => this.updateConnectionBadge());
+    });
+
+    // Strip Online Model Select & Config Button
+    const onlineModelSelect = document.getElementById('agent-online-model-select');
+    onlineModelSelect?.addEventListener('change', () => {
+      const parts = (onlineModelSelect.value || '').split(':');
+      if (parts.length === 2) {
+        const [prov, mod] = parts;
+        girionixEngine.setApiKey(girionixEngine.getApiKey(), prov, mod);
+        this.updateConnectionBadge();
+        if (this.platform) {
+          const modName = girionixEngine.getModelDisplayName(mod);
+          this.platform.showToast(`Switched online model to ${modName}`, 'blue');
+        }
+      }
+    });
+
+    const engineConfigBtn = document.getElementById('btn-agent-engine-config');
+    engineConfigBtn?.addEventListener('click', () => {
+      girionixEngine.openSettingsModal(() => this.updateConnectionBadge());
+    });
+
+    window.addEventListener('girionix-api-settings-changed', () => {
+      this.updateConnectionBadge();
     });
 
     // Also wire header partner badge in main layout
@@ -778,6 +821,27 @@ export class GirionixAgentManager {
    */
   async executeAgent(prompt, requestedMode = 'auto', isRefinement = false) {
     if (this.isExecuting) return;
+
+    if (!girionixEngine.getApiKey()) {
+      girionixEngine.openSettingsModal(() => {
+        this.updateConnectionBadge();
+        if (girionixEngine.getApiKey()) {
+          this.executeAgent(prompt, requestedMode, isRefinement);
+        }
+      });
+      if (this.platform) {
+        this.platform.showToast('🔑 Enter your free Gemini API key to run Girionix online models', 'blue');
+      }
+      return;
+    }
+
+    if (!navigator.onLine) {
+      if (this.platform) {
+        this.platform.showToast('⚠️ Girionix online models require an active internet connection', 'red');
+      }
+      return;
+    }
+
     this.isExecuting = true;
 
     const setupView = document.getElementById('agent-setup-view');
@@ -925,14 +989,15 @@ export class GirionixAgentManager {
     } catch (err) {
       console.error('[Girionix Agent] Execution error:', err);
       clearInterval(this.thinkingTimerInterval);
-      if (responseEl) {
         responseEl.innerHTML = `
           <div style="padding:16px; background:rgba(239,68,68,0.12); border:1px solid #ef4444; border-radius:10px; color:#fca5a5; font-size:13px;">
-            <strong>⚠️ Execution Encountered an Issue:</strong><br>
-            ${err.message || 'Unknown network error. Please verify your API key in API Config or switch to Sovereign Core.'}
+            <strong>⚠️ Girionix Online Agent Execution Error:</strong><br>
+            <p style="margin:6px 0 10px 0; color:#cbd5e1; font-size:12.5px;">${err.message || 'Unknown network error communicating with online AI model.'}</p>
+            <button class="btn-giri-primary" onclick="window.girionixEngine?.openSettingsModal()" style="font-size:12px; padding:6px 14px;">
+              <span>⚙️ Check API Key / Switch Model</span>
+            </button>
           </div>
         `;
-      }
     } finally {
       this.isExecuting = false;
     }

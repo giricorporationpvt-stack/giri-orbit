@@ -19,21 +19,19 @@ class GirionixEngine {
   static get PROVIDER_MODELS() {
     return {
       gemini: [
-        { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash (Recommended — Free, Fast & Smart)' },
-        { id: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash (Fast & Efficient)' },
-        { id: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro (Deep Complex Reasoning)' }
-      ],
-      openai: [
-        { id: 'gpt-4o-mini', name: 'GPT-4o mini (Fast & Affordable)' },
-        { id: 'gpt-4o', name: 'GPT-4o (Flagship Omni Intelligence)' },
-        { id: 'o3-mini', name: 'o3-mini (High-Reasoning Reasoning)' }
+        { id: 'gemini-2.0-flash', name: 'Girionix 2.0 Flash (Recommended — Free, Fast & Smart)' },
+        { id: 'gemini-2.5-pro', name: 'Girionix 2.5 Pro (Deep Multimodal Reasoning)' },
+        { id: 'gemini-1.5-pro', name: 'Girionix 1.5 Pro (Complex Analysis & Reasoning)' },
+        { id: 'gemini-1.5-flash', name: 'Girionix 1.5 Flash (Ultra-Fast Response)' }
       ],
       groq: [
-        { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B Versatile (Ultra High Speed)' },
-        { id: 'deepseek-r1-distill-llama-70b', name: 'DeepSeek R1 Distill 70B (Math & Logic)' }
+        { id: 'llama-3.3-70b-versatile', name: 'Girionix Turbo (Groq Llama 3.3 70B — Sub-Second)' },
+        { id: 'deepseek-r1-distill-llama-70b', name: 'Girionix R1 (DeepSeek R1 Distill 70B — Logic & Math)' }
       ],
-      sovereign: [
-        { id: 'Girionix-Local-10.4', name: 'Sovereign Core (100% Client-Side In-Memory Offline)' }
+      openai: [
+        { id: 'gpt-4o', name: 'Girionix Omni (OpenAI GPT-4o Flagship)' },
+        { id: 'gpt-4o-mini', name: 'Girionix Mini (OpenAI GPT-4o-mini Fast)' },
+        { id: 'o3-mini', name: 'Girionix o3-mini (High-Reasoning Cloud)' }
       ]
     };
   }
@@ -53,7 +51,7 @@ class GirionixEngine {
       if (model) {
         localStorage.setItem(this.modelKey, model);
       } else {
-        const defaults = { gemini: 'gemini-2.0-flash', openai: 'gpt-4o-mini', groq: 'llama-3.3-70b-versatile', sovereign: 'Girionix-Local-10.4' };
+        const defaults = { gemini: 'gemini-2.0-flash', openai: 'gpt-4o-mini', groq: 'llama-3.3-70b-versatile' };
         localStorage.setItem(this.modelKey, defaults[provider] || 'gemini-2.0-flash');
       }
       window.dispatchEvent(new CustomEvent('girionix-api-settings-changed'));
@@ -74,7 +72,9 @@ class GirionixEngine {
 
   getProvider() {
     try {
-      return localStorage.getItem(this.providerKey) || 'gemini';
+      const p = localStorage.getItem(this.providerKey);
+      if (p && p !== 'sovereign') return p;
+      return 'gemini';
     } catch (_) {
       return 'gemini';
     }
@@ -84,11 +84,11 @@ class GirionixEngine {
     try {
       const p = this.getProvider();
       const saved = localStorage.getItem(this.modelKey);
-      if (saved) return saved;
+      if (saved && saved !== 'Girionix-Local-10.4') return saved;
       if (p === 'gemini') return 'gemini-2.0-flash';
       if (p === 'groq') return 'llama-3.3-70b-versatile';
       if (p === 'openai') return 'gpt-4o-mini';
-      return 'Girionix-Local-10.4';
+      return 'gemini-2.0-flash';
     } catch (_) {
       return 'gemini-2.0-flash';
     }
@@ -100,6 +100,21 @@ class GirionixEngine {
     return Boolean(this.getApiKey() && navigator.onLine);
   }
 
+  getModelDisplayName(model) {
+    const map = {
+      'gemini-2.0-flash': 'Girionix 2.0 Flash',
+      'gemini-2.5-pro': 'Girionix 2.5 Pro',
+      'gemini-1.5-pro': 'Girionix 1.5 Pro',
+      'gemini-1.5-flash': 'Girionix 1.5 Flash',
+      'llama-3.3-70b-versatile': 'Girionix Turbo 70B',
+      'deepseek-r1-distill-llama-70b': 'Girionix R1 Logic',
+      'gpt-4o': 'Girionix Omni 4o',
+      'gpt-4o-mini': 'Girionix Mini',
+      'o3-mini': 'Girionix o3-mini'
+    };
+    return map[model] || model;
+  }
+
   /**
    * Get Live Connection Status Badge Metadata
    */
@@ -107,28 +122,28 @@ class GirionixEngine {
     const provider = this.getProvider();
     const model = this.getModel();
     const isLive = this.isLiveEnabled();
+    const displayName = this.getModelDisplayName(model);
 
     if (isLive) {
-      const provName = provider === 'gemini' ? 'Gemini 2.0' : (provider === 'openai' ? 'ChatGPT' : 'Groq');
       return {
         isLive: true,
         provider,
         model,
-        badgeText: `${provName} (${model.replace('gemini-2.0-flash', 'Flash').replace('gemini-1.5-flash', 'Flash 1.5')})`,
+        badgeText: `${displayName} (Online)`,
         statusColor: '#22c55e',
         icon: '🟢',
-        title: `Connected to ${provider.toUpperCase()} (${model})`
+        title: `Connected to ${displayName} Online Cloud Engine`
       };
     }
 
     return {
       isLive: false,
-      provider: 'sovereign',
-      model: 'Girionix-Local-10.4',
-      badgeText: 'Sovereign Core (Offline)',
-      statusColor: '#c084fc',
-      icon: '🟣',
-      title: 'Running on Sovereign In-Memory Engine (Zero API Key Required)'
+      provider,
+      model,
+      badgeText: `${displayName} (Online)`,
+      statusColor: '#38bdf8',
+      icon: '⚡',
+      title: `Girionix AI Online Model: ${displayName} (Click ⚙️ to enter free API key)`
     };
   }
 
@@ -225,35 +240,29 @@ class GirionixEngine {
   }
 
   /**
-   * Main Generation Pipeline
+   * Main Generation Pipeline — Strictly Online Girionix AI Models
    */
   async generate({ tool = 'drift', prompt = '', attachment = null, tone = 'executive', history = [] }) {
     const q = (prompt || '').trim();
 
-    // 1. Try Live API if configured and online
-    if (this.isLiveEnabled()) {
-      try {
-        const liveText = await this.callLiveApi({ tool, prompt: q, attachment, tone, history });
-        if (liveText && liveText.length > 20) {
-          return {
-            source: 'live',
-            provider: this.getProvider(),
-            model: this.getModel(),
-            text: liveText
-          };
-        }
-      } catch (err) {
-        console.warn('[Girionix Engine] Live API call failed, failing over to Sovereign Engine:', err);
-      }
+    if (!this.getApiKey()) {
+      throw new Error('API Key Required: Girionix AI operates exclusively with online cloud models. Please click ⚙️ API Key in the toolbar to enter your free Google Gemini or Groq API key.');
     }
 
-    // 2. Sovereign Local Knowledge Engine
-    const sovereignText = this.generateSovereignResponse(tool, q, attachment, tone);
+    if (!navigator.onLine) {
+      throw new Error('Network Offline: Girionix AI online models require an active internet connection to communicate with Google/Groq/OpenAI cloud servers.');
+    }
+
+    const liveText = await this.callLiveApi({ tool, prompt: q, attachment, tone, history });
+    if (!liveText || liveText.trim().length < 5) {
+      throw new Error('Empty response from Girionix online model. Please try again or switch model.');
+    }
+
     return {
-      source: 'sovereign',
-      provider: 'Girionix Sovereign Core',
-      model: 'Girionix-Pro-10.4-Local',
-      text: sovereignText
+      source: 'live',
+      provider: this.getProvider(),
+      model: this.getModel(),
+      text: liveText
     };
   }
 
@@ -399,8 +408,8 @@ Provide 4-6 rich, well-structured slides tailored specifically to the subject ma
             <div style="display:flex;align-items:center;gap:10px;">
               <span style="font-size:20px;">⚙️</span>
               <div>
-                <strong style="font-size:15px;color:#f8fafc;display:block;">Girionix AI &amp; LLM Configuration</strong>
-                <span style="font-size:11.5px;color:#94a3b8;">Google Gemini • OpenAI (ChatGPT) • Groq • Sovereign Offline</span>
+                <strong style="font-size:15px;color:#f8fafc;display:block;">Girionix AI Online Model Configuration</strong>
+                <span style="font-size:11.5px;color:#94a3b8;">Google Gemini • Groq Cloud • OpenAI (ChatGPT)</span>
               </div>
             </div>
             <button id="btn-close-ai-settings-modal" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;line-height:1;padding:4px 8px;border-radius:6px;">✕</button>
@@ -412,13 +421,12 @@ Provide 4-6 rich, well-structured slides tailored specifically to the subject ma
             <!-- Provider Selection -->
             <div>
               <label style="display:block;font-size:11.5px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">
-                AI Intelligence Provider
+                Online AI Provider
               </label>
               <select id="modal-ai-provider-select" style="width:100%;box-sizing:border-box;background:#13151f;border:1px solid #2e3346;color:#f8fafc;border-radius:8px;padding:10px 12px;font-size:13px;outline:none;cursor:pointer;">
                 <option value="gemini" ${currentProvider === 'gemini' ? 'selected' : ''}>🌐 Google Gemini API (Recommended: 2.0 Flash — Fast, Free &amp; Powerful)</option>
+                <option value="groq" ${currentProvider === 'groq' ? 'selected' : ''}>⚡ Groq Cloud (Llama 3.3 70B &amp; DeepSeek R1 — Sub-Second Velocity)</option>
                 <option value="openai" ${currentProvider === 'openai' ? 'selected' : ''}>🤖 OpenAI (ChatGPT — GPT-4o, GPT-4o-mini, o3-mini)</option>
-                <option value="groq" ${currentProvider === 'groq' ? 'selected' : ''}>⚡ Groq Cloud (Llama 3.3 70B — Sub-Second Velocity)</option>
-                <option value="sovereign" ${currentProvider === 'sovereign' ? 'selected' : ''}>🟣 Sovereign Local Core (100% In-Memory Offline — Zero Keys)</option>
               </select>
             </div>
 
@@ -433,7 +441,7 @@ Provide 4-6 rich, well-structured slides tailored specifically to the subject ma
             </div>
 
             <!-- API Key Input -->
-            <div id="modal-ai-key-container" style="${currentProvider === 'sovereign' ? 'display:none;' : ''}">
+            <div id="modal-ai-key-container">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                 <label style="font-size:11.5px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:0.5px;">
                   API Secret Key
@@ -458,7 +466,7 @@ Provide 4-6 rich, well-structured slides tailored specifically to the subject ma
 
           <!-- Footer Actions -->
           <div style="padding:14px 20px;border-top:1px solid #1a1d28;background:#07080c;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-            <button id="btn-clear-ai-settings-modal" style="background:transparent;border:1px solid #ef4444;color:#ef4444;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;">Reset to Sovereign</button>
+            <button id="btn-clear-ai-settings-modal" style="background:transparent;border:1px solid #64748b;color:#94a3b8;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;">Clear API Key</button>
             <div style="display:flex;gap:8px;">
               <button id="btn-test-ai-settings-modal" style="background:#1e293b;border:1px solid #475569;color:#f8fafc;border-radius:8px;padding:8px 16px;font-size:12.5px;font-weight:600;cursor:pointer;">Test Connection</button>
               <button id="btn-save-ai-settings-modal" style="background:linear-gradient(135deg,#06b6d4,#2563eb);border:none;color:#fff;border-radius:8px;padding:8px 20px;font-size:12.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(6,182,212,0.4);">Save &amp; Apply</button>
@@ -503,21 +511,16 @@ Provide 4-6 rich, well-structured slides tailored specifically to the subject ma
     provSelect?.addEventListener('change', () => {
       const p = provSelect.value;
       modelSelect.innerHTML = renderModelOptions(p);
-
-      if (p === 'sovereign') {
-        keyContainer.style.display = 'none';
+      keyContainer.style.display = 'block';
+      if (p === 'gemini') {
+        getKeyLink.href = 'https://aistudio.google.com/app/apikey';
+        getKeyLink.textContent = 'Get Free Gemini Key ↗';
+      } else if (p === 'groq') {
+        getKeyLink.href = 'https://console.groq.com/keys';
+        getKeyLink.textContent = 'Get Free Groq Key ↗';
       } else {
-        keyContainer.style.display = 'block';
-        if (p === 'gemini') {
-          getKeyLink.href = 'https://aistudio.google.com/app/apikey';
-          getKeyLink.textContent = 'Get Free Gemini Key ↗';
-        } else if (p === 'groq') {
-          getKeyLink.href = 'https://console.groq.com/keys';
-          getKeyLink.textContent = 'Get Free Groq Key ↗';
-        } else {
-          getKeyLink.href = 'https://platform.openai.com/api-keys';
-          getKeyLink.textContent = 'Get OpenAI Key ↗';
-        }
+        getKeyLink.href = 'https://platform.openai.com/api-keys';
+        getKeyLink.textContent = 'Get OpenAI Key ↗';
       }
       testResult.style.display = 'none';
     });
@@ -527,15 +530,6 @@ Provide 4-6 rich, well-structured slides tailored specifically to the subject ma
       const p = provSelect.value;
       const m = modelSelect.value;
       const k = keyInput.value.trim();
-
-      if (p === 'sovereign') {
-        testResult.style.display = 'block';
-        testResult.style.background = 'rgba(168,85,247,0.15)';
-        testResult.style.border = '1px solid #a855f7';
-        testResult.style.color = '#e9d5ff';
-        testResult.innerHTML = '🟣 <strong>Sovereign Core Ready:</strong> 100% offline synthesis engine is active with zero external latency.';
-        return;
-      }
 
       if (!k) {
         testResult.style.display = 'block';
@@ -588,10 +582,12 @@ Provide 4-6 rich, well-structured slides tailored specifically to the subject ma
     // Clear / Reset
     clearBtn?.addEventListener('click', () => {
       this.clearApiKey();
-      this.setApiKey('', 'sovereign', 'Girionix-Local-10.4');
+      this.setApiKey('', 'gemini', 'gemini-2.0-flash');
+      keyInput.value = '';
+      testResult.style.display = 'none';
       if (typeof onSaveCallback === 'function') onSaveCallback();
       if (window.orbitPlatform) {
-        window.orbitPlatform.showToast('Reset to Sovereign Local Core', 'blue');
+        window.orbitPlatform.showToast('Cleared API Key. Reset to Girionix 2.0 Flash online.', 'blue');
       }
       backdrop.remove();
     });

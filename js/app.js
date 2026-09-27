@@ -2491,13 +2491,12 @@ class GiriOrbitPlatform {
         history.push(aiMsg);
         saveChatHistory(currentTool, history);
       } catch (err) {
-        console.warn('[Girionix Copilot] Generation fallback:', err);
+        console.warn('[Girionix Copilot] Generation error:', err);
         typingEl.remove();
-        const fallbackText = girionixEngine.generateSovereignResponse(currentTool, q, attachedFileData);
         const aiMsg = {
           role: 'assistant',
-          text: fallbackText,
-          source: 'sovereign',
+          text: `⚠️ **Girionix Online AI Notice:** ${err.message || 'Could not communicate with online cloud model.'}\n\nPlease click ⚙️ in the header to enter your free API key or switch your online model.`,
+          source: 'error',
           time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })
         };
         history.push(aiMsg);
@@ -2524,15 +2523,9 @@ class GiriOrbitPlatform {
       const modeBtn = document.getElementById('btn-girionix-mode-instant');
       const conn = girionixEngine.getConnectionStatus();
       if (modeBtn) {
-        if (conn.isLive) {
-          modeBtn.innerHTML = `🟢 ${conn.provider === 'gemini' ? 'Gemini Live' : conn.provider.toUpperCase()}`;
-          modeBtn.title = `${conn.title} - Click ⚙️ to configure`;
-          modeBtn.style.color = '#22c55e';
-        } else {
-          modeBtn.innerHTML = '🟣 Sovereign';
-          modeBtn.title = 'Running on Sovereign Local Engine (Offline) - Click ⚙️ to configure';
-          modeBtn.style.color = '#c084fc';
-        }
+        modeBtn.innerHTML = `🟢 ${conn.badgeText}`;
+        modeBtn.title = `${conn.title} - Click ⚙️ to configure`;
+        modeBtn.style.color = '#22c55e';
       }
     };
     updateEngineBadge();
