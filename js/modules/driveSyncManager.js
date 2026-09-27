@@ -116,9 +116,16 @@ export class GiriDriveSyncManager {
       if (stored) {
         let files = JSON.parse(stored);
         if (Array.isArray(files)) {
-          // Purge mock dummy files
+          // Purge all mock/dummy files — keep ONLY real Google Drive or local linked files
           const mockIds = new Set(['gdrive-doc-01', 'gdrive-sheet-02', 'gdrive-slide-03', 'gdrive-pdf-04']);
-          files = files.filter(f => f && !mockIds.has(f.id));
+          const mockNames = new Set([
+            'New Strategy Document.docx',
+            'New Financial Model.xlsx',
+            'New Executive Deck.pptx',
+            'New Executive Form.pdf',
+            'Untitled Document.docx'
+          ]);
+          files = files.filter(f => f && (f.googleDriveId || f.isLocalDrive) && !mockIds.has(f.id) && !mockNames.has(f.name) && !String(f.id).startsWith('gdrive-'));
           localStorage.setItem(DRIVE_STORAGE_KEY, JSON.stringify(files));
         }
       } else {
@@ -488,6 +495,9 @@ export class GiriDriveSyncManager {
   /**
    * Google Identity Services (GIS) Official Token Client
    */
+  /**
+   * Google Identity Services (GIS) Official Token Client
+   */
   initGoogleTokenClient(clientId = null) {
     const cId = clientId || this.googleClientId;
     if (!cId) return;
@@ -500,7 +510,7 @@ export class GiriDriveSyncManager {
           enable_granular_consent: false,
           error_callback: (err) => {
             console.warn('[Google OAuth] Token error or popup blocked:', err);
-            this.showGoogleAccountChooserModal();
+            if (window.orbitPlatform) window.orbitPlatform.showToast('Google Sign-In popup was closed or blocked by browser.', 'red');
           },
           callback: async (resp) => {
             if (resp.error) {
@@ -509,19 +519,49 @@ export class GiriDriveSyncManager {
               return;
             }
             try {
+              // 1. Fetch real user profile from Google OAuth endpoint
               const userRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
                 headers: { Authorization: `Bearer ${resp.access_token}` }
               });
               const profile = await userRes.json();
-              this.performGoogleLogin(profile.name, profile.email, {
+
+              // 2. Query Google Drive API v3 about for exact real storage quota
+              let quotaText = '15 GB Google One Cloud';
+              try {
+                const aboutRes = await fetch('https://www.googleapis.com/drive/v3/about?fields=user,storageQuota', {
+                  headers: { Authorization: `Bearer ${resp.access_token}` }
+                });
+                if (aboutRes.ok) {
+                  const aboutData = await aboutRes.json();
+                  if (aboutData.storageQuota) {
+                    const usageBytes = parseInt(aboutData.storageQuota.usage || '0', 10);
+                    const limitBytes = parseInt(aboutData.storageQuota.limit || '16106127360', 10);
+                    const usedGB = (usageBytes / (1024 * 1024 * 1024)).toFixed(1);
+                    if (limitBytes > 0) {
+                      const totalGB = (limitBytes / (1024 * 1024 * 1024)).toFixed(0);
+                      const pct = Math.round((usageBytes / limitBytes) * 100);
+                      quotaText = `${usedGB} GB of ${totalGB} GB used (${pct}%)`;
+                    } else {
+                      quotaText = `${usedGB} GB used (Unlimited Workspace)`;
+                    }
+                  }
+                  if (aboutData.user?.displayName) profile.name = aboutData.user.displayName;
+                  if (aboutData.user?.photoLink) profile.picture = aboutData.user.photoLink;
+                }
+              } catch (_) {}
+
+              this.performGoogleLogin(profile.name || 'Google User', profile.email || 'user@gmail.com', {
                 picture: profile.picture || '',
                 accessToken: resp.access_token,
                 expiresAt: Date.now() + ((resp.expires_in || 3600) * 1000),
-                clientId: cId
+                clientId: cId,
+                quota: quotaText
               });
-              // Fetch the user's real, original Google Drive files immediately!
+
+              // 3. Fetch real files from Google Drive!
               await this.fetchRealGoogleDriveFiles(resp.access_token);
             } catch (err) {
+              console.error('[Google OAuth] Profile fetch error:', err);
               this.performGoogleLogin('Google User', 'drive.user@gmail.com', {
                 accessToken: resp.access_token,
                 clientId: cId
@@ -537,91 +577,420 @@ export class GiriDriveSyncManager {
   }
 
   /**
+   * Fetch Real Storage Quota from Google Drive API
+   */
+  async fetchRealStorageQuota(token) {
+    if (!token) return;
+    try {
+      const res = await fetch('https://www.googleapis.com/drive/v3/about?fields=user,storageQuota', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.storageQuota && this.googleUser) {
+          const usedBytes = parseInt(data.storageQuota.usage || '0', 10);
+          const limitBytes = parseInt(data.storageQuota.limit || '0', 10);
+          const usedGB = (usedBytes / (1024 * 1024 * 1024)).toFixed(1);
+          let quotaStr = '';
+          if (limitBytes > 0) {
+            const totalGB = (limitBytes / (1024 * 1024 * 1024)).toFixed(0);
+            const pct = Math.round((usedBytes / limitBytes) * 100);
+            quotaStr = `${usedGB} GB of ${totalGB} GB used (${pct}%)`;
+          } else {
+            quotaStr = `${usedGB} GB used`;
+          }
+          this.googleUser.quota = quotaStr;
+          if (data.user?.displayName) this.googleUser.name = data.user.displayName;
+          if (data.user?.photoLink) this.googleUser.picture = data.user.photoLink;
+          this.saveSettings();
+          const quotaEl = document.getElementById('drive-user-quota-text');
+          if (quotaEl) quotaEl.textContent = quotaStr;
+        }
+      }
+    } catch (_) {}
+  }
+
+  /**
    * Fetch Original Real Files directly from Google Drive API v3
    */
   async fetchRealGoogleDriveFiles(accessToken = null) {
-    const token = accessToken || this.googleUser?.accessToken;
-    if (!token) return [];
+    let token = accessToken || this.googleUser?.accessToken;
+    
+    // Check if token is expired
+    if (this.googleUser?.expiresAt && Date.now() > this.googleUser.expiresAt) {
+      token = null;
+    }
+
+    if (!token) {
+      if (this.tokenClient) {
+        this.tokenClient.requestAccessToken({
+          prompt: 'select_account',
+          login_hint: this.googleUser?.email || ''
+        });
+      } else {
+        this.promptGoogleDirectLogin();
+      }
+      return [];
+    }
+
+    const listEl = document.getElementById('drive-file-list-container');
+    if (listEl) {
+      listEl.innerHTML = `
+        <div style="padding:48px 20px; text-align:center; color:#94a3b8;">
+          <div style="font-size:32px; margin-bottom:12px; display:inline-block; animation:spin 1s linear infinite;">⏳</div>
+          <p style="font-size:14px; font-weight:600; color:#f1f5f9; margin-bottom:4px;">Connecting to your Google Drive...</p>
+          <p style="font-size:12px; color:#64748b;">Retrieving original documents, sheets, slides, and files</p>
+        </div>
+      `;
+    }
 
     try {
-      const res = await fetch(`https://www.googleapis.com/drive/v3/files?pageSize=60&fields=files(id,name,mimeType,modifiedTime,size,webViewLink,iconLink)&orderBy=modifiedTime desc`, {
+      this.fetchRealStorageQuota(token);
+
+      // Query non-trashed files, ordered by modified date descending
+      const q = encodeURIComponent("trashed = false and mimeType != 'application/vnd.google-apps.folder'");
+      const fields = encodeURIComponent('files(id,name,mimeType,modifiedTime,size,webViewLink,iconLink,thumbnailLink,owners,starred)');
+      const res = await fetch(`https://www.googleapis.com/drive/v3/files?pageSize=100&fields=${fields}&q=${q}&orderBy=modifiedTime desc`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 
+      if (res.status === 401) {
+        console.warn('[Google Drive] Access token expired, requesting fresh token...');
+        if (this.tokenClient) {
+          this.tokenClient.requestAccessToken({ prompt: 'select_account', login_hint: this.googleUser?.email || '' });
+        }
+        return [];
+      }
+
       if (!res.ok) {
-        console.warn('[Google Drive API] Fetch files error:', res.status);
+        const errJson = await res.json().catch(() => ({}));
+        console.warn('[Google Drive API] Error fetching files:', res.status, errJson);
+        const errMsg = errJson?.error?.message || `HTTP ${res.status} Error`;
+        if (listEl) {
+          listEl.innerHTML = `
+            <div style="padding:36px 20px; text-align:center;">
+              <div style="font-size:32px; margin-bottom:10px;">⚠️</div>
+              <h4 style="color:#f87171; margin:0 0 6px 0; font-size:15px;">Google Drive Authorization Required</h4>
+              <p style="font-size:12.5px; color:#94a3b8; max-width:440px; margin:0 auto 16px auto; line-height:1.5;">${errMsg}</p>
+              <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+                <button class="btn-giri-primary" id="btn-drive-reauth-inline" style="padding:8px 18px; font-size:12.5px; font-weight:600;">
+                  <span>🔑 Authorize Google Drive Access</span>
+                </button>
+                <button class="btn-giri-secondary" id="btn-drive-local-fallback" style="padding:8px 18px; font-size:12.5px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#f1f5f9; border-radius:6px; cursor:pointer;">
+                  <span>📁 Link Local Drive Folder</span>
+                </button>
+              </div>
+            </div>
+          `;
+          listEl.querySelector('#btn-drive-reauth-inline')?.addEventListener('click', () => {
+            if (this.tokenClient) {
+              this.tokenClient.requestAccessToken({ prompt: 'select_account' });
+            } else {
+              this.promptGoogleDirectLogin();
+            }
+          });
+          listEl.querySelector('#btn-drive-local-fallback')?.addEventListener('click', () => {
+            this.openLocalDriveDirectory();
+          });
+        }
         return [];
       }
 
       const data = await res.json();
-      if (Array.isArray(data.files) && data.files.length > 0) {
-        const realFiles = data.files.map(f => {
-          let tool = 'drift';
-          let format = 'docx';
-          const mime = (f.mimeType || '').toLowerCase();
-          const name = f.name || 'Untitled Document';
-          const ext = name.split('.').pop().toLowerCase();
+      const files = Array.isArray(data.files) ? data.files : [];
 
-          if (mime.includes('spreadsheet') || ['xlsx', 'xls', 'csv', 'tsv', 'ods'].includes(ext)) {
+      const realFiles = files.map(f => {
+        let tool = 'drift';
+        let format = 'docx';
+        const mime = (f.mimeType || '').toLowerCase();
+        const name = f.name || 'Untitled Document';
+        const ext = name.split('.').pop().toLowerCase();
+
+        if (mime.includes('spreadsheet') || ['xlsx', 'xls', 'csv', 'tsv', 'ods'].includes(ext)) {
+          tool = 'axis';
+          format = ext === 'csv' ? 'csv' : 'xlsx';
+        } else if (mime.includes('presentation') || ['pptx', 'ppt', 'odp'].includes(ext)) {
+          tool = 'kinetic';
+          format = 'pptx';
+        } else if (mime.includes('pdf') || ext === 'pdf') {
+          tool = 'pdf';
+          format = 'pdf';
+        } else {
+          tool = 'drift';
+          format = ['md', 'txt', 'html', 'odt'].includes(ext) ? ext : 'docx';
+        }
+
+        let formattedSize = '—';
+        if (f.size) {
+          const bytes = parseInt(f.size, 10);
+          if (bytes > 1048576) formattedSize = (bytes / 1048576).toFixed(1) + ' MB';
+          else if (bytes > 1024) formattedSize = (bytes / 1024).toFixed(1) + ' KB';
+          else formattedSize = bytes + ' B';
+        } else {
+          formattedSize = mime.includes('document') ? 'Google Doc' : mime.includes('spreadsheet') ? 'Google Sheet' : mime.includes('presentation') ? 'Google Slide' : 'Cloud File';
+        }
+
+        return {
+          id: f.id,
+          googleDriveId: f.id,
+          name: f.name,
+          tool: tool,
+          folder: 'My Drive',
+          format: format,
+          size: formattedSize,
+          lastModified: f.modifiedTime ? new Date(f.modifiedTime).getTime() : Date.now(),
+          synced: true,
+          isGoogleDrive: true,
+          webViewLink: f.webViewLink || `https://drive.google.com/file/d/${f.id}/view`,
+          iconLink: f.iconLink || '',
+          mimeType: f.mimeType
+        };
+      });
+
+      // Replace stored files completely with user's real Google Drive files
+      this.saveDriveFiles(realFiles);
+
+      // Re-render file list
+      if (listEl) {
+        listEl.innerHTML = this.renderDriveFileListHtml(realFiles);
+        this.bindFileListEvents(document.getElementById('drive-sync-modal-backdrop') || document.body);
+      }
+
+      if (window.orbitPlatform) {
+        window.orbitPlatform.showToast(`✅ Synced ${realFiles.length} real files from your Google Drive!`, 'green');
+      }
+
+      return realFiles;
+    } catch (err) {
+      console.warn('[Google Drive API] Error loading real files:', err);
+      if (listEl) {
+        listEl.innerHTML = `
+          <div style="padding:36px 20px; text-align:center; color:#94a3b8;">
+            <p style="color:#f87171; font-weight:600; font-size:14px; margin-bottom:8px;">Connection to Google Drive Interrupted</p>
+            <p style="font-size:12px; margin-bottom:14px;">${err.message || 'Check your internet connection and try again.'}</p>
+            <button class="btn-giri-primary" onclick="window.orbitDriveSync?.fetchRealGoogleDriveFiles()" style="font-size:12px; padding:6px 14px;">Try Again</button>
+          </div>
+        `;
+      }
+    }
+    return [];
+  }
+
+  /**
+   * Upload a File Directly to Real Google Drive via Multipart Upload
+   */
+  async uploadFileToRealGoogleDrive(file) {
+    const token = this.googleUser?.accessToken;
+    if (!token) {
+      if (window.orbitPlatform) window.orbitPlatform.showToast('Please connect to Google Drive first', 'blue');
+      return;
+    }
+
+    if (window.orbitPlatform) window.orbitPlatform.showToast(`Uploading "${file.name}" to Google Drive...`, 'blue');
+
+    try {
+      const metadata = {
+        name: file.name,
+        mimeType: file.type || 'application/octet-stream'
+      };
+
+      const form = new FormData();
+      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+      form.append('file', file);
+
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,modifiedTime,size,webViewLink', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: form
+      });
+
+      if (res.ok) {
+        if (window.orbitPlatform) window.orbitPlatform.showToast(`✅ "${file.name}" uploaded to Google Drive!`, 'green');
+        await this.fetchRealGoogleDriveFiles();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        if (window.orbitPlatform) window.orbitPlatform.showToast(`Upload failed: ${err.error?.message || res.statusText}`, 'red');
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      if (window.orbitPlatform) window.orbitPlatform.showToast('Upload error: ' + err.message, 'red');
+    }
+  }
+
+  /**
+   * Save Active Document Directly to Real Google Drive
+   */
+  async saveCurrentActiveFileToRealGoogleDrive(tool) {
+    const token = this.googleUser?.accessToken;
+    const currentTool = tool || (window.orbitPlatform?.currentView || 'drift');
+
+    let activeTitle = 'Document';
+    let content = '';
+    let mimeType = 'text/plain';
+    let ext = 'txt';
+
+    if (currentTool === 'drift') {
+      const titleEl = document.getElementById('drift-title-input');
+      activeTitle = (titleEl && titleEl.value ? titleEl.value.trim() : 'Document');
+      const paper = document.getElementById('drift-paper-canvas');
+      content = paper ? paper.innerHTML : '';
+      mimeType = 'text/html';
+      ext = 'html';
+    } else if (currentTool === 'axis') {
+      activeTitle = 'Spreadsheet';
+      content = localStorage.getItem('giri_orbit_axis_sheets') || '';
+      mimeType = 'application/json';
+      ext = 'json';
+    } else if (currentTool === 'kinetic') {
+      activeTitle = 'Presentation';
+      content = localStorage.getItem('giri_orbit_kinetic_deck') || '';
+      mimeType = 'application/json';
+      ext = 'json';
+    } else if (currentTool === 'pdf') {
+      activeTitle = 'Certified Document';
+      content = localStorage.getItem('giri_orbit_pdf_pages') || '';
+      mimeType = 'text/plain';
+      ext = 'txt';
+    }
+
+    const fileName = activeTitle.endsWith(`.${ext}`) ? activeTitle : `${activeTitle}.${ext}`;
+
+    // If Google token available, upload directly to Google Drive API
+    if (token) {
+      if (window.orbitPlatform) window.orbitPlatform.showToast(`Saving "${fileName}" to Google Drive...`, 'blue');
+
+      try {
+        const metadata = { name: fileName, mimeType: mimeType };
+        const form = new FormData();
+        form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+        form.append('file', new Blob([content], { type: mimeType }));
+
+        const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,modifiedTime,size,webViewLink', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: form
+        });
+
+        if (res.ok) {
+          if (window.orbitPlatform) window.orbitPlatform.showToast(`✅ Saved "${fileName}" to Google Drive!`, 'green');
+          await this.fetchRealGoogleDriveFiles();
+          return;
+        }
+      } catch (err) {
+        console.warn('API save error:', err);
+      }
+    }
+
+    // Sovereign fallback
+    const saved = this.saveActiveFileToDrive(currentTool, activeTitle, content, ext);
+    if (window.orbitPlatform && saved) {
+      window.orbitPlatform.showToast(`✅ Saved "${saved.name}" to Cloud Drive!`, 'green');
+    }
+  }
+
+  /**
+   * Delete File Directly from Real Google Drive
+   */
+  async deleteRealGoogleDriveFile(fileId) {
+    const token = this.googleUser?.accessToken;
+    if (token) {
+      try {
+        await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+      } catch (err) {
+        console.warn('Google Drive delete error:', err);
+      }
+    }
+    this.deleteDriveFile(fileId);
+  }
+
+  /**
+   * Native File System Directory Picker for Local Google Drive Folder
+   */
+  async openLocalDriveDirectory() {
+    if (!window.showDirectoryPicker) {
+      alert('Local Folder Sync is supported in Chrome, Edge, and modern Chromium browsers.');
+      return;
+    }
+    try {
+      const dirHandle = await window.showDirectoryPicker({
+        id: 'giri-orbit-google-drive',
+        mode: 'readwrite'
+      });
+      if (!dirHandle) return;
+
+      const app = window.orbitPlatform;
+      if (app) app.showToast(`Scanning "${dirHandle.name}" folder...`, 'blue');
+
+      const localFiles = [];
+      for await (const [name, handle] of dirHandle.entries()) {
+        if (handle.kind === 'file') {
+          const file = await handle.getFile();
+          const ext = name.split('.').pop().toLowerCase();
+          let tool = 'drift';
+          let format = ext;
+          if (['xlsx', 'xls', 'csv', 'tsv', 'ods'].includes(ext)) {
             tool = 'axis';
             format = ext === 'csv' ? 'csv' : 'xlsx';
-          } else if (mime.includes('presentation') || ['pptx', 'ppt', 'odp'].includes(ext)) {
+          } else if (['pptx', 'ppt', 'odp'].includes(ext)) {
             tool = 'kinetic';
             format = 'pptx';
-          } else if (mime.includes('pdf') || ext === 'pdf') {
+          } else if (ext === 'pdf') {
             tool = 'pdf';
             format = 'pdf';
-          } else {
+          } else if (['docx', 'doc', 'txt', 'md', 'html', 'rtf'].includes(ext)) {
             tool = 'drift';
-            format = ['md', 'txt', 'html', 'odt'].includes(ext) ? ext : 'docx';
+            format = ext;
+          } else {
+            continue;
           }
 
           let formattedSize = '—';
-          if (f.size) {
-            const bytes = parseInt(f.size, 10);
-            if (bytes > 1048576) formattedSize = (bytes / 1048576).toFixed(1) + ' MB';
-            else if (bytes > 1024) formattedSize = (bytes / 1024).toFixed(1) + ' KB';
-            else formattedSize = bytes + ' B';
-          } else {
-            formattedSize = tool === 'drift' ? 'Google Doc' : tool === 'axis' ? 'Google Sheet' : tool === 'kinetic' ? 'Google Slide' : 'Drive File';
-          }
+          if (file.size > 1048576) formattedSize = (file.size / 1048576).toFixed(1) + ' MB';
+          else if (file.size > 1024) formattedSize = (file.size / 1024).toFixed(1) + ' KB';
+          else formattedSize = file.size + ' B';
 
-          return {
-            id: f.id,
-            googleDriveId: f.id,
-            name: f.name,
+          const fileId = 'local-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+          this.activeFileHandles.set(fileId, handle);
+
+          localFiles.push({
+            id: fileId,
+            googleDriveId: fileId,
+            name: name,
             tool: tool,
-            folder: 'Google Drive',
+            folder: dirHandle.name,
             format: format,
             size: formattedSize,
-            lastModified: f.modifiedTime ? new Date(f.modifiedTime).getTime() : Date.now(),
+            lastModified: file.lastModified,
             synced: true,
-            isGoogleDrive: true,
-            webViewLink: f.webViewLink || '',
-            mimeType: f.mimeType
-          };
-        });
+            isLocalDrive: true,
+            handle: handle
+          });
+        }
+      }
 
-        // Replace any default sample files completely with user's real Google Drive files
-        this.saveDriveFiles(realFiles);
+      if (localFiles.length > 0) {
+        const existing = this.getDriveFiles().filter(f => !f.isLocalDrive);
+        const combined = [...localFiles, ...existing];
+        this.saveDriveFiles(combined);
 
-        // Update list in UI if modal is open
         const listEl = document.getElementById('drive-file-list-container');
         if (listEl) {
-          listEl.innerHTML = this.renderDriveFileListHtml(realFiles);
+          listEl.innerHTML = this.renderDriveFileListHtml(combined);
           this.bindFileListEvents(document.getElementById('drive-sync-modal-backdrop') || document.body);
         }
 
-        if (window.orbitPlatform) {
-          window.orbitPlatform.showToast(`✅ Synced ${realFiles.length} original files from Google Drive!`, 'green');
-        }
-
-        return realFiles;
+        if (app) app.showToast(`✅ Synced ${localFiles.length} real files from "${dirHandle.name}"!`, 'green');
+      } else {
+        if (app) app.showToast(`Folder "${dirHandle.name}" has no compatible Office documents.`, 'blue');
       }
     } catch (err) {
-      console.warn('[Google Drive API] Error loading real files:', err);
+      if (err.name !== 'AbortError') {
+        console.warn('Local folder sync error:', err);
+      }
     }
-    return [];
   }
 
   /**
@@ -734,9 +1103,9 @@ export class GiriDriveSyncManager {
 
       if (this.tokenClient) {
         try {
-          // Request access token with pre-selected scopes (enable_granular_consent: false)
+          // Request access token with interactive consent to ensure fresh, valid Drive scopes
           this.tokenClient.requestAccessToken({
-            prompt: '',
+            prompt: 'select_account',
             login_hint: displayEmail
           });
         } catch (err) {
@@ -983,6 +1352,8 @@ export class GiriDriveSyncManager {
     const userName = this.googleUser?.name || 'Orbit User';
     const userEmail = this.googleUser?.email || 'orbit.user@gmail.com';
     const initial = userName.charAt(0).toUpperCase();
+    const hasValidToken = !!(this.googleUser?.accessToken && (!this.googleUser?.expiresAt || Date.now() < this.googleUser.expiresAt));
+    const quotaDisplay = this.googleUser?.quota || '15 GB Google One Cloud';
 
     container.innerHTML = `
       <div class="drive-browser-wrap">
@@ -992,21 +1363,28 @@ export class GiriDriveSyncManager {
             <div style="display:flex; align-items:center; gap:12px;">
               <div style="position:relative; width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg, #2563eb, #1d4ed8); color:#fff; display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; overflow:hidden;">
                 ${this.googleUser?.picture ? `<img src="${this.escapeHtml(this.googleUser.picture)}" alt="Google Avatar" style="width:100%; height:100%; object-fit:cover; border-radius:50%;">` : initial}
-                <span style="position:absolute; bottom:-1px; right:-1px; width:12px; height:12px; border-radius:50%; background:#22c55e; border:2px solid #0f172a;"></span>
+                <span style="position:absolute; bottom:-1px; right:-1px; width:12px; height:12px; border-radius:50%; background:${hasValidToken ? '#22c55e' : '#f59e0b'}; border:2px solid #0f172a;"></span>
               </div>
               <div>
                 <div style="display:flex; align-items:center; gap:8px;">
                   <strong style="font-size:14px; color:#f1f5f9;">${this.escapeHtml(userName)}</strong>
-                  <span style="font-size:11px; background:rgba(34,197,94,0.15); color:#4ade80; border:1px solid rgba(34,197,94,0.3); border-radius:9999px; padding:2px 8px; font-weight:600;">Active Sync</span>
+                  <span style="font-size:11px; background:${hasValidToken ? 'rgba(34,197,94,0.15)' : 'rgba(245,158,11,0.15)'}; color:${hasValidToken ? '#4ade80' : '#fbbf24'}; border:1px solid ${hasValidToken ? 'rgba(34,197,94,0.3)' : 'rgba(245,158,11,0.3)'}; border-radius:9999px; padding:2px 8px; font-weight:600;">
+                    ${hasValidToken ? 'Active Cloud Sync' : 'Re-Auth Required'}
+                  </span>
                 </div>
                 <div style="font-size:12px; color:#94a3b8; display:flex; align-items:center; gap:8px; margin-top:2px;">
                   <span>${this.escapeHtml(userEmail)}</span>
                   <span>•</span>
-                  <span>${this.escapeHtml(this.googleUser?.quota || '15 GB Google One Cloud')}</span>
+                  <span id="drive-user-quota-text">${this.escapeHtml(quotaDisplay)}</span>
                 </div>
               </div>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
+              ${!hasValidToken ? `
+                <button id="btn-reconnect-google-token" style="background:#2563eb; border:none; color:#ffffff; border-radius:6px; padding:5px 12px; font-size:11.5px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(37,99,235,0.3);">
+                  <span>🔑 Authorize Drive</span>
+                </button>
+              ` : ''}
               <button id="btn-switch-google-account" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; border-radius:6px; padding:5px 12px; font-size:11.5px; font-weight:600; cursor:pointer; transition:all 0.15s;">
                 🔄 Switch
               </button>
@@ -1029,8 +1407,11 @@ export class GiriDriveSyncManager {
             <button class="btn-giri-primary" id="btn-drive-save-current" style="padding:6px 13px; font-size:11.5px; display:flex; align-items:center; gap:5px; font-weight:600;" title="Save open active document directly to Google Drive">
               <span>💾 Save Current File</span>
             </button>
-            <button class="btn-giri-secondary" id="btn-drive-upload-trigger" style="padding:6px 13px; font-size:11.5px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#f1f5f9; border-radius:6px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:5px;">
+            <button class="btn-giri-secondary" id="btn-drive-upload-trigger" style="padding:6px 13px; font-size:11.5px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#f1f5f9; border-radius:6px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:5px;" title="Upload any file from your computer to Google Drive">
               <span>📤 Upload File</span>
+            </button>
+            <button class="btn-giri-secondary" id="btn-drive-local-folder" style="padding:6px 13px; font-size:11.5px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; border-radius:6px; cursor:pointer; font-weight:600; display:flex; align-items:center; gap:5px;" title="Select and live-sync your local Google Drive folder on disk">
+              <span>📁 Local Drive</span>
             </button>
             <input type="file" id="drive-modal-file-upload-input" style="display:none;" accept=".docx,.doc,.xlsx,.xls,.pptx,.ppt,.pdf,.txt,.md,.csv,.tsv,.json">
             <div style="position:relative;">
@@ -1071,21 +1452,30 @@ export class GiriDriveSyncManager {
       </div>
     `;
 
-    // Automatically fetch real Google Drive files if token is present and default dummy files are loaded
+    // Automatically fetch real Google Drive files if token is present and default dummy files were removed
     if (this.googleUser?.accessToken) {
       const currentFiles = this.getDriveFiles();
-      const hasMock = currentFiles.some(f => !f.googleDriveId || (typeof f.id === 'string' && f.id.startsWith('gdrive-')));
-      if (hasMock || currentFiles.length === 0) {
+      if (currentFiles.length === 0) {
         this.fetchRealGoogleDriveFiles();
       }
     }
+
+    // Wire Authorize / Reconnect Button
+    container.querySelector('#btn-reconnect-google-token')?.addEventListener('click', () => {
+      if (this.tokenClient) {
+        this.tokenClient.requestAccessToken({ prompt: 'select_account', login_hint: this.googleUser?.email || '' });
+      } else {
+        this.promptGoogleDirectLogin();
+      }
+    });
 
     // Wire Sync Real Google Drive Files
     container.querySelector('#btn-sync-real-google-files')?.addEventListener('click', async () => {
       const btn = container.querySelector('#btn-sync-real-google-files');
       if (btn) btn.innerHTML = '<span>⏳ Syncing...</span>';
-      if (!this.googleUser?.accessToken && this.tokenClient) {
-        this.tokenClient.requestAccessToken({ prompt: '' });
+      const hasValid = !!(this.googleUser?.accessToken && (!this.googleUser?.expiresAt || Date.now() < this.googleUser.expiresAt));
+      if (!hasValid && this.tokenClient) {
+        this.tokenClient.requestAccessToken({ prompt: 'select_account', login_hint: this.googleUser?.email || '' });
       } else {
         await this.fetchRealGoogleDriveFiles();
       }
@@ -1103,11 +1493,8 @@ export class GiriDriveSyncManager {
     });
 
     // Wire Save Current File
-    container.querySelector('#btn-drive-save-current')?.addEventListener('click', () => {
-      const saved = this.saveCurrentActiveDocument(currentTool);
-      if (app && saved) {
-        app.showToast(`✅ Saved "${saved.name}" to Google Drive!`, 'green');
-      }
+    container.querySelector('#btn-drive-save-current')?.addEventListener('click', async () => {
+      await this.saveCurrentActiveFileToRealGoogleDrive(currentTool);
       this.renderDriveModal('browser');
     });
 
@@ -1117,23 +1504,16 @@ export class GiriDriveSyncManager {
       uploadInput?.click();
     });
 
-    uploadInput?.addEventListener('change', (e) => {
+    uploadInput?.addEventListener('change', async (e) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      const ext = file.name.split('.').pop().toLowerCase();
-      let tool = 'drift';
-      if (['xlsx', 'xls', 'csv', 'tsv'].includes(ext)) tool = 'axis';
-      else if (['pptx', 'ppt', 'deck'].includes(ext)) tool = 'kinetic';
-      else if (['pdf'].includes(ext)) tool = 'pdf';
+      await this.uploadFileToRealGoogleDrive(file);
+      uploadInput.value = '';
+    });
 
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const text = ev.target.result;
-        const saved = this.saveActiveFileToDrive(tool, file.name, text, ext);
-        if (app) app.showToast(`✅ Uploaded "${saved.name}" to Google Drive!`, 'green');
-        this.renderDriveModal('browser');
-      };
-      reader.readAsText(file);
+    // Wire Local Drive Folder Sync
+    container.querySelector('#btn-drive-local-folder')?.addEventListener('click', async () => {
+      await this.openLocalDriveDirectory();
     });
 
     // Wire New File Dropdown
@@ -1215,11 +1595,15 @@ export class GiriDriveSyncManager {
     if (!files || files.length === 0) {
       return `
         <div style="padding:48px 20px; text-align:center; color:#64748b;">
-          <div style="font-size:32px; margin-bottom:10px;">☁️</div>
-          <p style="font-size:14px; margin-bottom:12px; color:#94a3b8;">No files found in this Drive view.</p>
-          <div style="display:flex; justify-content:center; gap:10px;">
-            <button class="btn-giri-primary" onclick="window.orbitDriveSync?.createNewFile('drift')" style="font-size:12px; padding:7px 15px;">+ Create New Drift Doc</button>
+          <div style="font-size:36px; margin-bottom:12px;">📁</div>
+          <h4 style="font-size:15px; font-weight:700; color:#f1f5f9; margin-bottom:6px;">No Files in Google Drive View</h4>
+          <p style="font-size:13px; color:#94a3b8; max-width:440px; margin:0 auto 16px auto; line-height:1.5;">
+            Click <strong>Sync Drive Files</strong> to load all original files directly from your Google Drive, or link your local Google Drive folder.
+          </p>
+          <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;">
+            <button class="btn-giri-primary" onclick="window.orbitDriveSync?.fetchRealGoogleDriveFiles()" style="font-size:12px; padding:7px 15px; font-weight:600;">🔄 Sync Drive Files</button>
             <button class="btn-giri-secondary" onclick="document.getElementById('drive-modal-file-upload-input')?.click()" style="font-size:12px; padding:7px 15px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#f1f5f9; border-radius:6px; cursor:pointer;">📤 Upload File</button>
+            <button class="btn-giri-secondary" onclick="window.orbitDriveSync?.openLocalDriveDirectory()" style="font-size:12px; padding:7px 15px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; border-radius:6px; cursor:pointer;">📁 Local Drive Folder</button>
           </div>
         </div>
       `;
@@ -1228,23 +1612,24 @@ export class GiriDriveSyncManager {
     const toolBadges = {
       drift: { label: 'DOCS', bg: '#2563eb' },
       axis: { label: 'SHEETS', bg: '#16a34a' },
-      kinetic: { label: 'SLIDES', bg: '#dc2626' },
-      pdf: { label: 'PDF', bg: '#ea580c' }
+      kinetic: { label: 'SLIDES', bg: '#ea580c' },
+      pdf: { label: 'PDF', bg: '#dc2626' }
     };
 
     return files.map(f => {
-      const b = toolBadges[f.tool] || toolBadges.drift;
+      const b = toolBadges[f.tool] || { label: 'FILE', bg: '#64748b' };
       const dateStr = new Date(f.lastModified).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+      const webLink = f.webViewLink || (f.googleDriveId && !String(f.id).startsWith('local-') ? `https://drive.google.com/file/d/${f.googleDriveId}/view` : '');
       return `
         <div class="drive-file-item" data-file-id="${f.id}">
           <div class="drive-file-left">
             <span class="drive-file-badge" style="background:${b.bg};">${b.label}</span>
             <div class="drive-file-info">
-              <strong class="drive-file-name">${this.escapeHtml(f.name)}</strong>
+              <strong class="drive-file-name" title="${this.escapeHtml(f.name)}">${this.escapeHtml(f.name)}</strong>
               <div class="drive-file-meta">
                 <span>📁 ${this.escapeHtml(f.folder || 'My Drive')}</span>
                 <span>•</span>
-                <span>${f.size || '1 KB'}</span>
+                <span>${f.size || '—'}</span>
                 <span>•</span>
                 <span>Modified ${dateStr}</span>
               </div>
@@ -1252,7 +1637,10 @@ export class GiriDriveSyncManager {
           </div>
           <div class="drive-file-actions">
             <button class="btn-drive-open" data-file-id="${f.id}" title="Open and edit in ${f.tool.toUpperCase()}">Open ➔</button>
-            <button class="btn-drive-download" data-file-id="${f.id}" title="Download to device" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; border-radius:6px; padding:5px 9px; font-size:12px; cursor:pointer; transition:all 0.15s;">⬇</button>
+            ${webLink ? `
+              <a href="${webLink}" target="_blank" rel="noopener noreferrer" class="btn-drive-external" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#38bdf8; border-radius:6px; padding:5px 9px; font-size:11.5px; text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="View directly in official Google Drive on web">Drive ↗</a>
+            ` : ''}
+            <button class="btn-drive-download" data-file-id="${f.id}" title="Download file to device" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#cbd5e1; border-radius:6px; padding:5px 9px; font-size:12px; cursor:pointer; transition:all 0.15s;">⬇</button>
             <button class="btn-drive-delete" data-file-id="${f.id}" title="Delete from Drive" style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); color:#ef4444; border-radius:6px; padding:5px 9px; font-size:12px; cursor:pointer; transition:all 0.15s;">🗑</button>
           </div>
         </div>
@@ -1268,37 +1656,85 @@ export class GiriDriveSyncManager {
       });
     });
 
-    container.querySelectorAll('.btn-drive-download').forEach(btn => {
+    container.querySelectorAll('.btn-drive-external').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
+      });
+    });
+
+    container.querySelectorAll('.btn-drive-download').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
         const file = this.getDriveFileById(btn.dataset.fileId);
-        if (file) {
-          const blob = new Blob([file.content || ''], { type: 'text/plain;charset=utf-8' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = file.name;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-          if (window.orbitPlatform) window.orbitPlatform.showToast(`⬇ Downloaded ${file.name}`, 'blue');
+        if (!file) return;
+
+        if (file.googleDriveId && this.googleUser?.accessToken && !file.isLocalDrive) {
+          const app = window.orbitPlatform;
+          if (app) app.showToast(`Downloading "${file.name}" from Google Drive...`, 'blue');
+
+          try {
+            let downloadUrl = '';
+            const mime = (file.mimeType || '').toLowerCase();
+            if (mime === 'application/vnd.google-apps.document') {
+              downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.googleDriveId}/export?mimeType=application/vnd.openxmlformats-officedocument.wordprocessingml.document`;
+            } else if (mime === 'application/vnd.google-apps.spreadsheet') {
+              downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.googleDriveId}/export?mimeType=application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`;
+            } else if (mime === 'application/vnd.google-apps.presentation') {
+              downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.googleDriveId}/export?mimeType=application/vnd.openxmlformats-officedocument.presentationml.presentation`;
+            } else {
+              downloadUrl = `https://www.googleapis.com/drive/v3/files/${file.googleDriveId}?alt=media`;
+            }
+
+            const res = await fetch(downloadUrl, {
+              headers: { Authorization: `Bearer ${this.googleUser.accessToken}` }
+            });
+
+            if (res.ok) {
+              const blob = await res.blob();
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = file.name;
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              if (app) app.showToast(`✅ Downloaded ${file.name}`, 'green');
+              return;
+            }
+          } catch (err) {
+            console.warn('Google Drive direct download error:', err);
+          }
         }
+
+        const blob = new Blob([file.content || ''], { type: 'text/plain;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = file.name;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        if (window.orbitPlatform) window.orbitPlatform.showToast(`⬇ Downloaded ${file.name}`, 'blue');
       });
     });
 
     container.querySelectorAll('.btn-drive-delete').forEach(btn => {
-      btn.addEventListener('click', (e) => {
+      btn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (confirm('Delete this file from Google Drive?')) {
-          this.deleteDriveFile(btn.dataset.fileId);
+        const file = this.getDriveFileById(btn.dataset.fileId);
+        const name = file ? file.name : 'this file';
+        if (confirm(`Delete "${name}" from Google Drive?`)) {
+          await this.deleteRealGoogleDriveFile(btn.dataset.fileId);
           this.renderDriveModal('browser');
         }
       });
     });
 
     container.querySelectorAll('.drive-file-item').forEach(item => {
-      item.addEventListener('click', () => {
+      item.addEventListener('click', (e) => {
+        if (e.target.closest('button') || e.target.closest('a')) return;
         this.openDriveFile(item.dataset.fileId);
       });
     });

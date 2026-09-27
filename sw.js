@@ -7,7 +7,7 @@
  * Implements Stale-While-Revalidate and Cache-First strategies.
  */
 
-const CACHE_NAME = 'giri-orbit-sovereign-v11.8';
+const CACHE_NAME = 'giri-orbit-sovereign-v11.9';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
