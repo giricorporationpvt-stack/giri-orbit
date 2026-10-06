@@ -2833,6 +2833,17 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
               <div class="fluent-group-label">Icons</div>
             </div>
 
+            <!-- SmartArt Diagrams -->
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-kinetic-smartart" title="Insert SmartArt Diagrams (Process, Hierarchy, Cycle, Matrix, Funnel, Chevron)">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><path d="M10 6.5h4M6.5 10v4M17.5 10v4M10 17.5h4"/></svg>
+                  <span>SmartArt</span>
+                </button>
+              </div>
+              <div class="fluent-group-label">SmartArt</div>
+            </div>
+
             <!-- Text & Media Group -->
             <div class="fluent-ribbon-group">
               <div class="fluent-group-controls">
@@ -2844,14 +2855,27 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
                   <span style="font-size:16px;">🖼️</span>
                   <span>Picture</span>
                 </button>
+                <button class="fluent-btn-large" id="btn-kinetic-edit-pic" title="Format Picture: Crop, Filters, Radius, Rotation">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  <span>Format Pic</span>
+                </button>
                 <input type="file" id="kinetic-img-file-input" accept="image/*" style="display:none;">
+
+                <button class="fluent-btn-large" id="btn-kinetic-insert-audio" title="Insert Audio / Music / Narration">
+                  <span style="font-size:16px;">🎵</span>
+                  <span>Audio</span>
+                </button>
+                <button class="fluent-btn-large" id="btn-kinetic-insert-video" title="Insert Video (MP4 / YouTube Embed)">
+                  <span style="font-size:16px;">🎬</span>
+                  <span>Video</span>
+                </button>
 
                 <button class="fluent-btn-large" id="btn-kinetic-ai-gen" style="color:#a855f7; font-weight:700;" title="Girionix AI Presentation Studio (Alt+J / Ctrl+Shift+J)">
                   <strong style="color:#a855f7; font-size:18px;">⚡</strong>
                   <span style="color:#a855f7;">AI Studio</span>
                 </button>
               </div>
-              <div class="fluent-group-label">Media & Text</div>
+              <div class="fluent-group-label">Media &amp; Text</div>
             </div>
 
             <!-- Table Group -->
@@ -2889,17 +2913,22 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
               <div class="fluent-group-label">Chart</div>
             </div>
 
-            <!-- Links & Text -->
+            <!-- Links, Action Buttons & Text -->
             <div class="fluent-ribbon-group">
               <div class="fluent-group-controls">
                 <div class="fluent-group-col">
-                  <button class="fluent-btn-small" id="btn-kinetic-insert-link" style="padding:0 6px;">🔗 Hyperlink</button>
-                  <button class="fluent-btn-small" id="btn-kinetic-wordart" style="padding:0 6px;font-weight:900;">A WordArt</button>
-                  <button class="fluent-btn-small" id="btn-kinetic-insert-date" style="padding:0 6px;">📅 Date &amp; Time</button>
-                  <button class="fluent-btn-small" id="btn-kinetic-insert-slidenum" style="padding:0 6px;"># Slide Number</button>
+                  <div class="fluent-group-row">
+                    <button class="fluent-btn-small" id="btn-kinetic-insert-link" style="padding:0 6px;">🔗 Hyperlink</button>
+                    <button class="fluent-btn-small" id="btn-kinetic-action-buttons" style="padding:0 6px; font-weight:600;">🔘 Action ▾</button>
+                  </div>
+                  <div class="fluent-group-row">
+                    <button class="fluent-btn-small" id="btn-kinetic-wordart" style="padding:0 6px;font-weight:900;">A WordArt</button>
+                    <button class="fluent-btn-small" id="btn-kinetic-insert-date" style="padding:0 6px;">📅 Date</button>
+                    <button class="fluent-btn-small" id="btn-kinetic-insert-slidenum" style="padding:0 6px;"># Slide No</button>
+                  </div>
                 </div>
               </div>
-              <div class="fluent-group-label">Links &amp; Text</div>
+              <div class="fluent-group-label">Links &amp; Actions</div>
             </div>
 
             <!-- Symbols & Proofing -->
@@ -3008,6 +3037,10 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
                   <span>BG Color</span>
                   <input type="color" class="ribbon-color-input" id="input-kinetic-bg" value="#ffffff">
                 </label>
+                <button class="fluent-btn-large" id="btn-kinetic-format-bg" title="Format Background: Gradients, Patterns, Wallpaper, Custom Colors">
+                  <span style="font-size:16px;">🎨</span>
+                  <span>Format BG</span>
+                </button>
                 <div class="fluent-group-row" style="margin-left:6px; gap:4px;">
                   <button class="kinetic-bg-preset-btn" data-bg="#ffffff" title="White Canvas" style="width:18px; height:18px; border-radius:50%; background:#ffffff; border:1px solid #71717a; cursor:pointer;"></button>
                   <button class="kinetic-bg-preset-btn" data-bg="#18181b" title="Obsidian Night" style="width:18px; height:18px; border-radius:50%; background:#18181b; border:1px solid #71717a; cursor:pointer;"></button>
@@ -3173,8 +3206,27 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
                   <span style="font-size:16px;">⏵</span>
                   <span>From Current</span>
                 </button>
+                <button class="fluent-btn-large" id="btn-kinetic-presenter-view" title="Presenter View (Dual Screen / Notes Console)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="13" height="11" rx="1"/><rect x="17" y="3" width="5" height="5" rx="1"/><rect x="17" y="10" width="5" height="4" rx="1"/><line x1="2" y1="18" x2="22" y2="18"/></svg>
+                  <span>Presenter View</span>
+                </button>
               </div>
               <div class="fluent-group-label">Start Slide Show</div>
+            </div>
+
+            <!-- Rehearsal & Recording Group -->
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-kinetic-rehearse-timings" title="Rehearse Timings: Practice presentation & record timing for each slide">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                  <span>Rehearse</span>
+                </button>
+                <button class="fluent-btn-large" id="btn-kinetic-record-presentation" title="Record Presentation: Record narration, slide timings & audio notes" style="color:#ef4444;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="#ef4444"/></svg>
+                  <span style="color:#ef4444; font-weight:700;">Record</span>
+                </button>
+              </div>
+              <div class="fluent-group-label">Record &amp; Timings</div>
             </div>
 
             <!-- Presenter Options Group -->
@@ -3195,6 +3247,17 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
 
           <!-- 6. VIEW TAB PANE -->
           <div class="fluent-ribbon-pane" id="pane-kinetic-view">
+            <!-- Master Views Group -->
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-kinetic-slide-master" title="Slide Master: Customize universal template, header fonts & footer across all slides">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="6" y1="7" x2="18" y2="7"/><line x1="6" y1="10" x2="14" y2="10"/></svg>
+                  <span>Slide Master</span>
+                </button>
+              </div>
+              <div class="fluent-group-label">Master Views</div>
+            </div>
+
             <!-- Presentation Views Group -->
             <div class="fluent-ribbon-group">
               <div class="fluent-group-controls">
@@ -3202,11 +3265,19 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
                   <span style="font-size:16px;">📝</span>
                   <span>Notes</span>
                 </button>
-                <label style="display:flex; align-items:center; gap:6px; font-size:11px; cursor:pointer; color:#cbd5e1;">
-                  <input type="checkbox" id="chk-kinetic-slide-num" checked> Slide Numbers
-                </label>
+                <div class="fluent-group-col">
+                  <label style="display:flex; align-items:center; gap:6px; font-size:11px; cursor:pointer; color:#cbd5e1;">
+                    <input type="checkbox" id="chk-kinetic-slide-num" checked> Slide Numbers
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; font-size:11px; cursor:pointer; color:#cbd5e1;">
+                    <input type="checkbox" id="chk-kinetic-gridlines"> Gridlines
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; font-size:11px; cursor:pointer; color:#cbd5e1;">
+                    <input type="checkbox" id="chk-kinetic-guides"> Guides
+                  </label>
+                </div>
               </div>
-              <div class="fluent-group-label">Views</div>
+              <div class="fluent-group-label">Show / Hide</div>
             </div>
 
             <!-- Zoom Group -->
@@ -3289,6 +3360,13 @@ export function renderKineticApp(container, onDeckUpdate = null, startInEditor =
 
             <!-- Slide Canvas Floating Shapes & Objects Container -->
             <div id="slide-canvas-objects" style="position:absolute; inset:0; pointer-events:none;"></div>
+
+            <!-- Alignment Gridlines & Center Guides Overlays -->
+            <div id="kinetic-grid-overlay" style="display:none; position:absolute; inset:0; pointer-events:none; z-index:4; background-size:32px 32px; background-image:radial-gradient(circle, rgba(148,163,184,0.45) 1.2px, transparent 1.2px);"></div>
+            <div id="kinetic-guides-overlay" style="display:none; position:absolute; inset:0; pointer-events:none; z-index:4;">
+              <div style="position:absolute; top:50%; left:0; right:0; height:1px; border-top:1px dashed #0284c7; opacity:0.85;"></div>
+              <div style="position:absolute; left:50%; top:0; bottom:0; width:1px; border-left:1px dashed #0284c7; opacity:0.85;"></div>
+            </div>
 
             <div class="presenter-progress-bar" id="presenter-progress" style="width: 25%;"></div>
             <div id="kinetic-slide-number-indicator" style="position:absolute; bottom:14px; right:20px; font-size:11px; font-weight:600; color:var(--text-muted);">1</div>
@@ -4421,27 +4499,8 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
   });
 
   // 7. Editing Controls (Find, Replace, Select All)
-  container.querySelector('#btn-kinetic-find')?.addEventListener('click', () => {
-    const q = prompt('Find text in presentation:');
-    if (q && window.find) {
-      const found = window.find(q);
-      if (window.orbitPlatform) window.orbitPlatform.triggerToast(found ? `Found occurrence of "${q}"` : `No matches for "${q}"`);
-    }
-  });
-  container.querySelector('#btn-kinetic-replace')?.addEventListener('click', () => {
-    const findStr = prompt('Text to find:');
-    if (!findStr) return;
-    const repStr = prompt('Replace with:');
-    if (repStr === null) return;
-    const active = slidesData[currentSlideIndex];
-    if (active) {
-      active.title = active.title.replace(new RegExp(findStr, 'gi'), repStr);
-      active.desc = active.desc.replace(new RegExp(findStr, 'gi'), repStr);
-      saveDeck();
-      switchSlide(currentSlideIndex);
-      if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Replaced instances of "${findStr}"`);
-    }
-  });
+  container.querySelector('#btn-kinetic-find')?.addEventListener('click', () => openKineticFindReplaceModal(false));
+  container.querySelector('#btn-kinetic-replace')?.addEventListener('click', () => openKineticFindReplaceModal(true));
   container.querySelector('#btn-kinetic-select-all')?.addEventListener('click', () => {
     document.execCommand('selectAll');
   });
@@ -6583,6 +6642,1132 @@ function initKineticWorkspace(container, slidesData, currentSlideIndex, currentT
     window.speechSynthesis.speak(utter);
     if (window.orbitPlatform) window.orbitPlatform.triggerToast('Reading slide text aloud...');
   });
+
+  // ── SmartArt Diagram Inserter ─────────────────────────────────
+  function openKineticSmartArtModal() {
+    let modal = document.getElementById('kinetic-smartart-modal-backdrop');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'kinetic-smartart-modal-backdrop';
+      modal.className = 'axis-modal-backdrop';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
+      modal.innerHTML = `
+        <div class="axis-modal-dialog" style="width:780px;max-width:94vw;background:#18181b;border:1px solid #3f3f46;border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6);display:flex;flex-direction:column;max-height:88vh;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #27272a;background:#18181b;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">📊</span>
+              <div>
+                <strong style="font-size:15px;color:#f1f5f9;">Insert SmartArt Diagram</strong>
+                <p style="margin:2px 0 0 0;font-size:11.5px;color:#94a3b8;">Choose a process, hierarchy, cycle, or matrix diagram to insert onto your slide</p>
+              </div>
+            </div>
+            <button id="btn-close-kinetic-smartart" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
+          </div>
+          <div style="padding:20px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;">
+            <!-- 1. Process Flow -->
+            <div class="smartart-card" data-type="process" style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px;cursor:pointer;transition:transform 0.15s, border-color 0.15s;">
+              <div style="font-size:12px;font-weight:700;color:#38bdf8;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                <span>➔</span> Process Flow
+              </div>
+              <div style="background:#0f172a;border-radius:6px;padding:10px;display:flex;align-items:center;justify-content:center;gap:6px;min-height:70px;">
+                <div style="background:#2563eb;color:#fff;font-size:9px;font-weight:700;padding:4px 6px;border-radius:4px;">Step 1</div>
+                <span style="color:#64748b;font-size:10px;">➔</span>
+                <div style="background:#0284c7;color:#fff;font-size:9px;font-weight:700;padding:4px 6px;border-radius:4px;">Step 2</div>
+                <span style="color:#64748b;font-size:10px;">➔</span>
+                <div style="background:#059669;color:#fff;font-size:9px;font-weight:700;padding:4px 6px;border-radius:4px;">Step 3</div>
+              </div>
+              <p style="margin:8px 0 0 0;font-size:11px;color:#94a3b8;">Sequential workflow and milestone pipeline</p>
+            </div>
+
+            <!-- 2. Hierarchy / Org Chart -->
+            <div class="smartart-card" data-type="hierarchy" style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px;cursor:pointer;transition:transform 0.15s, border-color 0.15s;">
+              <div style="font-size:12px;font-weight:700;color:#a855f7;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                <span>△</span> Hierarchy / Tree
+              </div>
+              <div style="background:#0f172a;border-radius:6px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:4px;min-height:70px;">
+                <div style="background:#7c3aed;color:#fff;font-size:9px;font-weight:700;padding:3px 8px;border-radius:3px;">Leadership</div>
+                <div style="width:1px;height:6px;background:#64748b;"></div>
+                <div style="display:flex;gap:10px;">
+                  <div style="background:#6366f1;color:#fff;font-size:8px;padding:2px 6px;border-radius:3px;">Branch A</div>
+                  <div style="background:#6366f1;color:#fff;font-size:8px;padding:2px 6px;border-radius:3px;">Branch B</div>
+                </div>
+              </div>
+              <p style="margin:8px 0 0 0;font-size:11px;color:#94a3b8;">Organizational and structural breakdown</p>
+            </div>
+
+            <!-- 3. Circular Cycle -->
+            <div class="smartart-card" data-type="cycle" style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px;cursor:pointer;transition:transform 0.15s, border-color 0.15s;">
+              <div style="font-size:12px;font-weight:700;color:#10b981;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                <span>⭕</span> Circular Cycle
+              </div>
+              <div style="background:#0f172a;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;min-height:70px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;width:75px;text-align:center;">
+                  <div style="background:#059669;color:#fff;font-size:8px;padding:2px;border-radius:3px;">Plan</div>
+                  <div style="background:#10b981;color:#fff;font-size:8px;padding:2px;border-radius:3px;">Do</div>
+                  <div style="background:#14b8a6;color:#fff;font-size:8px;padding:2px;border-radius:3px;">Act</div>
+                  <div style="background:#0d9488;color:#fff;font-size:8px;padding:2px;border-radius:3px;">Check</div>
+                </div>
+              </div>
+              <p style="margin:8px 0 0 0;font-size:11px;color:#94a3b8;">Continuous feedback loops &amp; iterative processes</p>
+            </div>
+
+            <!-- 4. SWOT Matrix -->
+            <div class="smartart-card" data-type="matrix" style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px;cursor:pointer;transition:transform 0.15s, border-color 0.15s;">
+              <div style="font-size:12px;font-weight:700;color:#f59e0b;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                <span>⊞</span> 2×2 SWOT Matrix
+              </div>
+              <div style="background:#0f172a;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;min-height:70px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;width:95px;text-align:center;">
+                  <div style="background:#22c55e;color:#fff;font-size:8px;font-weight:700;padding:3px;border-radius:2px;">Strengths</div>
+                  <div style="background:#ef4444;color:#fff;font-size:8px;font-weight:700;padding:3px;border-radius:2px;">Weakness</div>
+                  <div style="background:#3b82f6;color:#fff;font-size:8px;font-weight:700;padding:3px;border-radius:2px;">Opps</div>
+                  <div style="background:#eab308;color:#000;font-size:8px;font-weight:700;padding:3px;border-radius:2px;">Threats</div>
+                </div>
+              </div>
+              <p style="margin:8px 0 0 0;font-size:11px;color:#94a3b8;">Strategic 4-quadrant comparative analysis</p>
+            </div>
+
+            <!-- 5. Funnel Stages -->
+            <div class="smartart-card" data-type="funnel" style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px;cursor:pointer;transition:transform 0.15s, border-color 0.15s;">
+              <div style="font-size:12px;font-weight:700;color:#ec4899;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                <span>▽</span> Funnel Stages
+              </div>
+              <div style="background:#0f172a;border-radius:6px;padding:8px;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:70px;">
+                <div style="background:#ec4899;width:75px;height:12px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;">Awareness</div>
+                <div style="background:#db2777;width:55px;height:12px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;">Interest</div>
+                <div style="background:#be185d;width:35px;height:12px;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;color:#fff;">Action</div>
+              </div>
+              <p style="margin:8px 0 0 0;font-size:11px;color:#94a3b8;">Conversion, marketing &amp; sales pipeline</p>
+            </div>
+
+            <!-- 6. Chevron Journey -->
+            <div class="smartart-card" data-type="chevron" style="background:#1e293b;border:1px solid #334155;border-radius:10px;padding:14px;cursor:pointer;transition:transform 0.15s, border-color 0.15s;">
+              <div style="font-size:12px;font-weight:700;color:#06b6d4;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                <span>➤</span> Chevron Roadmap
+              </div>
+              <div style="background:#0f172a;border-radius:6px;padding:8px;display:flex;align-items:center;justify-content:center;gap:3px;min-height:70px;">
+                <div style="background:#0891b2;color:#fff;font-size:8px;padding:3px 6px;clip-path:polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%, 15% 50%);">Phase 1</div>
+                <div style="background:#06b6d4;color:#fff;font-size:8px;padding:3px 6px;clip-path:polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%, 15% 50%);">Phase 2</div>
+                <div style="background:#22d3ee;color:#000;font-size:8px;padding:3px 6px;clip-path:polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%, 15% 50%);">Phase 3</div>
+              </div>
+              <p style="margin:8px 0 0 0;font-size:11px;color:#94a3b8;">Strategic multi-phase implementation roadmap</p>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#btn-close-kinetic-smartart')?.addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      modal.querySelectorAll('.smartart-card').forEach(card => {
+        card.addEventListener('mouseenter', () => { card.style.borderColor = '#38bdf8'; card.style.transform = 'translateY(-2px)'; });
+        card.addEventListener('mouseleave', () => { card.style.borderColor = '#334155'; card.style.transform = 'none'; });
+        card.addEventListener('click', () => {
+          const type = card.dataset.type;
+          insertSmartArtDiagram(type);
+          modal.remove();
+        });
+      });
+    } else {
+      document.body.appendChild(modal);
+    }
+  }
+
+  function insertSmartArtDiagram(type) {
+    let html = '';
+    if (type === 'process') {
+      html = `
+        <div style="display:flex;align-items:center;gap:12px;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);border:1px solid rgba(56,189,248,0.3);border-radius:12px;padding:16px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
+          <div style="flex:1;background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:8px;padding:12px;color:#fff;">
+            <div style="font-size:10px;text-transform:uppercase;opacity:0.8;font-weight:700;">Phase 01</div>
+            <strong contenteditable="true" style="display:block;font-size:14px;margin:3px 0;">Discovery &amp; Research</strong>
+            <p contenteditable="true" style="margin:0;font-size:11px;opacity:0.9;">Gather stakeholder requirements</p>
+          </div>
+          <span style="font-size:20px;color:#38bdf8;font-weight:900;">➔</span>
+          <div style="flex:1;background:linear-gradient(135deg,#0369a1,#0284c7);border-radius:8px;padding:12px;color:#fff;">
+            <div style="font-size:10px;text-transform:uppercase;opacity:0.8;font-weight:700;">Phase 02</div>
+            <strong contenteditable="true" style="display:block;font-size:14px;margin:3px 0;">Architecture &amp; Design</strong>
+            <p contenteditable="true" style="margin:0;font-size:11px;opacity:0.9;">Build models &amp; specifications</p>
+          </div>
+          <span style="font-size:20px;color:#38bdf8;font-weight:900;">➔</span>
+          <div style="flex:1;background:linear-gradient(135deg,#047857,#059669);border-radius:8px;padding:12px;color:#fff;">
+            <div style="font-size:10px;text-transform:uppercase;opacity:0.8;font-weight:700;">Phase 03</div>
+            <strong contenteditable="true" style="display:block;font-size:14px;margin:3px 0;">Deployment &amp; Scale</strong>
+            <p contenteditable="true" style="margin:0;font-size:11px;opacity:0.9;">Global production roll-out</p>
+          </div>
+        </div>
+      `;
+    } else if (type === 'hierarchy') {
+      html = `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);border:1px solid rgba(168,85,247,0.3);border-radius:12px;padding:16px;box-shadow:0 12px 32px rgba(0,0,0,0.3);min-width:380px;">
+          <div style="background:linear-gradient(135deg,#6d28d9,#7c3aed);color:#fff;border-radius:8px;padding:8px 20px;text-align:center;">
+            <strong contenteditable="true" style="display:block;font-size:13px;">Executive Leadership</strong>
+            <span contenteditable="true" style="font-size:11px;opacity:0.85;">Strategic Direction</span>
+          </div>
+          <div style="width:2px;height:12px;background:#64748b;"></div>
+          <div style="display:flex;gap:20px;">
+            <div style="background:#1e293b;border:1px solid #475569;color:#f8fafc;border-radius:8px;padding:8px 14px;text-align:center;">
+              <strong contenteditable="true" style="display:block;font-size:12px;color:#a855f7;">Engineering Lead</strong>
+              <span contenteditable="true" style="font-size:10.5px;color:#94a3b8;">System Architecture</span>
+            </div>
+            <div style="background:#1e293b;border:1px solid #475569;color:#f8fafc;border-radius:8px;padding:8px 14px;text-align:center;">
+              <strong contenteditable="true" style="display:block;font-size:12px;color:#38bdf8;">Operations Lead</strong>
+              <span contenteditable="true" style="font-size:10.5px;color:#94a3b8;">Execution &amp; Delivery</span>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (type === 'cycle') {
+      html = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:16px;box-shadow:0 12px 32px rgba(0,0,0,0.3);width:340px;">
+          <div style="background:linear-gradient(135deg,#065f46,#059669);color:#fff;border-radius:8px;padding:10px;text-align:center;">
+            <strong contenteditable="true" style="display:block;font-size:13px;">1. Plan</strong>
+            <span contenteditable="true" style="font-size:10.5px;opacity:0.85;">Define Objectives</span>
+          </div>
+          <div style="background:linear-gradient(135deg,#047857,#10b981);color:#fff;border-radius:8px;padding:10px;text-align:center;">
+            <strong contenteditable="true" style="display:block;font-size:13px;">2. Execute</strong>
+            <span contenteditable="true" style="font-size:10.5px;opacity:0.85;">Build &amp; Implement</span>
+          </div>
+          <div style="background:linear-gradient(135deg,#115e59,#0d9488);color:#fff;border-radius:8px;padding:10px;text-align:center;">
+            <strong contenteditable="true" style="display:block;font-size:13px;">4. Optimize</strong>
+            <span contenteditable="true" style="font-size:10.5px;opacity:0.85;">Iterate &amp; Refine</span>
+          </div>
+          <div style="background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;border-radius:8px;padding:10px;text-align:center;">
+            <strong contenteditable="true" style="display:block;font-size:13px;">3. Measure</strong>
+            <span contenteditable="true" style="font-size:10.5px;opacity:0.85;">Analyze Metrics</span>
+          </div>
+        </div>
+      `;
+    } else if (type === 'matrix') {
+      html = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:16px;box-shadow:0 12px 32px rgba(0,0,0,0.3);width:380px;">
+          <div style="background:#14532d;border:1px solid #22c55e;border-radius:8px;padding:10px;color:#fff;">
+            <strong contenteditable="true" style="color:#4ade80;font-size:12.5px;display:block;">STRENGTHS (S)</strong>
+            <p contenteditable="true" style="margin:4px 0 0 0;font-size:11px;opacity:0.9;">• Proprietary technology<br>• Sovereign offline architecture</p>
+          </div>
+          <div style="background:#7f1d1d;border:1px solid #ef4444;border-radius:8px;padding:10px;color:#fff;">
+            <strong contenteditable="true" style="color:#f87171;font-size:12.5px;display:block;">WEAKNESSES (W)</strong>
+            <p contenteditable="true" style="margin:4px 0 0 0;font-size:11px;opacity:0.9;">• Ecosystem awareness<br>• Integration dependencies</p>
+          </div>
+          <div style="background:#1e3a8a;border:1px solid #3b82f6;border-radius:8px;padding:10px;color:#fff;">
+            <strong contenteditable="true" style="color:#60a5fa;font-size:12.5px;display:block;">OPPORTUNITIES (O)</strong>
+            <p contenteditable="true" style="margin:4px 0 0 0;font-size:11px;opacity:0.9;">• Enterprise data sovereignty<br>• Local AI agent tooling</p>
+          </div>
+          <div style="background:#78350f;border:1px solid #f59e0b;border-radius:8px;padding:10px;color:#fff;">
+            <strong contenteditable="true" style="color:#fde047;font-size:12.5px;display:block;">THREATS (T)</strong>
+            <p contenteditable="true" style="margin:4px 0 0 0;font-size:11px;opacity:0.9;">• Legacy vendor lock-in<br>• Shifting regulatory landscape</p>
+          </div>
+        </div>
+      `;
+    } else if (type === 'funnel') {
+      html = `
+        <div style="display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);border:1px solid rgba(236,72,153,0.3);border-radius:12px;padding:16px;box-shadow:0 12px 32px rgba(0,0,0,0.3);width:340px;">
+          <div style="background:linear-gradient(90deg,#be185d,#ec4899);color:#fff;border-radius:6px;padding:8px;width:100%;text-align:center;">
+            <strong contenteditable="true" style="font-size:12px;">Top of Funnel: Awareness (100%)</strong>
+          </div>
+          <div style="background:linear-gradient(90deg,#9d174d,#db2777);color:#fff;border-radius:6px;padding:7px;width:80%;text-align:center;">
+            <strong contenteditable="true" style="font-size:11.5px;">Evaluation &amp; Intent (60%)</strong>
+          </div>
+          <div style="background:linear-gradient(90deg,#831843,#be185d);color:#fff;border-radius:6px;padding:6px;width:60%;text-align:center;">
+            <strong contenteditable="true" style="font-size:11px;">Opportunity / Trial (30%)</strong>
+          </div>
+          <div style="background:linear-gradient(90deg,#701a75,#a21caf);color:#fff;border-radius:6px;padding:5px;width:40%;text-align:center;">
+            <strong contenteditable="true" style="font-size:10.5px;">Closed / Won (15%)</strong>
+          </div>
+        </div>
+      `;
+    } else {
+      html = `
+        <div style="display:flex;align-items:center;gap:4px;background:rgba(15,23,42,0.85);backdrop-filter:blur(8px);border:1px solid rgba(6,182,212,0.3);border-radius:12px;padding:16px;box-shadow:0 12px 32px rgba(0,0,0,0.3);">
+          <div style="background:linear-gradient(135deg,#0e7490,#06b6d4);color:#fff;padding:10px 20px;clip-path:polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%, 15% 50%);">
+            <strong contenteditable="true" style="display:block;font-size:12.5px;">Phase 1</strong>
+            <span contenteditable="true" style="font-size:10.5px;opacity:0.9;">Concept</span>
+          </div>
+          <div style="background:linear-gradient(135deg,#0891b2,#22d3ee);color:#0f172a;padding:10px 20px;clip-path:polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%, 15% 50%);">
+            <strong contenteditable="true" style="display:block;font-size:12.5px;">Phase 2</strong>
+            <span contenteditable="true" style="font-size:10.5px;opacity:0.9;">Execute</span>
+          </div>
+          <div style="background:linear-gradient(135deg,#0284c7,#38bdf8);color:#0f172a;padding:10px 20px;clip-path:polygon(0% 0%, 85% 0%, 100% 50%, 85% 100%, 0% 100%, 15% 50%);">
+            <strong contenteditable="true" style="display:block;font-size:12.5px;">Phase 3</strong>
+            <span contenteditable="true" style="font-size:10.5px;opacity:0.9;">Scale</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const obj = document.createElement('div');
+    obj.style.cssText = 'position:absolute;top:70px;left:50px;z-index:15;cursor:move;';
+    obj.innerHTML = html;
+    obj.setAttribute('data-shape-type', 'smartart');
+    const canvas = slideFrame.querySelector('#slide-canvas-objects');
+    if (canvas) {
+      canvas.style.pointerEvents = 'all';
+      canvas.appendChild(obj);
+    }
+    saveDeck();
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Inserted SmartArt ${type} diagram`);
+  }
+
+  // ── Audio Inserter ───────────────────────────────────────────
+  function openKineticAudioModal() {
+    let modal = document.getElementById('kinetic-audio-modal-backdrop');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'kinetic-audio-modal-backdrop';
+      modal.className = 'axis-modal-backdrop';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
+      modal.innerHTML = `
+        <div class="axis-modal-dialog" style="width:480px;max-width:92vw;background:#18181b;border:1px solid #3f3f46;border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #27272a;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">🎵</span>
+              <strong style="font-size:15px;color:#f1f5f9;">Insert Audio / Narration</strong>
+            </div>
+            <button id="btn-close-kinetic-audio" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Upload Audio File (MP3, WAV, OGG)</label>
+              <input type="file" id="kinetic-audio-file-input" accept="audio/*" style="display:block;width:100%;color:#cbd5e1;font-size:12px;background:#09090b;padding:8px;border:1px solid #3f3f46;border-radius:6px;">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Or Audio Stream URL</label>
+              <input type="text" id="kinetic-audio-url-input" placeholder="https://example.com/soundtrack.mp3" style="width:100%;box-sizing:border-box;background:#09090b;border:1px solid #3f3f46;color:#f1f5f9;border-radius:6px;padding:8px 12px;font-size:12.5px;">
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+              <button id="btn-cancel-kinetic-audio" style="background:transparent;border:1px solid #475569;color:#94a3b8;border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer;">Cancel</button>
+              <button id="btn-confirm-kinetic-audio" style="background:#2563eb;border:none;color:#fff;border-radius:6px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;">Insert Audio</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#btn-close-kinetic-audio')?.addEventListener('click', () => modal.remove());
+      modal.querySelector('#btn-cancel-kinetic-audio')?.addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      modal.querySelector('#btn-confirm-kinetic-audio')?.addEventListener('click', () => {
+        const fileInput = modal.querySelector('#kinetic-audio-file-input');
+        const urlInput = modal.querySelector('#kinetic-audio-url-input');
+        if (fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+          const audioUrl = URL.createObjectURL(file);
+          insertAudioPlayer(audioUrl, file.name);
+          modal.remove();
+        } else if (urlInput.value.trim()) {
+          insertAudioPlayer(urlInput.value.trim(), 'Web Audio');
+          modal.remove();
+        } else {
+          alert('Please select an audio file or enter an audio URL');
+        }
+      });
+    } else {
+      document.body.appendChild(modal);
+    }
+  }
+
+  function insertAudioPlayer(src, label) {
+    const obj = document.createElement('div');
+    obj.style.cssText = 'position:absolute;top:100px;left:60px;z-index:20;cursor:move;background:#18181b;border:1px solid #3b82f6;border-radius:30px;padding:6px 14px;box-shadow:0 8px 24px rgba(0,0,0,0.5);display:flex;align-items:center;gap:10px;';
+    obj.innerHTML = `
+      <span style="font-size:16px;">🎵</span>
+      <span contenteditable="true" style="font-size:12px;font-weight:600;color:#f1f5f9;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${label}</span>
+      <audio controls src="${src}" style="height:28px;width:180px;"></audio>
+    `;
+    obj.setAttribute('data-shape-type', 'audio');
+    const canvas = slideFrame.querySelector('#slide-canvas-objects');
+    if (canvas) {
+      canvas.style.pointerEvents = 'all';
+      canvas.appendChild(obj);
+    }
+    saveDeck();
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Inserted audio player on slide');
+  }
+
+  // ── Video Inserter ───────────────────────────────────────────
+  function openKineticVideoModal() {
+    let modal = document.getElementById('kinetic-video-modal-backdrop');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'kinetic-video-modal-backdrop';
+      modal.className = 'axis-modal-backdrop';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
+      modal.innerHTML = `
+        <div class="axis-modal-dialog" style="width:480px;max-width:92vw;background:#18181b;border:1px solid #3f3f46;border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #27272a;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">🎬</span>
+              <strong style="font-size:15px;color:#f1f5f9;">Insert Video into Slide</strong>
+            </div>
+            <button id="btn-close-kinetic-video" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Upload Video File (MP4, WebM)</label>
+              <input type="file" id="kinetic-video-file-input" accept="video/*" style="display:block;width:100%;color:#cbd5e1;font-size:12px;background:#09090b;padding:8px;border:1px solid #3f3f46;border-radius:6px;">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Or YouTube / Video URL</label>
+              <input type="text" id="kinetic-video-url-input" placeholder="https://www.youtube.com/watch?v=..." style="width:100%;box-sizing:border-box;background:#09090b;border:1px solid #3f3f46;color:#f1f5f9;border-radius:6px;padding:8px 12px;font-size:12.5px;">
+            </div>
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+              <button id="btn-cancel-kinetic-video" style="background:transparent;border:1px solid #475569;color:#94a3b8;border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer;">Cancel</button>
+              <button id="btn-confirm-kinetic-video" style="background:#2563eb;border:none;color:#fff;border-radius:6px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;">Insert Video</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#btn-close-kinetic-video')?.addEventListener('click', () => modal.remove());
+      modal.querySelector('#btn-cancel-kinetic-video')?.addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      modal.querySelector('#btn-confirm-kinetic-video')?.addEventListener('click', () => {
+        const fileInput = modal.querySelector('#kinetic-video-file-input');
+        const urlInput = modal.querySelector('#kinetic-video-url-input');
+        if (fileInput.files && fileInput.files[0]) {
+          const file = fileInput.files[0];
+          const videoUrl = URL.createObjectURL(file);
+          insertVideoPlayer(videoUrl, false);
+          modal.remove();
+        } else if (urlInput.value.trim()) {
+          insertVideoPlayer(urlInput.value.trim(), true);
+          modal.remove();
+        } else {
+          alert('Please select a video file or enter a video URL');
+        }
+      });
+    } else {
+      document.body.appendChild(modal);
+    }
+  }
+
+  function insertVideoPlayer(src, isUrl) {
+    let inner = '';
+    const ytMatch = src.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (ytMatch && ytMatch[1]) {
+      inner = `<iframe width="320" height="180" src="https://www.youtube-nocookie.com/embed/${ytMatch[1]}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="border-radius:8px;border:none;"></iframe>`;
+    } else {
+      inner = `<video controls width="320" height="180" src="${src}" style="border-radius:8px;background:#000;"></video>`;
+    }
+
+    const obj = document.createElement('div');
+    obj.style.cssText = 'position:absolute;top:80px;left:80px;z-index:20;cursor:move;background:#09090b;border:1px solid #3f3f46;border-radius:10px;padding:8px;box-shadow:0 12px 32px rgba(0,0,0,0.5);';
+    obj.innerHTML = inner;
+    obj.setAttribute('data-shape-type', 'video');
+    const canvas = slideFrame.querySelector('#slide-canvas-objects');
+    if (canvas) {
+      canvas.style.pointerEvents = 'all';
+      canvas.appendChild(obj);
+    }
+    saveDeck();
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Inserted video player on slide');
+  }
+
+  // ── Action Buttons Inserter ───────────────────────────────────
+  function openKineticActionButtonsModal() {
+    let modal = document.getElementById('kinetic-actions-modal-backdrop');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'kinetic-actions-modal-backdrop';
+      modal.className = 'axis-modal-backdrop';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
+      modal.innerHTML = `
+        <div class="axis-modal-dialog" style="width:440px;max-width:92vw;background:#18181b;border:1px solid #3f3f46;border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #27272a;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">🔘</span>
+              <strong style="font-size:15px;color:#f1f5f9;">Insert Action Navigation Button</strong>
+            </div>
+            <button id="btn-close-kinetic-actions" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
+          </div>
+          <div style="padding:16px 20px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="action-btn-option" data-action="next" style="display:flex;align-items:center;gap:10px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;font-size:12.5px;">
+              <span style="background:#2563eb;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;">➔</span>
+              <span>Next Slide</span>
+            </button>
+            <button class="action-btn-option" data-action="prev" style="display:flex;align-items:center;gap:10px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;font-size:12.5px;">
+              <span style="background:#2563eb;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;">⬅</span>
+              <span>Prev Slide</span>
+            </button>
+            <button class="action-btn-option" data-action="first" style="display:flex;align-items:center;gap:10px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;font-size:12.5px;">
+              <span style="background:#0284c7;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;">🏠</span>
+              <span>First Slide</span>
+            </button>
+            <button class="action-btn-option" data-action="last" style="display:flex;align-items:center;gap:10px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;font-size:12.5px;">
+              <span style="background:#0284c7;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;">🏁</span>
+              <span>Last Slide</span>
+            </button>
+            <button class="action-btn-option" data-action="link" style="display:flex;align-items:center;gap:10px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;font-size:12.5px;">
+              <span style="background:#7c3aed;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;">🔗</span>
+              <span>Custom Link</span>
+            </button>
+            <button class="action-btn-option" data-action="info" style="display:flex;align-items:center;gap:10px;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:12px;cursor:pointer;font-weight:600;font-size:12.5px;">
+              <span style="background:#059669;color:#fff;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;">ℹ️</span>
+              <span>Slide Info</span>
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#btn-close-kinetic-actions')?.addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      modal.querySelectorAll('.action-btn-option').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const act = btn.dataset.action;
+          insertActionButton(act);
+          modal.remove();
+        });
+      });
+    } else {
+      document.body.appendChild(modal);
+    }
+  }
+
+  function insertActionButton(action) {
+    let icon = '➔';
+    let label = 'Next';
+    let targetUrl = '';
+    if (action === 'prev') { icon = '⬅'; label = 'Back'; }
+    if (action === 'first') { icon = '🏠'; label = 'Home'; }
+    if (action === 'last') { icon = '🏁'; label = 'End'; }
+    if (action === 'info') { icon = 'ℹ️'; label = 'Info'; }
+    if (action === 'link') {
+      targetUrl = prompt('Enter Web URL or Slide Number (e.g., https://... or 3):', 'https://');
+      if (!targetUrl) return;
+      icon = '🔗'; label = 'Link';
+    }
+
+    const obj = document.createElement('div');
+    obj.style.cssText = 'position:absolute;bottom:30px;right:40px;z-index:25;cursor:pointer;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:24px;padding:6px 14px;box-shadow:0 6px 16px rgba(0,0,0,0.4);display:flex;align-items:center;gap:6px;user-select:none;font-weight:700;font-size:12px;';
+    obj.innerHTML = `<span>${icon}</span><span contenteditable="true">${label}</span>`;
+    obj.setAttribute('data-shape-type', 'action-btn');
+    obj.setAttribute('data-action', action);
+    if (targetUrl) obj.setAttribute('data-target-url', targetUrl);
+
+    obj.addEventListener('click', (e) => {
+      if (isPresenting || e.altKey) {
+        if (action === 'next' && currentSlideIndex < slidesData.length - 1) switchSlide(currentSlideIndex + 1);
+        if (action === 'prev' && currentSlideIndex > 0) switchSlide(currentSlideIndex - 1);
+        if (action === 'first') switchSlide(0);
+        if (action === 'last') switchSlide(slidesData.length - 1);
+        if (action === 'info') alert(slidesData[currentSlideIndex]?.notes || 'No speaker notes for this slide');
+        if (action === 'link') {
+          const t = obj.getAttribute('data-target-url');
+          if (t && t.startsWith('http')) window.open(t, '_blank');
+          else if (t && !isNaN(parseInt(t))) switchSlide(Math.max(0, parseInt(t) - 1));
+        }
+      }
+    });
+
+    const canvas = slideFrame.querySelector('#slide-canvas-objects');
+    if (canvas) {
+      canvas.style.pointerEvents = 'all';
+      canvas.appendChild(obj);
+    }
+    saveDeck();
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Inserted action button (${label})`);
+  }
+
+  // ── Slide Master Modal ───────────────────────────────────────
+  function openKineticSlideMasterModal() {
+    let modal = document.getElementById('kinetic-master-modal-backdrop');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'kinetic-master-modal-backdrop';
+      modal.className = 'axis-modal-backdrop';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
+      modal.innerHTML = `
+        <div class="axis-modal-dialog" style="width:520px;max-width:92vw;background:#18181b;border:1px solid #3f3f46;border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #27272a;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">📐</span>
+              <div>
+                <strong style="font-size:15px;color:#f1f5f9;">Slide Master (Universal Styling)</strong>
+                <p style="margin:2px 0 0 0;font-size:11.5px;color:#94a3b8;">Set default background, typography &amp; footer for all slides</p>
+              </div>
+            </div>
+            <button id="btn-close-kinetic-master" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Master Slide Background</label>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <input type="color" id="kinetic-master-bg-color" value="#ffffff" style="width:36px;height:32px;border:none;border-radius:4px;cursor:pointer;background:transparent;">
+                <select id="kinetic-master-bg-preset" style="flex:1;background:#09090b;border:1px solid #3f3f46;color:#f1f5f9;border-radius:6px;padding:7px 10px;font-size:12px;">
+                  <option value="#ffffff">Minimalist Clean White</option>
+                  <option value="#18181b">Executive Obsidian Dark</option>
+                  <option value="#0f172a">Deep Slate Navy</option>
+                  <option value="linear-gradient(135deg, #0f172a, #1e293b)">Midnight Gradient</option>
+                  <option value="linear-gradient(135deg, #0369a1, #0f172a)">Sapphire Horizon</option>
+                  <option value="linear-gradient(135deg, #064e3b, #0f172a)">Nordic Emerald</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Master Header Font Family</label>
+              <select id="kinetic-master-font" style="width:100%;box-sizing:border-box;background:#09090b;border:1px solid #3f3f46;color:#f1f5f9;border-radius:6px;padding:8px 10px;font-size:12.5px;">
+                <option value="'Plus Jakarta Sans', system-ui, sans-serif">Plus Jakarta Sans (Modern Executive)</option>
+                <option value="'Inter', system-ui, sans-serif">Inter (Clean Tech)</option>
+                <option value="'Georgia', serif">Georgia (Editorial Serif)</option>
+                <option value="'Playfair Display', serif">Playfair Display (Luxury High-Contrast)</option>
+                <option value="'Montserrat', sans-serif">Montserrat (Bold Architectural)</option>
+                <option value="'JetBrains Mono', monospace">JetBrains Mono (Technical / Code)</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Master Accent Color</label>
+              <input type="color" id="kinetic-master-accent" value="#2563eb" style="width:100%;height:32px;border:none;border-radius:6px;cursor:pointer;background:transparent;">
+            </div>
+
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Master Footer Notice</label>
+              <input type="text" id="kinetic-master-footer" value="© 2026 Giri Corporation • Confidential" style="width:100%;box-sizing:border-box;background:#09090b;border:1px solid #3f3f46;color:#f1f5f9;border-radius:6px;padding:8px 12px;font-size:12.5px;">
+            </div>
+
+            <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:#cbd5e1;cursor:pointer;">
+              <input type="checkbox" id="kinetic-master-slidenums" checked> Show slide number on all slides
+            </label>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+              <button id="btn-cancel-kinetic-master" style="background:transparent;border:1px solid #475569;color:#94a3b8;border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer;">Cancel</button>
+              <button id="btn-apply-kinetic-master" style="background:#2563eb;border:none;color:#fff;border-radius:6px;padding:7px 18px;font-size:12px;font-weight:700;cursor:pointer;">Apply to All Slides</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#btn-close-kinetic-master')?.addEventListener('click', () => modal.remove());
+      modal.querySelector('#btn-cancel-kinetic-master')?.addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      const bgPreset = modal.querySelector('#kinetic-master-bg-preset');
+      const bgColor = modal.querySelector('#kinetic-master-bg-color');
+      bgPreset?.addEventListener('change', () => {
+        if (!bgPreset.value.includes('gradient')) bgColor.value = bgPreset.value;
+      });
+
+      modal.querySelector('#btn-apply-kinetic-master')?.addEventListener('click', () => {
+        const selectedBg = bgPreset.value;
+        const font = modal.querySelector('#kinetic-master-font').value;
+        const accent = modal.querySelector('#kinetic-master-accent').value;
+        const footer = modal.querySelector('#kinetic-master-footer').value;
+
+        slidesData.forEach(slide => {
+          slide.bg = selectedBg;
+          slide.accent = accent;
+          slide.masterFont = font;
+          slide.footerNotice = footer;
+        });
+
+        titleEl.style.fontFamily = font;
+        saveDeck();
+        renderThumbnails();
+        switchSlide(currentSlideIndex);
+        modal.remove();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Slide Master applied to all ${slidesData.length} slides!`);
+      });
+    } else {
+      document.body.appendChild(modal);
+    }
+  }
+
+  // ── Find and Replace Modal ───────────────────────────────────
+  function openKineticFindReplaceModal(startInReplace) {
+    let modal = document.getElementById('kinetic-find-modal-backdrop');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'kinetic-find-modal-backdrop';
+      modal.className = 'axis-modal-backdrop';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+      modal.innerHTML = `
+        <div class="axis-modal-dialog" style="width:440px;max-width:92vw;background:#18181b;border:1px solid #3f3f46;border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid #27272a;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:18px;">🔍</span>
+              <strong style="font-size:14.5px;color:#f1f5f9;">Find &amp; Replace</strong>
+            </div>
+            <button id="btn-close-kinetic-find" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
+          </div>
+          <div style="padding:18px;display:flex;flex-direction:column;gap:12px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:4px;">Find What</label>
+              <input type="text" id="kinetic-find-input" placeholder="Text to search..." style="width:100%;box-sizing:border-box;background:#09090b;border:1px solid #3f3f46;color:#f1f5f9;border-radius:6px;padding:8px 12px;font-size:12.5px;">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:4px;">Replace With</label>
+              <input type="text" id="kinetic-replace-input" placeholder="Replacement text..." style="width:100%;box-sizing:border-box;background:#09090b;border:1px solid #3f3f46;color:#f1f5f9;border-radius:6px;padding:8px 12px;font-size:12.5px;">
+            </div>
+            <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#cbd5e1;cursor:pointer;">
+              <input type="checkbox" id="kinetic-find-case-sensitive"> Match case
+            </label>
+            <div id="kinetic-find-status-pill" style="font-size:11px;color:#38bdf8;padding:4px 0;display:none;"></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+              <button id="btn-kinetic-find-next" style="background:#1e293b;border:1px solid #475569;color:#f1f5f9;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;">Find Next</button>
+              <div style="display:flex;gap:8px;">
+                <button id="btn-kinetic-do-replace" style="background:#2563eb;border:none;color:#fff;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;">Replace</button>
+                <button id="btn-kinetic-replace-all" style="background:#059669;border:none;color:#fff;border-radius:6px;padding:7px 14px;font-size:12px;font-weight:700;cursor:pointer;">Replace All</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#btn-close-kinetic-find')?.addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      const findInput = modal.querySelector('#kinetic-find-input');
+      const repInput = modal.querySelector('#kinetic-replace-input');
+      const statusPill = modal.querySelector('#kinetic-find-status-pill');
+      const caseBox = modal.querySelector('#kinetic-find-case-sensitive');
+
+      let lastSearchIdx = 0;
+
+      modal.querySelector('#btn-kinetic-find-next')?.addEventListener('click', () => {
+        const q = findInput.value.trim();
+        if (!q) return;
+        const matchCase = caseBox.checked;
+        let found = false;
+
+        for (let i = 0; i < slidesData.length; i++) {
+          const sIdx = (lastSearchIdx + i + 1) % slidesData.length;
+          const s = slidesData[sIdx];
+          const fullText = `${s.title||''} ${s.desc||''} ${s.tag||''} ${(s.features||[]).map(f => (f.title||'') + ' ' + (f.desc||'')).join(' ')} ${s.notes||''}`;
+          const isMatch = matchCase ? fullText.includes(q) : fullText.toLowerCase().includes(q.toLowerCase());
+          if (isMatch) {
+            lastSearchIdx = sIdx;
+            switchSlide(sIdx);
+            statusPill.style.display = 'block';
+            statusPill.textContent = `Match found on Slide ${sIdx + 1}`;
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          statusPill.style.display = 'block';
+          statusPill.textContent = `No occurrences of "${q}" found.`;
+        }
+      });
+
+      modal.querySelector('#btn-kinetic-do-replace')?.addEventListener('click', () => {
+        const q = findInput.value.trim();
+        const rep = repInput.value;
+        if (!q) return;
+        const cur = slidesData[currentSlideIndex];
+        if (cur) {
+          const flags = caseBox.checked ? 'g' : 'gi';
+          const reg = new RegExp(q, flags);
+          let changed = false;
+          if (cur.title && cur.title.match(reg)) { cur.title = cur.title.replace(reg, rep); changed = true; }
+          if (cur.desc && cur.desc.match(reg)) { cur.desc = cur.desc.replace(reg, rep); changed = true; }
+          if (cur.notes && cur.notes.match(reg)) { cur.notes = cur.notes.replace(reg, rep); changed = true; }
+          if (changed) {
+            saveDeck();
+            switchSlide(currentSlideIndex);
+            statusPill.style.display = 'block';
+            statusPill.textContent = `Replaced on Slide ${currentSlideIndex + 1}`;
+          }
+        }
+      });
+
+      modal.querySelector('#btn-kinetic-replace-all')?.addEventListener('click', () => {
+        const q = findInput.value.trim();
+        const rep = repInput.value;
+        if (!q) return;
+        const flags = caseBox.checked ? 'g' : 'gi';
+        const reg = new RegExp(q, flags);
+        let count = 0;
+
+        slidesData.forEach(s => {
+          if (s.title && s.title.match(reg)) { count += (s.title.match(reg) || []).length; s.title = s.title.replace(reg, rep); }
+          if (s.desc && s.desc.match(reg)) { count += (s.desc.match(reg) || []).length; s.desc = s.desc.replace(reg, rep); }
+          if (s.notes && s.notes.match(reg)) { count += (s.notes.match(reg) || []).length; s.notes = s.notes.replace(reg, rep); }
+          (s.features || []).forEach(f => {
+            if (f.title && f.title.match(reg)) { count++; f.title = f.title.replace(reg, rep); }
+            if (f.desc && f.desc.match(reg)) { count++; f.desc = f.desc.replace(reg, rep); }
+          });
+        });
+
+        saveDeck();
+        renderThumbnails();
+        switchSlide(currentSlideIndex);
+        statusPill.style.display = 'block';
+        statusPill.textContent = `Replaced ${count} occurrence(s) across all slides.`;
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Replaced ${count} instances across presentation`);
+      });
+    } else {
+      document.body.appendChild(modal);
+    }
+  }
+
+  // ── Format Background Modal ──────────────────────────────────
+  function openKineticFormatBgModal() {
+    let modal = document.getElementById('kinetic-formatbg-modal-backdrop');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'kinetic-formatbg-modal-backdrop';
+      modal.className = 'axis-modal-backdrop';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
+      modal.innerHTML = `
+        <div class="axis-modal-dialog" style="width:480px;max-width:92vw;background:#18181b;border:1px solid #3f3f46;border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #27272a;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">🎨</span>
+              <strong style="font-size:15px;color:#f1f5f9;">Format Slide Background</strong>
+            </div>
+            <button id="btn-close-kinetic-formatbg" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Solid Fill Color</label>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <input type="color" id="kinetic-bg-solid-picker" value="#ffffff" style="width:36px;height:32px;border:none;border-radius:4px;cursor:pointer;background:transparent;">
+                <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                  <button class="bg-swatch" data-bg="#ffffff" style="width:20px;height:20px;border-radius:50%;background:#ffffff;border:1px solid #71717a;cursor:pointer;"></button>
+                  <button class="bg-swatch" data-bg="#18181b" style="width:20px;height:20px;border-radius:50%;background:#18181b;border:1px solid #71717a;cursor:pointer;"></button>
+                  <button class="bg-swatch" data-bg="#0f172a" style="width:20px;height:20px;border-radius:50%;background:#0f172a;border:1px solid #71717a;cursor:pointer;"></button>
+                  <button class="bg-swatch" data-bg="#fdfbf7" style="width:20px;height:20px;border-radius:50%;background:#fdfbf7;border:1px solid #71717a;cursor:pointer;"></button>
+                  <button class="bg-swatch" data-bg="#064e3b" style="width:20px;height:20px;border-radius:50%;background:#064e3b;border:1px solid #71717a;cursor:pointer;"></button>
+                  <button class="bg-swatch" data-bg="#4c1d95" style="width:20px;height:20px;border-radius:50%;background:#4c1d95;border:1px solid #71717a;cursor:pointer;"></button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Gradient Presets</label>
+              <select id="kinetic-bg-gradient-select" style="width:100%;box-sizing:border-box;background:#09090b;border:1px solid #3f3f46;color:#f1f5f9;border-radius:6px;padding:8px 10px;font-size:12px;">
+                <option value="">Custom / None</option>
+                <option value="linear-gradient(135deg, #1e3a8a, #0f172a)">Deep Sapphire Horizon</option>
+                <option value="linear-gradient(135deg, #065f46, #022c22)">Emerald Dark Canopy</option>
+                <option value="linear-gradient(135deg, #7c2d12, #18181b)">Crimson Flare</option>
+                <option value="linear-gradient(135deg, #4c1d95, #1e1b4b)">Purple Aurora</option>
+                <option value="linear-gradient(135deg, #f8fafc, #e2e8f0)">Clean Slate Mist</option>
+              </select>
+            </div>
+
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Wallpaper / Image URL</label>
+              <input type="text" id="kinetic-bg-img-input" placeholder="https://images.unsplash.com/photo-..." style="width:100%;box-sizing:border-box;background:#09090b;border:1px solid #3f3f46;color:#f1f5f9;border-radius:6px;padding:8px 12px;font-size:12.5px;">
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+              <button id="btn-apply-bg-current" style="background:#2563eb;border:none;color:#fff;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:600;cursor:pointer;">Apply to Current Slide</button>
+              <button id="btn-apply-bg-all" style="background:#059669;border:none;color:#fff;border-radius:6px;padding:7px 16px;font-size:12px;font-weight:700;cursor:pointer;">Apply to All Slides</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#btn-close-kinetic-formatbg')?.addEventListener('click', () => modal.remove());
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      const solidPicker = modal.querySelector('#kinetic-bg-solid-picker');
+      const gradSelect = modal.querySelector('#kinetic-bg-gradient-select');
+      const imgInput = modal.querySelector('#kinetic-bg-img-input');
+
+      modal.querySelectorAll('.bg-swatch').forEach(s => {
+        s.addEventListener('click', () => {
+          solidPicker.value = s.dataset.bg;
+          gradSelect.value = '';
+          imgInput.value = '';
+        });
+      });
+
+      const getSelectedBg = () => {
+        if (imgInput.value.trim()) return `url("${imgInput.value.trim()}") center/cover no-repeat`;
+        if (gradSelect.value) return gradSelect.value;
+        return solidPicker.value;
+      };
+
+      modal.querySelector('#btn-apply-bg-current')?.addEventListener('click', () => {
+        const bg = getSelectedBg();
+        slideFrame.style.background = bg;
+        if (slidesData[currentSlideIndex]) slidesData[currentSlideIndex].bg = bg;
+        saveDeck();
+        renderThumbnails();
+        modal.remove();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Slide background updated');
+      });
+
+      modal.querySelector('#btn-apply-bg-all')?.addEventListener('click', () => {
+        const bg = getSelectedBg();
+        slidesData.forEach(s => s.bg = bg);
+        slideFrame.style.background = bg;
+        saveDeck();
+        renderThumbnails();
+        modal.remove();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Background applied to all ${slidesData.length} slides`);
+      });
+    } else {
+      document.body.appendChild(modal);
+    }
+  }
+
+  // ── Picture Formatting & Crop Dialog ─────────────────────────
+  function openKineticPictureEditModal() {
+    const activeImg = slideFrame.querySelector('#slide-canvas-objects img') || slideFrame.querySelector('img');
+    if (!activeImg) {
+      if (window.orbitPlatform) window.orbitPlatform.triggerToast('Please insert or select a picture on the slide first');
+      return;
+    }
+
+    let modal = document.getElementById('kinetic-pic-modal-backdrop');
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'kinetic-pic-modal-backdrop';
+      modal.className = 'axis-modal-backdrop';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:99999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(6px);';
+      modal.innerHTML = `
+        <div class="axis-modal-dialog" style="width:480px;max-width:92vw;background:#18181b;border:1px solid #3f3f46;border-radius:14px;overflow:hidden;box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid #27272a;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:22px;">🖼️</span>
+              <strong style="font-size:15px;color:#f1f5f9;">Format Picture &amp; Crop</strong>
+            </div>
+            <button id="btn-close-kinetic-pic" style="background:transparent;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">✕</button>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Shape Crop &amp; Border Radius</label>
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
+                <button class="pic-shape-btn" data-radius="0" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:8px 4px;font-size:11px;cursor:pointer;">Square</button>
+                <button class="pic-shape-btn" data-radius="14px" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:8px 4px;font-size:11px;cursor:pointer;">Rounded</button>
+                <button class="pic-shape-btn" data-radius="50%" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:8px 4px;font-size:11px;cursor:pointer;">Circle</button>
+                <button class="pic-shape-btn" data-radius="999px" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:8px 4px;font-size:11px;cursor:pointer;">Pill</button>
+              </div>
+            </div>
+
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Artistic Filters</label>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;">
+                <button class="pic-filter-btn" data-filter="none" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:6px;font-size:11px;cursor:pointer;">Normal</button>
+                <button class="pic-filter-btn" data-filter="grayscale(100%)" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:6px;font-size:11px;cursor:pointer;">Grayscale</button>
+                <button class="pic-filter-btn" data-filter="sepia(100%)" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:6px;font-size:11px;cursor:pointer;">Sepia</button>
+                <button class="pic-filter-btn" data-filter="contrast(150%) brightness(110%)" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:6px;font-size:11px;cursor:pointer;">Vivid</button>
+                <button class="pic-filter-btn" data-filter="invert(100%)" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:6px;font-size:11px;cursor:pointer;">Invert</button>
+                <button class="pic-filter-btn" data-filter="blur(2px)" style="background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:6px;font-size:11px;cursor:pointer;">Soft Blur</button>
+              </div>
+            </div>
+
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:6px;">Rotation</label>
+              <div style="display:flex;gap:8px;">
+                <button id="btn-pic-rot-0" style="flex:1;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:6px;font-size:11px;cursor:pointer;">0°</button>
+                <button id="btn-pic-rot-90" style="flex:1;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:6px;font-size:11px;cursor:pointer;">90°</button>
+                <button id="btn-pic-rot-180" style="flex:1;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:6px;font-size:11px;cursor:pointer;">180°</button>
+                <button id="btn-pic-rot-270" style="flex:1;background:#1e293b;border:1px solid #334155;color:#f1f5f9;border-radius:4px;padding:6px;font-size:11px;cursor:pointer;">270°</button>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px;">
+              <button id="btn-done-kinetic-pic" style="background:#2563eb;border:none;color:#fff;border-radius:6px;padding:7px 20px;font-size:12px;font-weight:700;cursor:pointer;">Done</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#btn-close-kinetic-pic')?.addEventListener('click', () => modal.remove());
+      modal.querySelector('#btn-done-kinetic-pic')?.addEventListener('click', () => { modal.remove(); saveDeck(); });
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      modal.querySelectorAll('.pic-shape-btn').forEach(b => {
+        b.addEventListener('click', () => {
+          activeImg.style.borderRadius = b.dataset.radius;
+        });
+      });
+
+      modal.querySelectorAll('.pic-filter-btn').forEach(b => {
+        b.addEventListener('click', () => {
+          activeImg.style.filter = b.dataset.filter;
+        });
+      });
+
+      modal.querySelector('#btn-pic-rot-0')?.addEventListener('click', () => { activeImg.style.transform = 'rotate(0deg)'; });
+      modal.querySelector('#btn-pic-rot-90')?.addEventListener('click', () => { activeImg.style.transform = 'rotate(90deg)'; });
+      modal.querySelector('#btn-pic-rot-180')?.addEventListener('click', () => { activeImg.style.transform = 'rotate(180deg)'; });
+      modal.querySelector('#btn-pic-rot-270')?.addEventListener('click', () => { activeImg.style.transform = 'rotate(270deg)'; });
+    } else {
+      document.body.appendChild(modal);
+    }
+  }
+
+  // ── Rehearse Timings ─────────────────────────────────────────
+  let rehearseInterval = null;
+  let rehearseSlideSecs = 0;
+  let rehearseTotalSecs = 0;
+  let rehearseHud = null;
+
+  function startKineticRehearsal() {
+    rehearseSlideSecs = 0;
+    rehearseTotalSecs = 0;
+
+    launchPresenter(0);
+
+    rehearseHud = document.getElementById('kinetic-rehearse-hud');
+    if (!rehearseHud) {
+      rehearseHud = document.createElement('div');
+      rehearseHud.id = 'kinetic-rehearse-hud';
+      rehearseHud.style.cssText = 'position:fixed;top:14px;left:14px;z-index:999999;background:rgba(15,23,42,0.95);border:1px solid #38bdf8;border-radius:10px;padding:10px 16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);display:flex;align-items:center;gap:14px;backdrop-filter:blur(8px);';
+      rehearseHud.innerHTML = `
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span style="font-size:16px;">⏱️</span>
+          <div>
+            <div style="font-size:9.5px;color:#94a3b8;font-weight:700;text-transform:uppercase;">Slide Time</div>
+            <strong id="txt-rehearse-slide-time" style="font-size:15px;color:#38bdf8;font-family:monospace;">00:00</strong>
+          </div>
+        </div>
+        <div style="width:1px;height:24px;background:#334155;"></div>
+        <div>
+          <div style="font-size:9.5px;color:#94a3b8;font-weight:700;text-transform:uppercase;">Total Deck</div>
+          <strong id="txt-rehearse-total-time" style="font-size:15px;color:#f1f5f9;font-family:monospace;">00:00</strong>
+        </div>
+        <button id="btn-rehearse-next-slide" style="background:#2563eb;border:none;color:#fff;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">Next ➔</button>
+        <button id="btn-rehearse-end" style="background:#dc2626;border:none;color:#fff;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;">Stop &amp; Save</button>
+      `;
+      document.body.appendChild(rehearseHud);
+
+      const fmt = (s) => `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+
+      rehearseInterval = setInterval(() => {
+        rehearseSlideSecs++;
+        rehearseTotalSecs++;
+        const sEl = document.getElementById('txt-rehearse-slide-time');
+        const tEl = document.getElementById('txt-rehearse-total-time');
+        if (sEl) sEl.textContent = fmt(rehearseSlideSecs);
+        if (tEl) tEl.textContent = fmt(rehearseTotalSecs);
+      }, 1000);
+
+      rehearseHud.querySelector('#btn-rehearse-next-slide')?.addEventListener('click', () => {
+        if (slidesData[currentSlideIndex]) {
+          slidesData[currentSlideIndex].duration = rehearseSlideSecs;
+        }
+        rehearseSlideSecs = 0;
+        if (currentSlideIndex < slidesData.length - 1) {
+          switchSlide(currentSlideIndex + 1);
+        } else {
+          endRehearsal();
+        }
+      });
+
+      rehearseHud.querySelector('#btn-rehearse-end')?.addEventListener('click', endRehearsal);
+    }
+  }
+
+  function endRehearsal() {
+    clearInterval(rehearseInterval);
+    if (slidesData[currentSlideIndex]) {
+      slidesData[currentSlideIndex].duration = rehearseSlideSecs;
+    }
+    rehearseHud?.remove();
+    rehearseHud = null;
+    exitPresenter();
+    saveDeck();
+    alert(`Rehearsal Complete!\n\nTotal presentation time: ${Math.floor(rehearseTotalSecs/60)}m ${rehearseTotalSecs%60}s\nSlide timings have been recorded.`);
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Rehearsal slide timings recorded!');
+  }
+
+  // ── Record Presentation (Audio Narration) ─────────────────────
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let recordInterval = null;
+  let recordSecs = 0;
+  let recordHud = null;
+
+  async function startKineticRecording() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      alert('Microphone recording is not supported in your browser.');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder = new MediaRecorder(stream);
+      audioChunks = [];
+      recordSecs = 0;
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) audioChunks.push(e.data);
+      };
+
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const audioUrl = URL.createObjectURL(audioBlob);
+        insertAudioPlayer(audioUrl, `Narration - Slide ${currentSlideIndex + 1}`);
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Saved voice narration for Slide ${currentSlideIndex + 1}`);
+        stream.getTracks().forEach(t => t.stop());
+      };
+
+      mediaRecorder.start();
+
+      recordHud = document.getElementById('kinetic-record-hud');
+      if (!recordHud) {
+        recordHud = document.createElement('div');
+        recordHud.id = 'kinetic-record-hud';
+        recordHud.style.cssText = 'position:fixed;top:14px;right:14px;z-index:999999;background:rgba(15,23,42,0.95);border:1px solid #ef4444;border-radius:10px;padding:10px 16px;box-shadow:0 8px 32px rgba(0,0,0,0.6);display:flex;align-items:center;gap:12px;backdrop-filter:blur(8px);';
+        recordHud.innerHTML = `
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#ef4444;box-shadow:0 0 10px #ef4444;"></span>
+            <strong style="color:#ef4444;font-size:12px;font-weight:800;letter-spacing:0.5px;">REC</strong>
+            <span id="txt-record-time" style="font-size:14px;color:#f1f5f9;font-family:monospace;">00:00</span>
+          </div>
+          <button id="btn-record-stop" style="background:#ef4444;border:none;color:#fff;border-radius:6px;padding:6px 14px;font-size:11px;font-weight:700;cursor:pointer;">Stop &amp; Save</button>
+        `;
+        document.body.appendChild(recordHud);
+
+        recordInterval = setInterval(() => {
+          recordSecs++;
+          const tEl = document.getElementById('txt-record-time');
+          if (tEl) tEl.textContent = `${String(Math.floor(recordSecs/60)).padStart(2,'0')}:${String(recordSecs%60).padStart(2,'0')}`;
+        }, 1000);
+
+        recordHud.querySelector('#btn-record-stop')?.addEventListener('click', () => {
+          clearInterval(recordInterval);
+          mediaRecorder.stop();
+          recordHud?.remove();
+          recordHud = null;
+        });
+      }
+    } catch (err) {
+      alert('Could not access microphone: ' + err.message);
+    }
+  }
+
+  // ── Guides & Gridlines ────────────────────────────────────────
+  const chkGridlines = container.querySelector('#chk-kinetic-gridlines');
+  const chkGuides = container.querySelector('#chk-kinetic-guides');
+  const gridOverlay = slideFrame.querySelector('#kinetic-grid-overlay');
+  const guidesOverlay = slideFrame.querySelector('#kinetic-guides-overlay');
+
+  chkGridlines?.addEventListener('change', (e) => {
+    if (gridOverlay) gridOverlay.style.display = e.target.checked ? 'block' : 'none';
+  });
+
+  chkGuides?.addEventListener('change', (e) => {
+    if (guidesOverlay) guidesOverlay.style.display = e.target.checked ? 'block' : 'none';
+  });
+
+  // ── Newly Added Ribbon Button Event Handlers ──────────────────
+  container.querySelector('#btn-kinetic-smartart')?.addEventListener('click', openKineticSmartArtModal);
+  container.querySelector('#btn-kinetic-insert-audio')?.addEventListener('click', openKineticAudioModal);
+  container.querySelector('#btn-kinetic-insert-video')?.addEventListener('click', openKineticVideoModal);
+  container.querySelector('#btn-kinetic-action-buttons')?.addEventListener('click', openKineticActionButtonsModal);
+  container.querySelector('#btn-kinetic-slide-master')?.addEventListener('click', openKineticSlideMasterModal);
+  container.querySelector('#btn-kinetic-format-bg')?.addEventListener('click', openKineticFormatBgModal);
+  container.querySelector('#btn-kinetic-edit-pic')?.addEventListener('click', openKineticPictureEditModal);
+  container.querySelector('#btn-kinetic-presenter-view')?.addEventListener('click', () => launchPresenter(currentSlideIndex));
+  container.querySelector('#btn-kinetic-rehearse-timings')?.addEventListener('click', startKineticRehearsal);
+  container.querySelector('#btn-kinetic-record-presentation')?.addEventListener('click', startKineticRecording);
 
   function renderNavThumbnails() { renderThumbnails(); }
   function renderActiveSlide() { switchSlide(currentSlideIndex); }
