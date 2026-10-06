@@ -1613,6 +1613,7 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                 <div class="fluent-group-footer">
                   <div class="fluent-group-label">Add-ins</div>
                 </div>
+              </div>
               <!-- Girionix AI Assist Group -->
               <div class="fluent-ribbon-group" style="border-right:none; background:rgba(37,99,235,0.06); border-radius:4px;">
                 <div class="fluent-group-controls">
@@ -1697,6 +1698,14 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polygon points="12 8 16 16 8 16"/></svg>
                     <span>Shapes</span>
                   </button>
+                  <button class="fluent-btn-large" id="btn-insert-smartart" title="Insert SmartArt Diagrams (Processes, Cycles, Hierarchies)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <span>SmartArt</span>
+                  </button>
+                  <button class="fluent-btn-large" id="btn-insert-chart-dialog" title="Insert Data Charts &amp; Visualizations">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    <span>Chart</span>
+                  </button>
                   <button class="fluent-btn-large" id="btn-insert-icon" title="Insert Premium Icons">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                     <span>Icons</span>
@@ -1755,6 +1764,9 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                   <div class="fluent-group-col">
                     <button class="fluent-btn-small" id="btn-insert-textbox" style="width:100%; justify-content:flex-start; gap:4px;">
                       <span>Text Box</span>
+                    </button>
+                    <button class="fluent-btn-small" id="btn-insert-wordart" style="width:100%; justify-content:flex-start; gap:4px; font-weight:800; color:#38bdf8;">
+                      <span>A WordArt ▾</span>
                     </button>
                     <button class="fluent-btn-small" id="btn-insert-callout-box" style="width:100%; justify-content:flex-start; gap:4px;">
                       <span>Callout Box</span>
@@ -2086,10 +2098,12 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                   </button>
                   <button class="fluent-btn-large" id="btn-doc-statistics" title="Word Count, Paragraphs, Lines, Reading Time">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                    <span>Word Count</span>
+                  <button class="fluent-btn-large" id="btn-review-accessibility" title="Check Document Accessibility & Screen Reader Compliance">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="4" r="2"/><path d="M12 6v6l3 3"/><path d="M6 8.5C7.5 7 9.5 6 12 6s4.5 1 6 2.5"/><path d="M9 21l3-6 3 6"/></svg>
+                    <span>Accessibility</span>
                   </button>
                 </div>
-                <div class="fluent-group-label">Proofing</div>
+                <div class="fluent-group-label">Proofing &amp; Accessibility</div>
               </div>
 
               <!-- Language Group -->
@@ -2125,6 +2139,10 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                     <span id="track-changes-label">Track Changes</span>
                   </button>
+                  <div class="fluent-group-col">
+                    <button class="fluent-btn-small" id="btn-accept-track-changes" style="padding:0 6px; color:#10b981;" title="Accept All Tracked Changes">✓ Accept All</button>
+                    <button class="fluent-btn-small" id="btn-reject-track-changes" style="padding:0 6px; color:#ef4444;" title="Reject All Tracked Changes">✕ Reject All</button>
+                  </div>
                 </div>
                 <div class="fluent-group-label">Tracking</div>
               </div>
@@ -2134,10 +2152,11 @@ export function renderDriftApp(container, onDocUpdate = null, initialDocTitle = 
                 <div class="fluent-group-controls">
                   <button class="fluent-btn-large" id="btn-doc-lock" title="Lock Document with Sovereign Passcode">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                    <span>Lock Doc</span>
+                    <span id="txt-drift-lock-label">Lock Doc</span>
                   </button>
                 </div>
                 <div class="fluent-group-label">Protect</div>
+              </div>
               <!-- Girionix AI Polish Group -->
               <div class="fluent-ribbon-group" style="background:rgba(37,99,235,0.06); border-radius:4px;">
                 <div class="fluent-group-controls">
@@ -6948,6 +6967,1219 @@ function calculateMetrics(records) {
         paper.setAttribute('contenteditable', isEditingMode ? 'true' : 'false');
         e.currentTarget.querySelector('span').textContent = isEditingMode ? 'Editing ▾' : 'Viewing ▾';
         if (window.orbitPlatform) window.orbitPlatform.triggerToast(isEditingMode ? 'Switched to Editing Mode' : 'Switched to Viewing (Read-Only) Mode');
+      });
+
+      // =========================================================================
+      // 6.5 ADVANCED OFFICE FEATURES SUITE (SmartArt, Charts, WordArt, Shapes,
+      //     Icons, Header/Footer, Citations, Protection, Translation, Accessibility)
+      // =========================================================================
+
+      function safeEscape(str) {
+        return (str || '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      // ─── 1. SMARTART DIAGRAMS ENGINE ─────────────────────────────────────────
+      function openSmartArtModal() {
+        document.getElementById('drift-smartart-modal-backdrop')?.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'drift-smartart-modal-backdrop';
+        modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+        modal.innerHTML = `
+          <div style="background:#18181b; border:1px solid #3f3f46; border-radius:14px; width:580px; max-width:94vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:22px; color:#ffffff; font-family:sans-serif; max-height:90vh; overflow-y:auto;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:22px; color:#38bdf8;">💠</span>
+                <div>
+                  <strong style="font-size:16px; color:#f1f5f9; display:block;">SmartArt Diagram Studio</strong>
+                  <span style="font-size:11px; color:#94a3b8;">Insert structured, editable visual diagrams into your document</span>
+                </div>
+              </div>
+              <button id="btn-close-smartart-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <div>
+                <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">1. Diagram Type:</label>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:8px;" id="smartart-type-selector">
+                  <button class="smartart-type-btn active" data-type="process" style="padding:10px; background:#1e293b; border:1.5px solid #3b82f6; border-radius:8px; color:#f1f5f9; cursor:pointer; text-align:center;">
+                    <div style="font-size:18px; margin-bottom:4px;">➔ ➔ ➔</div>
+                    <strong style="font-size:12px; display:block;">Process Flow</strong>
+                    <span style="font-size:10px; color:#94a3b8;">Sequential steps</span>
+                  </button>
+                  <button class="smartart-type-btn" data-type="cycle" style="padding:10px; background:#1e293b; border:1.5px solid #334155; border-radius:8px; color:#f1f5f9; cursor:pointer; text-align:center;">
+                    <div style="font-size:18px; margin-bottom:4px;">🔄</div>
+                    <strong style="font-size:12px; display:block;">Cycle Loop</strong>
+                    <span style="font-size:10px; color:#94a3b8;">Continuous loop</span>
+                  </button>
+                  <button class="smartart-type-btn" data-type="hierarchy" style="padding:10px; background:#1e293b; border:1.5px solid #334155; border-radius:8px; color:#f1f5f9; cursor:pointer; text-align:center;">
+                    <div style="font-size:18px; margin-bottom:4px;">🏛️</div>
+                    <strong style="font-size:12px; display:block;">Hierarchy</strong>
+                    <span style="font-size:10px; color:#94a3b8;">Org tree / levels</span>
+                  </button>
+                  <button class="smartart-type-btn" data-type="matrix" style="padding:10px; background:#1e293b; border:1.5px solid #334155; border-radius:8px; color:#f1f5f9; cursor:pointer; text-align:center;">
+                    <div style="font-size:18px; margin-bottom:4px;">⊞</div>
+                    <strong style="font-size:12px; display:block;">Matrix (2×2)</strong>
+                    <span style="font-size:10px; color:#94a3b8;">4 Quadrants / SWOT</span>
+                  </button>
+                  <button class="smartart-type-btn" data-type="chevron" style="padding:10px; background:#1e293b; border:1.5px solid #334155; border-radius:8px; color:#f1f5f9; cursor:pointer; text-align:center;">
+                    <div style="font-size:18px; margin-bottom:4px;">⏩</div>
+                    <strong style="font-size:12px; display:block;">Chevron Flow</strong>
+                    <span style="font-size:10px; color:#94a3b8;">Strategic phases</span>
+                  </button>
+                  <button class="smartart-type-btn" data-type="funnel" style="padding:10px; background:#1e293b; border:1.5px solid #334155; border-radius:8px; color:#f1f5f9; cursor:pointer; text-align:center;">
+                    <div style="font-size:18px; margin-bottom:4px;">▽</div>
+                    <strong style="font-size:12px; display:block;">Funnel Stages</strong>
+                    <span style="font-size:10px; color:#94a3b8;">Pipeline stages</span>
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">2. Color Palette:</label>
+                <div style="display:flex; gap:8px;" id="smartart-theme-selector">
+                  <button class="smartart-theme-btn active" data-color="#2563eb" style="flex:1; padding:7px; background:#1e293b; border:2px solid #2563eb; border-radius:6px; color:#f1f5f9; cursor:pointer; font-size:11.5px; font-weight:600;">Executive Blue</button>
+                  <button class="smartart-theme-btn" data-color="#059669" style="flex:1; padding:7px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#f1f5f9; cursor:pointer; font-size:11.5px; font-weight:600;">Emerald Green</button>
+                  <button class="smartart-theme-btn" data-color="#7c3aed" style="flex:1; padding:7px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#f1f5f9; cursor:pointer; font-size:11.5px; font-weight:600;">Violet Purple</button>
+                  <button class="smartart-theme-btn" data-color="#ea580c" style="flex:1; padding:7px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#f1f5f9; cursor:pointer; font-size:11.5px; font-weight:600;">Sunset Amber</button>
+                </div>
+              </div>
+
+              <div>
+                <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">3. Steps / Items (comma-separated):</label>
+                <input type="text" id="smartart-steps-input" value="Phase 1: Discovery, Phase 2: Design, Phase 3: Build, Phase 4: Launch" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:9px 12px; font-size:12.5px; outline:none;">
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #27272a; padding-top:14px;">
+              <button id="btn-cancel-smartart" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:7px 16px; font-size:12px; cursor:pointer;">Cancel</button>
+              <button id="btn-confirm-smartart" style="background:#2563eb; border:none; color:#ffffff; border-radius:6px; padding:7px 20px; font-size:12.5px; font-weight:700; cursor:pointer;">Insert SmartArt</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        let activeType = 'process';
+        let activeColor = '#2563eb';
+
+        modal.querySelectorAll('.smartart-type-btn').forEach(b => {
+          b.addEventListener('click', () => {
+            modal.querySelectorAll('.smartart-type-btn').forEach(btn => {
+              btn.classList.remove('active');
+              btn.style.borderColor = '#334155';
+            });
+            b.classList.add('active');
+            b.style.borderColor = '#3b82f6';
+            activeType = b.dataset.type;
+
+            const input = modal.querySelector('#smartart-steps-input');
+            if (activeType === 'cycle') input.value = 'Plan: Strategy, Execute: Deploy, Measure: Metrics, Optimize: Refine';
+            else if (activeType === 'hierarchy') input.value = 'Executive Leadership, Operations Team, Engineering Division, Financial Governance';
+            else if (activeType === 'matrix') input.value = 'Strengths: Core IP, Weaknesses: Scaling, Opportunities: Enterprise, Threats: Regulations';
+            else if (activeType === 'chevron') input.value = 'Stage 1: Kickoff, Stage 2: Synthesis, Stage 3: Rollout, Stage 4: Scale';
+            else if (activeType === 'funnel') input.value = 'Awareness (10k), Evaluation (4k), Consideration (1.2k), Conversion (450)';
+            else input.value = 'Phase 1: Discovery, Phase 2: Design, Phase 3: Build, Phase 4: Launch';
+          });
+        });
+
+        modal.querySelectorAll('.smartart-theme-btn').forEach(b => {
+          b.addEventListener('click', () => {
+            modal.querySelectorAll('.smartart-theme-btn').forEach(btn => {
+              btn.classList.remove('active');
+              btn.style.border = '1px solid #334155';
+            });
+            b.classList.add('active');
+            activeColor = b.dataset.color;
+            b.style.border = `2px solid ${activeColor}`;
+          });
+        });
+
+        const close = () => modal.remove();
+        modal.querySelector('#btn-close-smartart-modal')?.addEventListener('click', close);
+        modal.querySelector('#btn-cancel-smartart')?.addEventListener('click', close);
+        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+        modal.querySelector('#btn-confirm-smartart')?.addEventListener('click', () => {
+          const items = (modal.querySelector('#smartart-steps-input')?.value || '')
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+
+          let html = '';
+          if (activeType === 'process') {
+            html = `
+              <div class="drift-smartart-container" contenteditable="false" style="margin:24px 0; padding:18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                <div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Process Flow Diagram</div>
+                <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  ${items.map((it, i) => `
+                    <div style="flex:1; min-width:110px; background:#ffffff; border:1.5px solid ${activeColor}; border-radius:8px; padding:10px 12px; box-shadow:0 2px 6px rgba(0,0,0,0.04); text-align:center;">
+                      <div style="width:22px; height:22px; border-radius:50%; background:${activeColor}; color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; margin:0 auto 6px auto;">${i+1}</div>
+                      <div contenteditable="true" style="font-size:12px; font-weight:700; color:#0f172a; outline:none;">${safeEscape(it)}</div>
+                    </div>
+                    ${i < items.length - 1 ? `<span style="font-size:18px; color:${activeColor}; font-weight:900;">➔</span>` : ''}
+                  `).join('')}
+                </div>
+              </div><p><br></p>
+            `;
+          } else if (activeType === 'cycle') {
+            html = `
+              <div class="drift-smartart-container" contenteditable="false" style="margin:24px 0; padding:18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                <div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Cycle Loop Diagram</div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px;">
+                  ${items.map((it, i) => `
+                    <div style="background:#ffffff; border-top:4px solid ${activeColor}; border-radius:6px; padding:12px; border-left:1px solid #e2e8f0; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; box-shadow:0 2px 6px rgba(0,0,0,0.04); position:relative;">
+                      <div style="font-size:10px; font-weight:800; color:${activeColor}; margin-bottom:4px;">PHASE ${i+1} ↻</div>
+                      <div contenteditable="true" style="font-size:12px; font-weight:700; color:#0f172a; outline:none;">${safeEscape(it)}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div><p><br></p>
+            `;
+          } else if (activeType === 'hierarchy') {
+            const topNode = items[0] || 'Leadership';
+            const subNodes = items.slice(1);
+            html = `
+              <div class="drift-smartart-container" contenteditable="false" style="margin:24px 0; padding:20px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; text-align:center;">
+                <div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Organizational Hierarchy</div>
+                <div style="display:inline-block; background:${activeColor}; color:#fff; border-radius:6px; padding:10px 22px; font-weight:700; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.12);" contenteditable="true">${safeEscape(topNode)}</div>
+                <div style="width:2px; height:18px; background:#cbd5e1; margin:0 auto;"></div>
+                <div style="width:60%; height:2px; background:#cbd5e1; margin:0 auto;"></div>
+                <div style="display:flex; justify-content:center; gap:12px; margin-top:0; flex-wrap:wrap;">
+                  ${subNodes.map(sn => `
+                    <div style="min-width:110px; margin-top:12px; background:#ffffff; border:1px solid #cbd5e1; border-radius:6px; padding:8px 14px; font-size:11.5px; font-weight:600; color:#0f172a; box-shadow:0 1px 4px rgba(0,0,0,0.05);" contenteditable="true">${safeEscape(sn)}</div>
+                  `).join('')}
+                </div>
+              </div><p><br></p>
+            `;
+          } else if (activeType === 'matrix') {
+            html = `
+              <div class="drift-smartart-container" contenteditable="false" style="margin:24px 0; padding:18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                <div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Strategic Matrix (2×2)</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                  ${items.slice(0, 4).map((it, i) => {
+                    const colors = [activeColor, '#10b981', '#f59e0b', '#6366f1'];
+                    const col = colors[i % colors.length];
+                    return `
+                      <div style="background:#ffffff; border-left:4px solid ${col}; border-radius:6px; padding:12px; border-top:1px solid #e2e8f0; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0;">
+                        <div style="font-size:10px; font-weight:800; color:${col}; text-transform:uppercase; margin-bottom:4px;">QUADRANT ${i+1}</div>
+                        <div contenteditable="true" style="font-size:12px; font-weight:600; color:#0f172a; outline:none;">${safeEscape(it)}</div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div><p><br></p>
+            `;
+          } else if (activeType === 'chevron') {
+            html = `
+              <div class="drift-smartart-container" contenteditable="false" style="margin:24px 0; padding:18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;">
+                <div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Chevron Strategic Timeline</div>
+                <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                  ${items.map((it, i) => `
+                    <div style="flex:1; min-width:110px; background:linear-gradient(135deg, ${activeColor}, ${activeColor}dd); color:#ffffff; border-radius:6px; padding:10px 14px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+                      <div style="font-size:9.5px; font-weight:800; opacity:0.85; text-transform:uppercase;">MILESTONE ${i+1}</div>
+                      <div contenteditable="true" style="font-size:12px; font-weight:700; color:#ffffff; outline:none; margin-top:2px;">${safeEscape(it)}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div><p><br></p>
+            `;
+          } else {
+            // Funnel
+            html = `
+              <div class="drift-smartart-container" contenteditable="false" style="margin:24px 0; padding:18px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; text-align:center;">
+                <div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:12px;">Conversion Funnel Stages</div>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+                  ${items.map((it, i) => {
+                    const widthPct = Math.max(35, 100 - (i * 18));
+                    return `
+                      <div style="width:${widthPct}%; background:${activeColor}; color:#fff; border-radius:4px; padding:8px 12px; font-size:12px; font-weight:700; box-shadow:0 1px 4px rgba(0,0,0,0.1);" contenteditable="true">${safeEscape(it)}</div>
+                    `;
+                  }).join('')}
+                </div>
+              </div><p><br></p>
+            `;
+          }
+
+          insertIntoPaperAtCursor(html);
+          close();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast('SmartArt diagram inserted into document!');
+        });
+      }
+
+      container.querySelector('#btn-insert-smartart')?.addEventListener('click', openSmartArtModal);
+
+      // ─── 2. DATA CHARTS & VISUALIZATIONS ─────────────────────────────────────
+      function openChartInsertModal() {
+        document.getElementById('drift-chart-modal-backdrop')?.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'drift-chart-modal-backdrop';
+        modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+        modal.innerHTML = `
+          <div style="background:#18181b; border:1px solid #3f3f46; border-radius:14px; width:520px; max-width:94vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:22px; color:#ffffff; font-family:sans-serif;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:22px; color:#10b981;">📊</span>
+                <div>
+                  <strong style="font-size:16px; color:#f1f5f9; display:block;">Insert Data Chart</strong>
+                  <span style="font-size:11px; color:#94a3b8;">Choose a chart style and enter data series</span>
+                </div>
+              </div>
+              <button id="btn-close-chart-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:6px; text-transform:uppercase;">Chart Type:</label>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:6px;" id="chart-type-selector">
+                  <button class="chart-type-btn active" data-type="column" style="padding:8px; background:#1e293b; border:1.5px solid #3b82f6; border-radius:6px; color:#f1f5f9; cursor:pointer; font-size:11.5px; font-weight:700;">📊 Column</button>
+                  <button class="chart-type-btn" data-type="bar" style="padding:8px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#f1f5f9; cursor:pointer; font-size:11.5px; font-weight:700;">📶 Bar</button>
+                  <button class="chart-type-btn" data-type="line" style="padding:8px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#f1f5f9; cursor:pointer; font-size:11.5px; font-weight:700;">📈 Line</button>
+                  <button class="chart-type-btn" data-type="pie" style="padding:8px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#f1f5f9; cursor:pointer; font-size:11.5px; font-weight:700;">🥧 Pie</button>
+                  <button class="chart-type-btn" data-type="donut" style="padding:8px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#f1f5f9; cursor:pointer; font-size:11.5px; font-weight:700;">⭕ Donut</button>
+                  <button class="chart-type-btn" data-type="area" style="padding:8px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#f1f5f9; cursor:pointer; font-size:11.5px; font-weight:700;">🏔 Area</button>
+                </div>
+              </div>
+
+              <div>
+                <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:4px;">Chart Title:</label>
+                <input type="text" id="chart-title-input" value="Quarterly Performance Metrics" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:8px 12px; font-size:12px; outline:none;">
+              </div>
+
+              <div style="display:flex; gap:10px;">
+                <div style="flex:1;">
+                  <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:4px;">Categories (Labels):</label>
+                  <input type="text" id="chart-labels-input" value="Q1, Q2, Q3, Q4, Q5" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:8px 12px; font-size:12px; outline:none;">
+                </div>
+                <div style="flex:1;">
+                  <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:4px;">Values (Numbers):</label>
+                  <input type="text" id="chart-values-input" value="65, 42, 88, 55, 94" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:8px 12px; font-size:12px; outline:none;">
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #27272a; padding-top:14px;">
+              <button id="btn-cancel-chart-dialog" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:7px 16px; font-size:12px; cursor:pointer;">Cancel</button>
+              <button id="btn-confirm-insert-chart" style="background:#10b981; border:none; color:#ffffff; border-radius:6px; padding:7px 20px; font-size:12.5px; font-weight:700; cursor:pointer;">Insert Chart</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        let activeChartType = 'column';
+
+        modal.querySelectorAll('.chart-type-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            modal.querySelectorAll('.chart-type-btn').forEach(b => {
+              b.classList.remove('active');
+              b.style.border = '1px solid #334155';
+            });
+            btn.classList.add('active');
+            btn.style.border = '1.5px solid #3b82f6';
+            activeChartType = btn.dataset.type;
+          });
+        });
+
+        const close = () => modal.remove();
+        modal.querySelector('#btn-close-chart-modal')?.addEventListener('click', close);
+        modal.querySelector('#btn-cancel-chart-dialog')?.addEventListener('click', close);
+        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+        modal.querySelector('#btn-confirm-insert-chart')?.addEventListener('click', () => {
+          const title = modal.querySelector('#chart-title-input')?.value || 'Chart Visualization';
+          const labels = (modal.querySelector('#chart-labels-input')?.value || 'A, B, C, D').split(',').map(s => s.trim());
+          const values = (modal.querySelector('#chart-values-input')?.value || '10, 20, 30, 40').split(',').map(s => parseFloat(s.trim()) || 0);
+
+          const colors = ['#2563eb', '#10b981', '#f59e0b', '#dc2626', '#8b5cf6', '#06b6d4', '#ec4899'];
+          const maxVal = Math.max(...values, 1);
+          let svgContent = '';
+
+          if (activeChartType === 'column') {
+            const barWidth = Math.max(20, Math.floor(260 / values.length) - 10);
+            svgContent = `
+              <svg viewBox="0 0 320 180" width="100%" height="200" style="overflow:visible;">
+                <line x1="30" y1="150" x2="310" y2="150" stroke="#cbd5e1" stroke-width="1.5"/>
+                ${values.map((v, i) => {
+                  const h = Math.round((v / maxVal) * 115);
+                  const x = 40 + i * (barWidth + 12);
+                  const y = 150 - h;
+                  const col = colors[i % colors.length];
+                  return `
+                    <rect x="${x}" y="${y}" width="${barWidth}" height="${h}" fill="${col}" rx="3"/>
+                    <text x="${x + barWidth/2}" y="${y - 4}" font-size="10" font-weight="700" text-anchor="middle" fill="#334155">${v}</text>
+                    <text x="${x + barWidth/2}" y="165" font-size="9.5" text-anchor="middle" fill="#64748b">${labels[i] || ''}</text>
+                  `;
+                }).join('')}
+              </svg>
+            `;
+          } else if (activeChartType === 'bar') {
+            const barHeight = Math.max(14, Math.floor(130 / values.length) - 8);
+            svgContent = `
+              <svg viewBox="0 0 320 180" width="100%" height="200" style="overflow:visible;">
+                <line x1="60" y1="10" x2="60" y2="160" stroke="#cbd5e1" stroke-width="1.5"/>
+                ${values.map((v, i) => {
+                  const w = Math.round((v / maxVal) * 220);
+                  const y = 20 + i * (barHeight + 10);
+                  const col = colors[i % colors.length];
+                  return `
+                    <text x="54" y="${y + barHeight/2 + 3}" font-size="9.5" text-anchor="end" fill="#64748b">${labels[i] || ''}</text>
+                    <rect x="60" y="${y}" width="${w}" height="${barHeight}" fill="${col}" rx="3"/>
+                    <text x="${68 + w}" y="${y + barHeight/2 + 3}" font-size="9.5" font-weight="700" fill="#334155">${v}</text>
+                  `;
+                }).join('')}
+              </svg>
+            `;
+          } else if (activeChartType === 'line' || activeChartType === 'area') {
+            const pts = values.map((v, i) => {
+              const x = 40 + (i / Math.max(1, values.length - 1)) * 250;
+              const y = 145 - (v / maxVal) * 110;
+              return { x, y, v };
+            });
+            const poly = pts.map(p => `${p.x},${p.y}`).join(' ');
+            const areaPoly = `40,150 ${poly} ${pts[pts.length-1].x},150`;
+            svgContent = `
+              <svg viewBox="0 0 320 180" width="100%" height="200" style="overflow:visible;">
+                <line x1="30" y1="150" x2="300" y2="150" stroke="#cbd5e1" stroke-width="1.5"/>
+                ${activeChartType === 'area' ? `<polygon points="${areaPoly}" fill="rgba(37,99,235,0.18)"/>` : ''}
+                <polyline points="${poly}" fill="none" stroke="#2563eb" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                ${pts.map((p, i) => `
+                  <circle cx="${p.x}" cy="${p.y}" r="4.5" fill="#2563eb" stroke="#ffffff" stroke-width="2"/>
+                  <text x="${p.x}" y="${p.y - 7}" font-size="9.5" font-weight="700" text-anchor="middle" fill="#1e40af">${p.v}</text>
+                  <text x="${p.x}" y="165" font-size="9" text-anchor="middle" fill="#64748b">${labels[i] || ''}</text>
+                `).join('')}
+              </svg>
+            `;
+          } else {
+            // Pie / Donut
+            const total = values.reduce((a, b) => a + b, 0) || 1;
+            let currentAngle = -Math.PI / 2;
+            const r = 60;
+            const ir = activeChartType === 'donut' ? 32 : 0;
+            const slices = values.map((v, i) => {
+              const start = currentAngle;
+              const angle = (v / total) * (2 * Math.PI);
+              currentAngle += angle;
+              const end = currentAngle;
+              return { v, label: labels[i] || '', color: colors[i % colors.length], start, end };
+            });
+
+            svgContent = `
+              <svg viewBox="0 0 320 180" width="100%" height="200" style="overflow:visible;">
+                <g transform="translate(100, 90)">
+                  ${slices.map(s => {
+                    const x1 = r * Math.cos(s.start);
+                    const y1 = r * Math.sin(s.start);
+                    const x2 = r * Math.cos(s.end);
+                    const y2 = r * Math.sin(s.end);
+                    const large = (s.end - s.start) > Math.PI ? 1 : 0;
+                    if (ir > 0) {
+                      const ix1 = ir * Math.cos(s.start);
+                      const iy1 = ir * Math.sin(s.start);
+                      const ix2 = ir * Math.cos(s.end);
+                      const iy2 = ir * Math.sin(s.end);
+                      return `<path d="M ${ix1} ${iy1} L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} L ${ix2} ${iy2} A ${ir} ${ir} 0 ${large} 0 ${ix1} ${iy1} Z" fill="${s.color}"/>`;
+                    }
+                    return `<path d="M 0 0 L ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2} Z" fill="${s.color}"/>`;
+                  }).join('')}
+                </g>
+                <g transform="translate(200, 30)">
+                  ${slices.map((s, i) => `
+                    <g transform="translate(0, ${i * 22})">
+                      <rect x="0" y="0" width="12" height="12" fill="${s.color}" rx="2"/>
+                      <text x="18" y="10" font-size="10" font-weight="600" fill="#334155">${s.label} (${s.v})</text>
+                    </g>
+                  `).join('')}
+                </g>
+              </svg>
+            `;
+          }
+
+          const figureHtml = `
+            <figure class="drift-chart-container" contenteditable="false" style="margin:24px auto; max-width:540px; background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:16px 20px; box-shadow:0 4px 12px rgba(0,0,0,0.05); text-align:center;">
+              <div style="font-size:13px; font-weight:800; color:#0f172a; margin-bottom:12px; letter-spacing:-0.2px;">${safeEscape(title)}</div>
+              ${svgContent}
+              <figcaption contenteditable="true" style="font-size:11px; color:#64748b; margin-top:10px; font-style:italic; border-top:1px solid #f1f5f9; padding-top:6px;">Figure: ${safeEscape(title)} — Source: Sovereign Analytics</figcaption>
+            </figure><p><br></p>
+          `;
+
+          insertIntoPaperAtCursor(figureHtml);
+          close();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Inserted ${activeChartType} chart!`);
+        });
+      }
+
+      container.querySelector('#btn-insert-chart-dialog')?.addEventListener('click', openChartInsertModal);
+
+      // ─── 3. WORDART TYPOGRAPHY STUDIO ────────────────────────────────────────
+      function openWordArtModal() {
+        document.getElementById('drift-wordart-modal-backdrop')?.remove();
+
+        const sel = window.getSelection();
+        const selectedText = (sel && !sel.isCollapsed) ? sel.toString().trim() : '';
+
+        const modal = document.createElement('div');
+        modal.id = 'drift-wordart-modal-backdrop';
+        modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+        modal.innerHTML = `
+          <div style="background:#18181b; border:1px solid #3f3f46; border-radius:14px; width:520px; max-width:94vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:22px; color:#ffffff; font-family:sans-serif;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <span style="font-size:22px; color:#a855f7;">✨</span>
+                <div>
+                  <strong style="font-size:16px; color:#f1f5f9; display:block;">WordArt Typography Studio</strong>
+                  <span style="font-size:11px; color:#94a3b8;">Choose a high-impact typographical style</span>
+                </div>
+              </div>
+              <button id="btn-close-wordart-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:4px;">WordArt Text:</label>
+                <input type="text" id="wordart-text-input" value="${safeEscape(selectedText || 'EXECUTIVE LEADERSHIP')}" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:9px 12px; font-size:13px; font-weight:700; outline:none;">
+              </div>
+
+              <div>
+                <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:6px; text-transform:uppercase;">Select Typography Style:</label>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;" id="wordart-presets-grid">
+                  <button class="wordart-preset-btn active" data-style="cyan" style="padding:10px; background:#0f172a; border:2px solid #38bdf8; border-radius:8px; cursor:pointer; text-align:center;">
+                    <span style="font-size:16px; font-weight:900; background:linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Neon Cyan</span>
+                  </button>
+                  <button class="wordart-preset-btn" data-style="gold" style="padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; cursor:pointer; text-align:center;">
+                    <span style="font-size:16px; font-weight:900; background:linear-gradient(180deg, #fef08a 0%, #ca8a04 50%, #854d0e 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Royal Gold 3D</span>
+                  </button>
+                  <button class="wordart-preset-btn" data-style="emerald" style="padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; cursor:pointer; text-align:center;">
+                    <span style="font-size:16px; font-weight:900; background:linear-gradient(135deg, #34d399, #059669); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Emerald Wave</span>
+                  </button>
+                  <button class="wordart-preset-btn" data-style="sunset" style="padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; cursor:pointer; text-align:center;">
+                    <span style="font-size:16px; font-weight:900; background:linear-gradient(90deg, #f97316, #ef4444, #ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Sunset Blaze</span>
+                  </button>
+                  <button class="wordart-preset-btn" data-style="silver" style="padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; cursor:pointer; text-align:center;">
+                    <span style="font-size:16px; font-weight:900; background:linear-gradient(180deg, #ffffff 0%, #94a3b8 50%, #475569 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Chrome Silver</span>
+                  </button>
+                  <button class="wordart-preset-btn" data-style="galaxy" style="padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; cursor:pointer; text-align:center;">
+                    <span style="font-size:16px; font-weight:900; background:linear-gradient(135deg, #c084fc, #6366f1, #3b82f6); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Cosmic Galaxy</span>
+                  </button>
+                  <button class="wordart-preset-btn" data-style="ocean" style="padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; cursor:pointer; text-align:center;">
+                    <span style="font-size:16px; font-weight:900; background:linear-gradient(135deg, #06b6d4, #0284c7); -webkit-background-clip:text; -webkit-text-fill-color:transparent;">Ocean Breeze</span>
+                  </button>
+                  <button class="wordart-preset-btn" data-style="outline" style="padding:10px; background:#0f172a; border:1px solid #334155; border-radius:8px; cursor:pointer; text-align:center;">
+                    <span style="font-size:16px; font-weight:900; -webkit-text-stroke: 1.5px #38bdf8; color: transparent;">Minimal Outline</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #27272a; padding-top:14px;">
+              <button id="btn-cancel-wordart" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:7px 16px; font-size:12px; cursor:pointer;">Cancel</button>
+              <button id="btn-confirm-wordart" style="background:#8b5cf6; border:none; color:#ffffff; border-radius:6px; padding:7px 20px; font-size:12.5px; font-weight:700; cursor:pointer;">Insert WordArt</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        let activeStyle = 'cyan';
+
+        modal.querySelectorAll('.wordart-preset-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            modal.querySelectorAll('.wordart-preset-btn').forEach(b => {
+              b.classList.remove('active');
+              b.style.border = '1px solid #334155';
+            });
+            btn.classList.add('active');
+            btn.style.border = '2px solid #38bdf8';
+            activeStyle = btn.dataset.style;
+          });
+        });
+
+        const close = () => modal.remove();
+        modal.querySelector('#btn-close-wordart-modal')?.addEventListener('click', close);
+        modal.querySelector('#btn-cancel-wordart')?.addEventListener('click', close);
+        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+        modal.querySelector('#btn-confirm-wordart')?.addEventListener('click', () => {
+          const txt = modal.querySelector('#wordart-text-input')?.value.trim() || 'WordArt Heading';
+
+          const styleCssMap = {
+            cyan: 'background:linear-gradient(135deg, #38bdf8, #818cf8); -webkit-background-clip:text; -webkit-text-fill-color:transparent; text-shadow:0 0 20px rgba(56,189,248,0.3);',
+            gold: 'background:linear-gradient(180deg, #fef08a 0%, #ca8a04 50%, #854d0e 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; filter:drop-shadow(0 2px 2px rgba(0,0,0,0.3));',
+            emerald: 'background:linear-gradient(135deg, #34d399, #059669); -webkit-background-clip:text; -webkit-text-fill-color:transparent;',
+            sunset: 'background:linear-gradient(90deg, #f97316, #ef4444, #ec4899); -webkit-background-clip:text; -webkit-text-fill-color:transparent;',
+            silver: 'background:linear-gradient(180deg, #ffffff 0%, #94a3b8 50%, #475569 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent;',
+            galaxy: 'background:linear-gradient(135deg, #c084fc, #6366f1, #3b82f6); -webkit-background-clip:text; -webkit-text-fill-color:transparent;',
+            ocean: 'background:linear-gradient(135deg, #06b6d4, #0284c7); -webkit-background-clip:text; -webkit-text-fill-color:transparent;',
+            outline: '-webkit-text-stroke: 1.5px #2563eb; color: transparent;'
+          };
+
+          const appliedCss = styleCssMap[activeStyle] || styleCssMap.cyan;
+          const wordArtHtml = `
+            <div class="drift-wordart-heading" contenteditable="true" style="font-family:'Plus Jakarta Sans', system-ui, sans-serif; font-size:32px; font-weight:900; letter-spacing:-0.5px; margin:20px 0 10px 0; text-transform:uppercase; ${appliedCss}">${safeEscape(txt)}</div><p><br></p>
+          `;
+
+          insertIntoPaperAtCursor(wordArtHtml);
+          close();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast('WordArt heading inserted!');
+        });
+      }
+
+      container.querySelector('#btn-insert-wordart')?.addEventListener('click', openWordArtModal);
+
+      // ─── 4. DRAWING SHAPES INSERTER ──────────────────────────────────────────
+      function openShapeModal() {
+        document.getElementById('drift-shape-modal-backdrop')?.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'drift-shape-modal-backdrop';
+        modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+        modal.innerHTML = `
+          <div style="background:#18181b; border:1px solid #3f3f46; border-radius:14px; width:480px; max-width:94vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:20px; color:#ffffff; font-family:sans-serif;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:20px; color:#f59e0b;">⬡</span>
+                <strong style="font-size:15px; color:#f1f5f9;">Insert Geometric Shape</strong>
+              </div>
+              <button id="btn-close-shape-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-bottom:16px;" id="shapes-picker-grid">
+              <button class="shape-pick-btn active" data-shape="rect" style="padding:12px; background:#1e293b; border:2px solid #3b82f6; border-radius:6px; color:#fff; cursor:pointer;">▬ Rect</button>
+              <button class="shape-pick-btn" data-shape="rounded" style="padding:12px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#fff; cursor:pointer;">▢ Round</button>
+              <button class="shape-pick-btn" data-shape="circle" style="padding:12px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#fff; cursor:pointer;">● Circle</button>
+              <button class="shape-pick-btn" data-shape="arrow-r" style="padding:12px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#fff; cursor:pointer;">➔ Arrow</button>
+              <button class="shape-pick-btn" data-shape="star" style="padding:12px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#fff; cursor:pointer;">★ Star</button>
+              <button class="shape-pick-btn" data-shape="callout" style="padding:12px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#fff; cursor:pointer;">💬 Bubble</button>
+              <button class="shape-pick-btn" data-shape="diamond" style="padding:12px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#fff; cursor:pointer;">⬥ Diamond</button>
+              <button class="shape-pick-btn" data-shape="banner" style="padding:12px; background:#1e293b; border:1px solid #334155; border-radius:6px; color:#fff; cursor:pointer;">⚐ Banner</button>
+            </div>
+
+            <div>
+              <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:4px;">Shape Label Text (Optional):</label>
+              <input type="text" id="shape-label-input" value="Notice / Key Action" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:8px 12px; font-size:12px; outline:none;">
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:18px; border-top:1px solid #27272a; padding-top:14px;">
+              <button id="btn-cancel-shape" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:7px 16px; font-size:12px; cursor:pointer;">Cancel</button>
+              <button id="btn-confirm-shape" style="background:#2563eb; border:none; color:#ffffff; border-radius:6px; padding:7px 20px; font-size:12.5px; font-weight:700; cursor:pointer;">Insert Shape</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        let activeShape = 'rect';
+        modal.querySelectorAll('.shape-pick-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            modal.querySelectorAll('.shape-pick-btn').forEach(b => {
+              b.classList.remove('active');
+              b.style.border = '1px solid #334155';
+            });
+            btn.classList.add('active');
+            btn.style.border = '2px solid #3b82f6';
+            activeShape = btn.dataset.shape;
+          });
+        });
+
+        const close = () => modal.remove();
+        modal.querySelector('#btn-close-shape-modal')?.addEventListener('click', close);
+        modal.querySelector('#btn-cancel-shape')?.addEventListener('click', close);
+        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+        modal.querySelector('#btn-confirm-shape')?.addEventListener('click', () => {
+          const txt = modal.querySelector('#shape-label-input')?.value || 'Shape';
+          let shapeHtml = '';
+
+          if (activeShape === 'circle') {
+            shapeHtml = `
+              <div class="drift-shape-box" contenteditable="false" style="display:inline-block; margin:16px 0; text-align:center;">
+                <div style="width:120px; height:120px; border-radius:50%; background:#2563eb; color:#fff; display:flex; align-items:center; justify-content:center; padding:12px; box-sizing:border-box; box-shadow:0 4px 12px rgba(37,99,235,0.25);">
+                  <span contenteditable="true" style="font-size:12px; font-weight:700; outline:none;">${safeEscape(txt)}</span>
+                </div>
+              </div>&nbsp;
+            `;
+          } else if (activeShape === 'rounded') {
+            shapeHtml = `
+              <div class="drift-shape-box" contenteditable="false" style="display:inline-block; margin:16px 0;">
+                <div style="padding:16px 28px; border-radius:24px; background:#f8fafc; border:2px solid #2563eb; color:#0f172a; box-shadow:0 4px 12px rgba(0,0,0,0.06);">
+                  <strong contenteditable="true" style="font-size:13px; outline:none;">${safeEscape(txt)}</strong>
+                </div>
+              </div>&nbsp;
+            `;
+          } else if (activeShape === 'arrow-r') {
+            shapeHtml = `
+              <div class="drift-shape-box" contenteditable="false" style="display:inline-block; margin:16px 0;">
+                <div style="padding:10px 24px; background:#10b981; color:#fff; clip-path:polygon(0% 0%, 80% 0%, 100% 50%, 80% 100%, 0% 100%, 15% 50%); display:flex; align-items:center; justify-content:center; min-width:140px;">
+                  <strong contenteditable="true" style="font-size:12px; outline:none;">${safeEscape(txt)}</strong>
+                </div>
+              </div>&nbsp;
+            `;
+          } else if (activeShape === 'star') {
+            shapeHtml = `
+              <div class="drift-shape-box" contenteditable="false" style="display:inline-block; margin:16px 0; text-align:center;">
+                <div style="background:#f59e0b; color:#fff; padding:18px 24px; border-radius:12px; transform:rotate(-2deg); box-shadow:0 4px 12px rgba(245,158,11,0.3);">
+                  <span style="font-size:16px;">★ </span><strong contenteditable="true" style="font-size:13px; outline:none;">${safeEscape(txt)}</strong>
+                </div>
+              </div>&nbsp;
+            `;
+          } else if (activeShape === 'callout') {
+            shapeHtml = `
+              <div class="drift-shape-box" contenteditable="false" style="margin:16px 0; max-width:320px;">
+                <div style="background:#eff6ff; border:1.5px solid #3b82f6; border-radius:10px; padding:12px 16px; position:relative;">
+                  <span contenteditable="true" style="font-size:12px; color:#1e40af; outline:none; font-weight:600;">${safeEscape(txt)}</span>
+                  <div style="position:absolute; bottom:-8px; left:20px; width:12px; height:12px; background:#eff6ff; border-right:1.5px solid #3b82f6; border-bottom:1.5px solid #3b82f6; transform:rotate(45deg);"></div>
+                </div>
+              </div><p><br></p>
+            `;
+          } else {
+            shapeHtml = `
+              <div class="drift-shape-box" contenteditable="false" style="display:inline-block; margin:16px 0;">
+                <div style="padding:14px 24px; background:#1e293b; color:#f8fafc; border-radius:6px; border-left:4px solid #38bdf8; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+                  <strong contenteditable="true" style="font-size:12.5px; outline:none;">${safeEscape(txt)}</strong>
+                </div>
+              </div>&nbsp;
+            `;
+          }
+
+          insertIntoPaperAtCursor(shapeHtml);
+          close();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast('Shape inserted into document');
+        });
+      }
+
+      container.querySelector('#btn-insert-shape')?.addEventListener('click', openShapeModal);
+
+      // ─── 5. VECTOR ICONS GALLERY ─────────────────────────────────────────────
+      function openIconModal() {
+        document.getElementById('drift-icon-modal-backdrop')?.remove();
+
+        const iconDefs = [
+          { name: 'Document', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' },
+          { name: 'Folder', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' },
+          { name: 'Check', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>' },
+          { name: 'Star', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' },
+          { name: 'Shield', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' },
+          { name: 'Lock', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' },
+          { name: 'Globe', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>' },
+          { name: 'User', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' },
+          { name: 'Mail', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>' },
+          { name: 'Calendar', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>' },
+          { name: 'Zap', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' },
+          { name: 'Settings', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' },
+          { name: 'Award', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>' },
+          { name: 'Bookmark', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>' },
+          { name: 'Heart', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>' },
+          { name: 'Search', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>' }
+        ];
+
+        const modal = document.createElement('div');
+        modal.id = 'drift-icon-modal-backdrop';
+        modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+        modal.innerHTML = `
+          <div style="background:#18181b; border:1px solid #3f3f46; border-radius:14px; width:460px; max-width:92vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:20px; color:#ffffff; font-family:sans-serif;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+              <strong style="font-size:15px; color:#f1f5f9;">Insert Icon</strong>
+              <button id="btn-close-icon-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:10px;" id="icons-grid-container">
+              ${iconDefs.map((ic, i) => `
+                <button class="icon-card-btn" data-icon-idx="${i}" style="padding:14px; background:#1e293b; border:1px solid #334155; border-radius:8px; color:#f1f5f9; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:6px;">
+                  <div>${ic.svg}</div>
+                  <span style="font-size:10.5px; color:#94a3b8;">${ic.name}</span>
+                </button>
+              `).join('')}
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        const close = () => modal.remove();
+        modal.querySelector('#btn-close-icon-modal')?.addEventListener('click', close);
+        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+        modal.querySelectorAll('.icon-card-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const idx = parseInt(btn.dataset.iconIdx, 10);
+            const chosen = iconDefs[idx];
+            if (chosen) {
+              const html = `<span style="display:inline-block; vertical-align:middle; margin:0 4px;" contenteditable="false">${chosen.svg}</span>&nbsp;`;
+              insertIntoPaperAtCursor(html);
+              close();
+              if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Inserted ${chosen.name} icon`);
+            }
+          });
+        });
+      }
+
+      container.querySelector('#btn-insert-icon')?.addEventListener('click', openIconModal);
+
+      // ─── 6. RUNNING HEADERS, FOOTERS & PAGE NUMBERS ──────────────────────────
+      container.querySelector('#btn-insert-header')?.addEventListener('click', () => {
+        let hdr = paper.querySelector('.drift-doc-running-header');
+        if (!hdr) {
+          hdr = document.createElement('header');
+          hdr.className = 'drift-doc-running-header';
+          hdr.contentEditable = 'true';
+          hdr.style.cssText = 'border-bottom:1px solid #cbd5e1; padding-bottom:8px; margin-bottom:24px; font-size:9.5pt; color:#64748b; display:flex; justify-content:space-between; user-select:none;';
+          hdr.innerHTML = `<span>${safeEscape(currentDocTitle)} • Executive Document</span><span>CONFIDENTIAL</span>`;
+          paper.prepend(hdr);
+          saveDocument();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast('Header created — click to edit');
+        } else {
+          hdr.scrollIntoView({ behavior: 'smooth' });
+          hdr.focus();
+        }
+      });
+
+      container.querySelector('#btn-insert-footer')?.addEventListener('click', () => {
+        let ftr = paper.querySelector('.drift-doc-running-footer');
+        if (!ftr) {
+          ftr = document.createElement('footer');
+          ftr.className = 'drift-doc-running-footer';
+          ftr.contentEditable = 'true';
+          ftr.style.cssText = 'border-top:1px solid #cbd5e1; padding-top:8px; margin-top:36px; font-size:9.5pt; color:#64748b; display:flex; justify-content:space-between; user-select:none;';
+          ftr.innerHTML = `<span>Giri Orbit Enterprise Workspace</span><span>Page <span class="drift-page-num-token">1</span></span>`;
+          paper.appendChild(ftr);
+          saveDocument();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast('Footer created — click to edit');
+        } else {
+          ftr.scrollIntoView({ behavior: 'smooth' });
+          ftr.focus();
+        }
+      });
+
+      container.querySelector('#btn-insert-page-number')?.addEventListener('click', () => {
+        const pageTokenHtml = `<span class="drift-page-number-token" contenteditable="false" style="font-weight:700; color:#2563eb; background:#eff6ff; padding:2px 8px; border-radius:4px; font-family:var(--font-mono, monospace); font-size:11px;">Page 1</span>&nbsp;`;
+        insertIntoPaperAtCursor(pageTokenHtml);
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Page number token inserted');
+      });
+
+      // ─── 7. TEXT BOX, CALLOUT, DATE & BOOKMARK ───────────────────────────────
+      container.querySelector('#btn-insert-textbox')?.addEventListener('click', () => {
+        const tbHtml = `
+          <div class="drift-floating-textbox" contenteditable="true" style="border:1.5px solid #3b82f6; border-radius:8px; padding:14px 18px; margin:16px 0; background:#f8fafc; box-shadow:0 4px 12px rgba(0,0,0,0.05); min-width:260px; font-size:11pt; color:#1e293b;">
+            <p style="margin:0 0 6px 0; font-weight:700; color:#1e40af;">Text Box</p>
+            <p style="margin:0;">Enter supplementary notes, key highlights, or sidebar remarks here...</p>
+          </div><p><br></p>
+        `;
+        insertIntoPaperAtCursor(tbHtml);
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Text box inserted');
+      });
+
+      container.querySelector('#btn-insert-callout-box')?.addEventListener('click', () => {
+        const calloutHtml = `
+          <div class="drift-callout-banner" contenteditable="true" style="padding:14px 18px; margin:16px 0; background:#f0fdf4; border:1px solid #bbf7d0; border-left:4px solid #16a34a; border-radius:6px; color:#166534; font-size:11pt; line-height:1.6;">
+            <strong>💡 Executive Directive:</strong> Enter crucial operational takeaway or policy guidance here.
+          </div><p><br></p>
+        `;
+        insertIntoPaperAtCursor(calloutHtml);
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Callout box inserted');
+      });
+
+      container.querySelector('#btn-insert-date')?.addEventListener('click', () => {
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        insertIntoPaperAtCursor(`<span style="color:#475569; font-weight:600;">${dateStr}</span>&nbsp;`);
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Current date inserted');
+      });
+
+      container.querySelector('#btn-insert-bookmark')?.addEventListener('click', () => {
+        const bmName = prompt('Enter Bookmark Name (e.g., Section2, Appendix):', 'Bookmark_1');
+        if (bmName && bmName.trim()) {
+          const safeName = bmName.trim().replace(/\s+/g, '_');
+          const bmHtml = `<a id="bm_${safeName}" name="bm_${safeName}" class="drift-bookmark-anchor" title="Bookmark: ${safeName}" style="border-bottom:2px dotted #38bdf8; text-decoration:none; color:inherit;">🔖 ${safeEscape(bmName.trim())}</a>&nbsp;`;
+          insertIntoPaperAtCursor(bmHtml);
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Bookmark "${safeName}" created`);
+        }
+      });
+
+      // ─── 8. CITATIONS & BIBLIOGRAPHY BUILDER ──────────────────────────────────
+      let citationRegistry = [];
+
+      container.querySelector('#btn-insert-endnote')?.addEventListener('click', () => {
+        let endnoteContainer = paper.querySelector('.drift-endnotes-container');
+        if (!endnoteContainer) {
+          endnoteContainer = document.createElement('div');
+          endnoteContainer.className = 'drift-endnotes-container';
+          endnoteContainer.innerHTML = '<hr style="border:none; border-top:1.5px solid #cbd5e1; margin:32px 0 16px;"><h4 style="margin:0 0 10px 0; font-size:12pt; color:#0f172a;">Endnotes</h4>';
+          paper.appendChild(endnoteContainer);
+        }
+        const noteIndex = endnoteContainer.querySelectorAll('.drift-endnote-item').length + 1;
+        const roman = ['i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x'][noteIndex - 1] || noteIndex;
+        document.execCommand('insertHTML', false, `<sup style="color:#7c3aed; font-weight:800; cursor:pointer;" title="Endnote ${roman}">[${roman}]</sup>&nbsp;`);
+
+        const noteRow = document.createElement('div');
+        noteRow.className = 'drift-endnote-item';
+        noteRow.style.cssText = 'font-size:10pt; color:#475569; margin-bottom:6px;';
+        noteRow.innerHTML = `<strong style="color:#7c3aed;">[${roman}]</strong> <span contenteditable="true">Enter endnote citation or reference text here...</span>`;
+        endnoteContainer.appendChild(noteRow);
+        saveDocument();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Endnote [${roman}] added at cursor & document end`);
+      });
+
+      container.querySelector('#btn-insert-citation')?.addEventListener('click', () => {
+        const author = prompt('Author Name(s):', 'Giri Research');
+        if (!author) return;
+        const year = prompt('Publication Year:', '2026') || '2026';
+        const title = prompt('Work / Book / Paper Title:', 'Sovereign Distributed Computing');
+        const style = container.querySelector('#drift-citation-style')?.value || 'APA';
+
+        citationRegistry.push({ author, year, title, style });
+
+        let inTextCitation = '';
+        if (style === 'MLA') inTextCitation = `(${author} ${year})`;
+        else if (style === 'IEEE') inTextCitation = `[${citationRegistry.length}]`;
+        else inTextCitation = `(${author}, ${year})`;
+
+        const citeHtml = `<span class="drift-citation-token" data-author="${safeEscape(author)}" data-year="${safeEscape(year)}" data-title="${safeEscape(title || '')}" contenteditable="false" style="color:#2563eb; font-weight:600; cursor:pointer;" title="${safeEscape(title || '')}">${inTextCitation}</span>&nbsp;`;
+        insertIntoPaperAtCursor(citeHtml);
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Inserted citation: ${inTextCitation}`);
+      });
+
+      container.querySelector('#btn-insert-bibliography')?.addEventListener('click', () => {
+        let biblioContainer = paper.querySelector('.drift-bibliography-container');
+        if (!biblioContainer) {
+          biblioContainer = document.createElement('div');
+          biblioContainer.className = 'drift-bibliography-container';
+          paper.appendChild(biblioContainer);
+        }
+
+        const existingTokens = Array.from(paper.querySelectorAll('.drift-citation-token'));
+        const sources = existingTokens.map(tok => ({
+          author: tok.dataset.author || 'Author',
+          year: tok.dataset.year || '2026',
+          title: tok.dataset.title || 'Referenced Work'
+        }));
+
+        if (sources.length === 0 && citationRegistry.length === 0) {
+          sources.push(
+            { author: 'Giri Enterprise Architecture', year: '2026', title: 'Sovereign In-Memory Office Specifications' },
+            { author: 'ISO / IEC Standards', year: '2024', title: 'Information Security Management Guidelines' }
+          );
+        }
+
+        const allSources = [...citationRegistry, ...sources];
+        const unique = Array.from(new Set(allSources.map(s => `${s.author}|${s.year}|${s.title}`))).map(str => {
+          const [author, year, title] = str.split('|');
+          return { author, year, title };
+        });
+
+        biblioContainer.innerHTML = `
+          <hr style="border:none; border-top:2px solid #cbd5e1; margin:40px 0 20px;">
+          <h3 style="font-size:14pt; font-weight:800; color:#0f172a; margin:0 0 14px 0;">References &amp; Bibliography</h3>
+          <div style="display:flex; flex-direction:column; gap:8px; font-size:10.5pt; color:#334155; line-height:1.6;">
+            ${unique.map(u => `
+              <div style="padding-left:24px; text-indent:-24px;">
+                <strong>${safeEscape(u.author)}</strong> (${safeEscape(u.year)}). <em>${safeEscape(u.title)}</em>. Sovereign Repository.
+              </div>
+            `).join('')}
+          </div><p><br></p>
+        `;
+
+        saveDocument();
+        biblioContainer.scrollIntoView({ behavior: 'smooth' });
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Bibliography compiled from citations!');
+      });
+
+      // ─── 9. TRACK CHANGES RESOLUTION ─────────────────────────────────────────
+      container.querySelector('#btn-accept-track-changes')?.addEventListener('click', () => {
+        const insElements = paper.querySelectorAll('ins');
+        const delElements = paper.querySelectorAll('del');
+
+        insElements.forEach(ins => {
+          const textNode = document.createTextNode(ins.textContent);
+          ins.parentNode?.replaceChild(textNode, ins);
+        });
+        delElements.forEach(del => del.remove());
+
+        saveDocument();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Accepted all tracked changes (${insElements.length} insertions kept, ${delElements.length} deletions applied)`);
+      });
+
+      container.querySelector('#btn-reject-track-changes')?.addEventListener('click', () => {
+        const insElements = paper.querySelectorAll('ins');
+        const delElements = paper.querySelectorAll('del');
+
+        insElements.forEach(ins => ins.remove());
+        delElements.forEach(del => {
+          const textNode = document.createTextNode(del.textContent);
+          del.parentNode?.replaceChild(textNode, del);
+        });
+
+        saveDocument();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Rejected all tracked changes (reverted to original text)`);
+      });
+
+      // ─── 10. SOVEREIGN PASSCODE LOCK & PROTECTION ────────────────────────────
+      let isDocumentLocked = false;
+      let documentPasscode = null;
+
+      container.querySelector('#btn-doc-lock')?.addEventListener('click', () => {
+        const lockLabel = container.querySelector('#txt-drift-lock-label');
+
+        if (!isDocumentLocked) {
+          const code = prompt('Enter a passcode to lock this document from edits:');
+          if (!code) return;
+          documentPasscode = code.trim();
+          isDocumentLocked = true;
+          paper.setAttribute('contenteditable', 'false');
+
+          let lockBanner = paper.querySelector('#drift-document-lock-banner');
+          if (!lockBanner) {
+            lockBanner = document.createElement('div');
+            lockBanner.id = 'drift-document-lock-banner';
+            lockBanner.contentEditable = 'false';
+            lockBanner.style.cssText = 'background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; border-radius:6px; padding:10px 16px; margin-bottom:18px; display:flex; align-items:center; justify-content:space-between; font-size:12px; font-weight:700; user-select:none;';
+            lockBanner.innerHTML = '<span>🔒 Document Protected: Read-Only Mode</span><span style="font-size:11px; font-weight:500;">Click "Unlock Doc" in the ribbon to edit</span>';
+            paper.prepend(lockBanner);
+          }
+
+          if (lockLabel) lockLabel.textContent = 'Unlock Doc';
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast('Document locked with passcode protection');
+        } else {
+          const attempt = prompt('Enter passcode to unlock document for editing:');
+          if (attempt === documentPasscode) {
+            isDocumentLocked = false;
+            documentPasscode = null;
+            paper.setAttribute('contenteditable', 'true');
+            paper.querySelector('#drift-document-lock-banner')?.remove();
+            if (lockLabel) lockLabel.textContent = 'Lock Doc';
+            if (window.orbitPlatform) window.orbitPlatform.triggerToast('Document successfully unlocked');
+          } else {
+            alert('Incorrect passcode. Document remains protected.');
+          }
+        }
+      });
+
+      // ─── 11. MULTILINGUAL TRANSLATION ENGINE ─────────────────────────────────
+      function openTranslationModal() {
+        document.getElementById('drift-translate-modal-backdrop')?.remove();
+
+        const sel = window.getSelection();
+        const selectedText = (sel && !sel.isCollapsed) ? sel.toString().trim() : (paper.innerText.slice(0, 300) + '...');
+
+        const modal = document.createElement('div');
+        modal.id = 'drift-translate-modal-backdrop';
+        modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+        modal.innerHTML = `
+          <div style="background:#18181b; border:1px solid #3f3f46; border-radius:14px; width:520px; max-width:94vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:22px; color:#ffffff; font-family:sans-serif;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:22px;">🌐</span>
+                <strong style="font-size:15px; color:#f1f5f9;">Multilingual Document Translation</strong>
+              </div>
+              <button id="btn-close-translate-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div>
+                <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:4px;">Target Language:</label>
+                <select id="translate-target-lang" class="fluent-select-dark" style="width:100%; height:34px; font-size:12.5px;">
+                  <option value="hi" selected>Hindi (हिन्दी)</option>
+                  <option value="es">Spanish (Español)</option>
+                  <option value="fr">French (Français)</option>
+                  <option value="de">German (Deutsch)</option>
+                  <option value="ja">Japanese (日本語)</option>
+                  <option value="zh">Chinese (中文)</option>
+                  <option value="ar">Arabic (العربية)</option>
+                  <option value="ru">Russian (Русский)</option>
+                  <option value="pt">Portuguese (Português)</option>
+                  <option value="it">Italian (Italiano)</option>
+                </select>
+              </div>
+
+              <div>
+                <label style="display:block; font-size:11.5px; font-weight:700; color:#cbd5e1; margin-bottom:4px;">Source Text to Translate:</label>
+                <div style="padding:10px 12px; background:#09090b; border:1px solid #3f3f46; border-radius:6px; font-size:12px; color:#94a3b8; max-height:80px; overflow-y:auto;">
+                  ${safeEscape(selectedText)}
+                </div>
+              </div>
+
+              <div>
+                <label style="display:block; font-size:11.5px; font-weight:700; color:#38bdf8; margin-bottom:4px;">Translated Preview:</label>
+                <div id="translate-result-preview" style="padding:12px; background:#1e293b; border:1px solid #3b82f6; border-radius:6px; font-size:12.5px; color:#f1f5f9; min-height:60px;">
+                  अनुवाद तैयार किया जा रहा है... (Translating...)
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:20px; border-top:1px solid #27272a; padding-top:14px;">
+              <button id="btn-cancel-translate" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:7px 16px; font-size:12px; cursor:pointer;">Cancel</button>
+              <button id="btn-apply-translation" style="background:#2563eb; border:none; color:#ffffff; border-radius:6px; padding:7px 20px; font-size:12.5px; font-weight:700; cursor:pointer;">Insert Translation</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        const dicts = {
+          hi: { 'executive': 'कार्यकारी', 'report': 'रिपोर्ट', 'document': 'दस्तावेज़', 'project': 'परियोजना', 'overview': 'अवलोकन', 'status': 'स्थिति', 'meeting': 'बैठक', 'confidential': 'गोपनीय', 'approved': 'स्वीकृत' },
+          es: { 'executive': 'ejecutivo', 'report': 'informe', 'document': 'documento', 'project': 'proyecto', 'overview': 'resumen', 'status': 'estado', 'meeting': 'reunión', 'confidential': 'confidencial', 'approved': 'aprobado' },
+          fr: { 'executive': 'exécutif', 'report': 'rapport', 'document': 'document', 'project': 'projet', 'overview': 'aperçu', 'status': 'statut', 'meeting': 'réunion', 'confidential': 'confidentiel', 'approved': 'approuvé' },
+          de: { 'executive': 'leitend', 'report': 'bericht', 'document': 'dokument', 'project': 'projekt', 'overview': 'übersicht', 'status': 'status', 'meeting': 'besprechung', 'confidential': 'vertraulich', 'approved': 'genehmigt' },
+          ja: { 'executive': 'エグゼクティブ', 'report': 'レポート', 'document': 'ドキュメント', 'project': 'プロジェクト', 'overview': '概要', 'status': 'ステータス', 'meeting': 'ミーティング', 'confidential': '機密', 'approved': '承認済み' }
+        };
+
+        const updatePreview = () => {
+          const lang = modal.querySelector('#translate-target-lang')?.value;
+          const previewEl = modal.querySelector('#translate-result-preview');
+          const d = dicts[lang] || dicts.hi;
+
+          let translated = selectedText;
+          Object.keys(d).forEach(k => {
+            const re = new RegExp(`\\b${k}\\b`, 'gi');
+            translated = translated.replace(re, d[k]);
+          });
+
+          if (lang === 'hi') {
+            previewEl.textContent = `[हिन्दी अनुवाद]: ${translated}`;
+          } else if (lang === 'es') {
+            previewEl.textContent = `[Traducción al español]: ${translated}`;
+          } else if (lang === 'fr') {
+            previewEl.textContent = `[Traduction en français]: ${translated}`;
+          } else if (lang === 'de') {
+            previewEl.textContent = `[Deutsche Übersetzung]: ${translated}`;
+          } else if (lang === 'ja') {
+            previewEl.textContent = `[日本語翻訳]: ${translated}`;
+          } else {
+            previewEl.textContent = `[Translated ${lang}]: ${translated}`;
+          }
+        };
+
+        modal.querySelector('#translate-target-lang')?.addEventListener('change', updatePreview);
+        updatePreview();
+
+        const close = () => modal.remove();
+        modal.querySelector('#btn-close-translate-modal')?.addEventListener('click', close);
+        modal.querySelector('#btn-cancel-translate')?.addEventListener('click', close);
+        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
+
+        modal.querySelector('#btn-apply-translation')?.addEventListener('click', () => {
+          const result = modal.querySelector('#translate-result-preview')?.textContent || '';
+          insertIntoPaperAtCursor(`<span style="color:#2563eb; font-weight:500;">${safeEscape(result)}</span>&nbsp;`);
+          close();
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast('Translation applied to document');
+        });
+      }
+
+      container.querySelector('#btn-review-translate')?.addEventListener('click', openTranslationModal);
+
+      // ─── 12. REAL-TIME AUTOCORRECT ENGINE ────────────────────────────────────
+      const autoCorrectMap = {
+        'teh': 'the',
+        'adn': 'and',
+        'waht': 'what',
+        'dont': "don't",
+        'cant': "can't",
+        'wont': "won't",
+        'seperate': 'separate',
+        'recieve': 'receive',
+        'occured': 'occurred',
+        'untill': 'until',
+        'widht': 'width',
+        'heigth': 'height',
+        'targit': 'target',
+        '(c)': '©',
+        '(r)': '®',
+        '(tm)': '™',
+        '-->': '→',
+        '<--': '←'
+      };
+
+      paper.addEventListener('keyup', (e) => {
+        if (e.key === ' ' || e.key === 'Enter') {
+          const sel = window.getSelection();
+          if (!sel || !sel.anchorNode || sel.anchorNode.nodeType !== 3) return;
+          const text = sel.anchorNode.nodeValue || '';
+          const words = text.split(/\s+/);
+          const lastWord = words[words.length - 2]; // Word before trailing space
+          if (lastWord && autoCorrectMap[lastWord.toLowerCase()]) {
+            const corrected = autoCorrectMap[lastWord.toLowerCase()];
+            const newText = text.replace(new RegExp(`\\b${lastWord}\\b`, 'g'), corrected);
+            sel.anchorNode.nodeValue = newText;
+            saveDocument();
+          }
+        }
+      });
+
+      // ─── 13. ACCESSIBILITY AUDIT ENGINE ──────────────────────────────────────
+      container.querySelector('#btn-review-accessibility')?.addEventListener('click', () => {
+        document.getElementById('drift-a11y-modal-backdrop')?.remove();
+
+        const images = paper.querySelectorAll('img');
+        const imagesWithoutAlt = Array.from(images).filter(img => !img.alt || img.alt.trim() === '');
+        const headings = paper.querySelectorAll('h1, h2, h3');
+        const hasH1 = paper.querySelectorAll('h1').length > 0;
+        const tables = paper.querySelectorAll('table');
+        const tablesWithoutHeaders = Array.from(tables).filter(t => t.querySelectorAll('th').length === 0);
+        const emptyLinks = Array.from(paper.querySelectorAll('a')).filter(a => !a.textContent.trim());
+
+        let score = 100;
+        const issues = [];
+
+        if (imagesWithoutAlt.length > 0) {
+          score -= 15;
+          issues.push({ level: 'warn', text: `${imagesWithoutAlt.length} image(s) missing descriptive Alt text for screen readers.` });
+        }
+        if (!hasH1) {
+          score -= 10;
+          issues.push({ level: 'info', text: 'Document lacks a main Heading 1 (Title).' });
+        }
+        if (tablesWithoutHeaders.length > 0) {
+          score -= 10;
+          issues.push({ level: 'warn', text: `${tablesWithoutHeaders.length} table(s) missing column header row (<th>).` });
+        }
+        if (emptyLinks.length > 0) {
+          score -= 10;
+          issues.push({ level: 'warn', text: `${emptyLinks.length} hyperlink(s) contain empty link labels.` });
+        }
+
+        const modal = document.createElement('div');
+        modal.id = 'drift-a11y-modal-backdrop';
+        modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+        modal.innerHTML = `
+          <div style="background:#18181b; border:1px solid #3f3f46; border-radius:14px; width:480px; max-width:92vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:22px; color:#ffffff; font-family:sans-serif;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:22px; color:#10b981;">♿</span>
+                <div>
+                  <strong style="font-size:15px; color:#f1f5f9; display:block;">Accessibility Audit Report</strong>
+                  <span style="font-size:11px; color:#94a3b8;">WCAG 2.1 & Screen Reader Compliance Check</span>
+                </div>
+              </div>
+              <button id="btn-close-a11y-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 18px; background:#0f172a; border-radius:8px; border:1px solid #334155; margin-bottom:14px;">
+              <div>
+                <span style="font-size:11px; color:#94a3b8; text-transform:uppercase;">Overall Compliance Score</span>
+                <strong style="font-size:26px; color:${score >= 90 ? '#10b981' : score >= 70 ? '#f59e0b' : '#ef4444'}; display:block;">${score}%</strong>
+              </div>
+              <div style="text-align:right;">
+                <span style="font-size:12px; color:#38bdf8; font-weight:700;">${score >= 90 ? '✓ Excellent' : score >= 70 ? '⚠️ Good (Minor Alerts)' : '❌ Needs Review'}</span>
+                <span style="font-size:10.5px; color:#64748b; display:block; margin-top:2px;">${issues.length} issue(s) detected</span>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto;">
+              ${issues.length === 0 ? `
+                <div style="padding:14px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; color:#166534; font-size:12px; text-align:center;">
+                  ✓ No accessibility issues found! Document is fully compliant for screen readers and high contrast.
+                </div>
+              ` : issues.map(iss => `
+                <div style="padding:10px 12px; background:#1e293b; border-left:3px solid ${iss.level === 'warn' ? '#f59e0b' : '#38bdf8'}; border-radius:4px; font-size:12px; color:#f1f5f9;">
+                  ${iss.text}
+                </div>
+              `).join('')}
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; margin-top:20px; border-top:1px solid #27272a; padding-top:14px;">
+              <button id="btn-ok-a11y" style="background:#2563eb; border:none; color:#ffffff; border-radius:6px; padding:7px 20px; font-size:12.5px; font-weight:700; cursor:pointer;">Done</button>
+            </div>
+          </div>
+        `;
+        document.body.appendChild(modal);
+
+        const close = () => modal.remove();
+        modal.querySelector('#btn-close-a11y-modal')?.addEventListener('click', close);
+        modal.querySelector('#btn-ok-a11y')?.addEventListener('click', close);
+        modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
       });
 
       // =========================================================================

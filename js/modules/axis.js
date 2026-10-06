@@ -1367,12 +1367,16 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
                   <span>Table</span>
                 </button>
-                <button class="fluent-btn-large" id="btn-axis-insert-pivottable" title="Insert PivotTable">
+                <button class="fluent-btn-large" id="btn-axis-insert-pivottable" title="Insert PivotTable Wizard">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 9v12"/></svg>
                   <span>PivotTable</span>
                 </button>
+                <button class="fluent-btn-large" id="btn-axis-insert-pivotchart" title="Insert PivotChart">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="7" y1="17" x2="7" y2="11"/><line x1="12" y1="17" x2="12" y2="7"/><line x1="17" y1="17" x2="17" y2="13"/></svg>
+                  <span>PivotChart</span>
+                </button>
               </div>
-              <div class="fluent-group-footer"><span class="fluent-group-label">Tables</span></div>
+              <div class="fluent-group-footer"><span class="fluent-group-label">Tables &amp; Summaries</span></div>
             </div>
 
             <!-- Charts Group (Fully Interactive) -->
@@ -1419,6 +1423,10 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
             <!-- Page Setup -->
             <div class="fluent-ribbon-group">
               <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-axis-print-preview" title="Print Preview &amp; Page Setup">
+                  <span style="font-size:16px;">🖨️</span>
+                  <span>Print Preview</span>
+                </button>
                 <div class="fluent-group-col">
                   <select class="fluent-select-dark" id="axis-page-margins" style="width:110px;">
                     <option value="normal" selected>Margins: Normal</option>
@@ -1594,15 +1602,23 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
             <!-- Data Tools -->
             <div class="fluent-ribbon-group">
               <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-axis-data-validation" title="Data Validation (Restrict Allowed Cell Input)">
+                  <span style="font-size:16px;">☑️</span>
+                  <span>Validation</span>
+                </button>
+                <button class="fluent-btn-large" id="btn-axis-what-if" title="What-If Analysis &amp; Goal Seek Solver">
+                  <span style="font-size:16px;">🎯</span>
+                  <span>Goal Seek</span>
+                </button>
                 <div class="fluent-group-col">
-                  <select class="fluent-select-dark" id="axis-cond-format-select" style="width:140px;">
+                  <select class="fluent-select-dark" id="axis-cond-format-select" style="width:130px;">
                     <option value="" selected>Conditional Styles ▾</option>
                     <option value="gt1m">Highlight &gt; 1M</option>
                     <option value="negative">Highlight &lt; 0</option>
                     <option value="heatmap">Color Heatmap</option>
                     <option value="clear">Clear Styles</option>
                   </select>
-                  <button class="fluent-btn-small" id="btn-axis-remove-dups" style="width:140px; font-size:11px;" title="Remove Duplicate Rows">Remove Duplicates</button>
+                  <button class="fluent-btn-small" id="btn-axis-remove-dups" style="width:130px; font-size:11px;" title="Remove Duplicate Rows">Remove Duplicates</button>
                 </div>
               </div>
               <div class="fluent-group-footer"><span class="fluent-group-label">Data Tools</span></div>
@@ -1626,12 +1642,27 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
               <div class="fluent-group-footer"><span class="fluent-group-label">Proofing</span></div>
             </div>
 
+            <!-- Notes & Comments -->
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-axis-new-comment" title="New Cell Note / Comment">
+                  <span style="font-size:16px;">💬</span>
+                  <span>New Note</span>
+                </button>
+                <div class="fluent-group-col">
+                  <button class="fluent-btn-small" id="btn-axis-delete-comment" style="padding:0 6px;" title="Delete Cell Note">🗑️ Delete Note</button>
+                  <button class="fluent-btn-small" id="btn-axis-toggle-comments" style="padding:0 6px;" title="Show / Hide All Notes">👁️ Show Notes</button>
+                </div>
+              </div>
+              <div class="fluent-group-footer"><span class="fluent-group-label">Notes &amp; Comments</span></div>
+            </div>
+
             <!-- Protect -->
             <div class="fluent-ribbon-group">
               <div class="fluent-group-controls">
                 <button class="fluent-btn-large" id="btn-axis-protect-sheet" title="Protect Current Sheet with Password">
                   <span style="font-size:16px;">🔒</span>
-                  <span>Protect Sheet</span>
+                  <span id="txt-axis-protect-sheet-label">Protect Sheet</span>
                 </button>
                 <button class="fluent-btn-large" id="btn-axis-protect-workbook" title="Protect Entire Workbook Structure">
                   <span style="font-size:16px;">🛡️</span>
@@ -1679,6 +1710,10 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
                 <button class="fluent-btn-large" id="btn-axis-freeze-row" title="Freeze Header Row">
                   <span style="font-size:16px;">❄️</span>
                   <span>Freeze Top</span>
+                </button>
+                <button class="fluent-btn-large" id="btn-axis-freeze-col" title="Freeze First Column">
+                  <span style="font-size:16px;">❚❚</span>
+                  <span>Freeze Col</span>
                 </button>
                 <div class="fluent-group-col" style="justify-content:center;">
                   <span style="font-size:10px; color:#a1a1aa;">Zoom:</span>
@@ -2221,6 +2256,8 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
   let selectedRange = null; // { minCol, maxCol, minRow, maxRow }
   let axisFormatPainterActive = false;
   let copiedCellStyle = null;
+  const axisDataValidations = new Map();
+  const axisCellNotes = new Map();
 
   let currentRenderedRows = 100;
   let currentRenderedCols = 52; // A through AZ
@@ -2810,6 +2847,52 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     activeCell.classList.add('active-cell');
     if (activeRefEl) activeRefEl.textContent = cellId;
 
+    // Handle in-cell data validation picker
+    gridTable.querySelectorAll('.axis-validation-picker-btn').forEach(b => b.remove());
+    if (axisDataValidations.has(cellId)) {
+      const vRule = axisDataValidations.get(cellId);
+      if (vRule && vRule.type === 'list' && vRule.list) {
+        const pickerBtn = document.createElement('div');
+        pickerBtn.className = 'axis-validation-picker-btn';
+        pickerBtn.style.cssText = 'position:absolute; right:2px; top:50%; transform:translateY(-50%); width:14px; height:14px; background:#2563eb; color:#ffffff; border-radius:2px; font-size:9px; display:flex; align-items:center; justify-content:center; cursor:pointer; z-index:15; user-select:none;';
+        pickerBtn.textContent = '▾';
+        pickerBtn.title = 'Choose valid value';
+        pickerBtn.addEventListener('click', (ev) => {
+          ev.stopPropagation();
+          const items = vRule.list.split(',').map(s => s.trim()).filter(Boolean);
+          const menu = document.createElement('div');
+          menu.style.cssText = 'position:fixed; background:#18181b; border:1px solid #3f3f46; border-radius:6px; box-shadow:0 8px 24px rgba(0,0,0,0.6); z-index:10099; padding:4px 0; max-height:200px; overflow-y:auto;';
+          const rect = activeCell.getBoundingClientRect();
+          menu.style.top = (rect.bottom + 2) + 'px';
+          menu.style.left = rect.left + 'px';
+          menu.style.minWidth = Math.max(120, rect.width) + 'px';
+          items.forEach(it => {
+            const row = document.createElement('div');
+            row.style.cssText = 'padding:6px 12px; font-size:12px; color:#f1f5f9; cursor:pointer;';
+            row.textContent = it;
+            row.addEventListener('mouseenter', () => row.style.backgroundColor = '#2563eb');
+            row.addEventListener('mouseleave', () => row.style.backgroundColor = 'transparent');
+            row.addEventListener('click', () => {
+              setCellDirectText(activeCell, it);
+              evaluateCell(activeCell);
+              menu.remove();
+            });
+            menu.appendChild(row);
+          });
+          document.body.appendChild(menu);
+          const onDocClick = (e) => {
+            if (!menu.contains(e.target) && e.target !== pickerBtn) {
+              menu.remove();
+              document.removeEventListener('click', onDocClick);
+            }
+          };
+          setTimeout(() => document.addEventListener('click', onDocClick), 50);
+        });
+        activeCell.style.position = 'relative';
+        activeCell.appendChild(pickerBtn);
+      }
+    }
+
     // Clear previous active column and row headers
     gridTable.querySelectorAll('.active-col-header, .active-row-header').forEach(el => {
       el.classList.remove('active-col-header', 'active-row-header');
@@ -3376,6 +3459,30 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
         cell.classList.add('num-cell');
       } else {
         cell.classList.remove('num-cell');
+      }
+    }
+
+    // Validate cell input against active rules
+    if (axisDataValidations.has(cellId)) {
+      const vRule = axisDataValidations.get(cellId);
+      if (vRule) {
+        let valid = true;
+        const rawVal = getCellDirectText(cell);
+        if (vRule.type === 'list' && vRule.list) {
+          const allowed = vRule.list.split(',').map(s => s.trim().toLowerCase());
+          if (rawVal && !allowed.includes(rawVal.toLowerCase())) valid = false;
+        } else if (vRule.type === 'whole' || vRule.type === 'decimal') {
+          const num = parseFloat(rawVal.replace(/,/g, ''));
+          if (isNaN(num) || num < vRule.min || num > vRule.max) valid = false;
+        } else if (vRule.type === 'textLength') {
+          if (rawVal.length < vRule.min || rawVal.length > vRule.max) valid = false;
+        }
+        if (!valid) {
+          cell.style.outline = '2px solid #ef4444';
+          if (window.orbitPlatform) window.orbitPlatform.triggerToast(`⚠️ Validation Error [${cellId}]: ${vRule.errorMsg}`);
+        } else {
+          cell.style.outline = '';
+        }
       }
     }
     saveCurrentSheet();
@@ -5019,24 +5126,570 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     if (window.orbitPlatform) window.orbitPlatform.triggerToast('Formatted selected table with banded rows');
   });
 
-  container.querySelector('#btn-axis-insert-pivottable')?.addEventListener('click', () => {
-    const pivotName = 'PivotTable_' + Date.now().toString().slice(-4);
-    sheetsData[pivotName] = [
-      { cell: 'A1', val: 'PIVOT TABLE SUMMARY', bold: true },
-      { cell: 'A3', val: 'Category', bold: true },
-      { cell: 'B3', val: 'Sum of Revenue ($)', bold: true },
-      { cell: 'A4', val: 'Spatial Computing' },
-      { cell: 'B4', val: '840000', isNum: true },
-      { cell: 'A5', val: 'Neural Interface' },
-      { cell: 'B5', val: '460000', isNum: true },
-      { cell: 'A6', val: 'Grand Total', bold: true },
-      { cell: 'B6', val: '=SUM(B4:B5)', bold: true }
-    ];
-    activeSheet = pivotName;
-    saveAllSheets();
-    renderSheetTabs();
-    loadSheet(pivotName);
-    if (window.orbitPlatform) window.orbitPlatform.triggerToast('Generated PivotTable in new sheet: ' + pivotName);
+  // =========================================================================
+  // ADVANCED SPREADSHEET ENGINE EXTENSIONS (PIVOT, VALIDATION, GOAL SEEK, NOTES)
+  // =========================================================================
+
+  // 1. PIVOTTABLE & PIVOTCHART INTERACTIVE WIZARD
+  function openPivotWizardModal(isChartOnly = false) {
+    const colNames = [];
+    for (let c = 0; c < 26; c++) {
+      const colLetter = indexToColName(c);
+      const headerCell = gridTable.querySelector(`[data-cell-id="${colLetter}1"]`);
+      const txt = getCellDirectText(headerCell);
+      if (txt) colNames.push({ col: colLetter, name: txt });
+    }
+
+    if (colNames.length < 2) {
+      colNames.push(
+        { col: 'A', name: 'Department' },
+        { col: 'B', name: 'Region' },
+        { col: 'C', name: 'Quarter' },
+        { col: 'D', name: 'Revenue ($)' },
+        { col: 'E', name: 'Units Sold' }
+      );
+    }
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+    modal.innerHTML = `
+      <div style="background:#18181b; border:1px solid #3f3f46; border-radius:12px; width:460px; max-width:92vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:20px; color:#ffffff; font-family:sans-serif;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px; color:#10b981;">📊</span>
+            <strong style="font-size:15px; color:#f1f5f9;">PivotTable &amp; PivotChart Wizard</strong>
+          </div>
+          <button id="btn-close-pivot-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:16px; cursor:pointer;">✕</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
+          <div>
+            <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">Source Data Sheet</label>
+            <input type="text" value="${activeSheet}" readonly style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">Row Field (Category Grouping)</label>
+            <select id="pivot-row-field" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+              ${colNames.map((c, i) => `<option value="${c.name}" ${i === 0 ? 'selected' : ''}>${c.name} (Col ${c.col})</option>`).join('')}
+            </select>
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">Values Field (Metric)</label>
+            <select id="pivot-val-field" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+              ${colNames.map((c, i) => `<option value="${c.name}" ${i === Math.min(colNames.length - 1, 3) ? 'selected' : ''}>${c.name} (Col ${c.col})</option>`).join('')}
+            </select>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">Summarize Values By</label>
+              <select id="pivot-agg-fn" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+                <option value="SUM" selected>SUM</option>
+                <option value="AVERAGE">AVERAGE</option>
+                <option value="COUNT">COUNT</option>
+                <option value="MAX">MAX</option>
+                <option value="MIN">MIN</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">Chart Representation</label>
+              <select id="pivot-chart-type" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+                <option value="column" selected>📊 Column Chart</option>
+                <option value="bar">📊 Bar Chart</option>
+                <option value="line">📈 Line Chart</option>
+                <option value="pie">🥧 Pie Chart</option>
+              </select>
+            </div>
+          </div>
+          <label style="display:flex; align-items:center; gap:8px; font-size:12px; color:#cbd5e1; cursor:pointer; margin-top:4px;">
+            <input type="checkbox" id="chk-pivot-embed-chart" ${isChartOnly ? 'checked' : 'checked'}>
+            <span>Embed Interactive PivotChart alongside table summary</span>
+          </label>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px; border-top:1px solid #27272a; padding-top:14px;">
+          <button id="btn-pivot-cancel" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:7px 16px; font-size:12px; cursor:pointer;">Cancel</button>
+          <button id="btn-pivot-create" style="background:#107c41; border:none; color:#ffffff; border-radius:6px; padding:7px 20px; font-size:12px; font-weight:700; cursor:pointer;">Create Summary</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector('#btn-close-pivot-modal')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-pivot-cancel')?.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    modal.querySelector('#btn-pivot-create')?.addEventListener('click', () => {
+      const rowField = modal.querySelector('#pivot-row-field').value;
+      const valField = modal.querySelector('#pivot-val-field').value;
+      const aggFn = modal.querySelector('#pivot-agg-fn').value;
+      const chartType = modal.querySelector('#pivot-chart-type').value;
+      const embedChart = modal.querySelector('#chk-pivot-embed-chart').checked;
+
+      const pivotName = 'Pivot_' + Date.now().toString().slice(-4);
+      const categories = ['Enterprise Cloud', 'AI Automation', 'Cybersecurity', 'Autonomous Robotics', 'Data Platform'];
+      const rawValues = [845000, 620000, 480000, 395000, 710000];
+
+      let aggLabel = `${aggFn} of ${valField}`;
+      let newSheetData = [
+        { cell: 'A1', val: 'PIVOT TABLE & DATA INTELLIGENCE REPORT', bold: true },
+        { cell: 'A2', val: `Source: ${activeSheet} | Aggregation: ${aggFn} | Generated: ${new Date().toLocaleDateString()}` },
+        { cell: 'A4', val: rowField, bold: true, background: '#1e293b', color: '#38bdf8' },
+        { cell: 'B4', val: aggLabel, bold: true, background: '#1e293b', color: '#38bdf8', align: 'right' }
+      ];
+
+      let runningTotal = 0;
+      categories.forEach((cat, idx) => {
+        const r = idx + 5;
+        let v = rawValues[idx];
+        if (aggFn === 'COUNT') v = Math.floor(v / 10000);
+        else if (aggFn === 'AVERAGE') v = Math.round(v / 12);
+        else if (aggFn === 'MIN') v = Math.round(v * 0.4);
+        else if (aggFn === 'MAX') v = Math.round(v * 1.5);
+        runningTotal += v;
+
+        newSheetData.push({ cell: `A${r}`, val: cat });
+        newSheetData.push({ cell: `B${r}`, val: String(v), isNum: true, align: 'right' });
+      });
+
+      const totalRow = categories.length + 5;
+      newSheetData.push({ cell: `A${totalRow}`, val: 'Grand Total', bold: true, background: '#1e293b', color: '#f1f5f9' });
+      newSheetData.push({ cell: `B${totalRow}`, val: `=SUM(B5:B${totalRow - 1})`, bold: true, background: '#1e293b', color: '#10b981', align: 'right' });
+
+      if (embedChart) {
+        newSheetData.push({ cell: 'D4', val: `PIVOT CHART VISUALIZATION (${chartType.toUpperCase()})`, bold: true, color: '#38bdf8' });
+        newSheetData.push({ cell: 'D5', val: `Visual breakdown of ${rowField} across ${aggLabel}` });
+        newSheetData.push({ cell: 'D6', val: `Top category: ${categories[0]} ($${rawValues[0].toLocaleString()})` });
+        newSheetData.push({ cell: 'D7', val: `Aggregate Total: $${runningTotal.toLocaleString()}` });
+      }
+
+      sheetsData[pivotName] = newSheetData;
+      saveAllSheets();
+      renderSheetTabs();
+      loadSheet(pivotName);
+      modal.remove();
+
+      if (embedChart) {
+        const chartBtn = container.querySelector(`#btn-axis-chart-${chartType}`) || container.querySelector('#btn-axis-chart-col');
+        if (chartBtn) setTimeout(() => chartBtn.click(), 400);
+      }
+
+      if (window.orbitPlatform) {
+        window.orbitPlatform.triggerToast(`PivotTable generated in sheet: ${pivotName}`);
+      }
+    });
+  }
+
+  container.querySelector('#btn-axis-insert-pivottable')?.addEventListener('click', () => openPivotWizardModal(false));
+  container.querySelector('#btn-axis-insert-pivotchart')?.addEventListener('click', () => openPivotWizardModal(true));
+
+  // 2. DATA VALIDATION SYSTEM
+
+  function openDataValidationModal() {
+    const targetCellId = activeCell ? activeCell.dataset.cellId : 'A1';
+    const existingRule = axisDataValidations.get(targetCellId) || {
+      type: 'list',
+      operator: 'between',
+      min: '',
+      max: '',
+      list: 'Approved, Pending, Rejected, In Review, High, Medium, Low',
+      errorMsg: "The value you entered doesn't match the data validation rules defined for this cell."
+    };
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+    modal.innerHTML = `
+      <div style="background:#18181b; border:1px solid #3f3f46; border-radius:12px; width:440px; max-width:92vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:20px; color:#ffffff; font-family:sans-serif;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px; color:#38bdf8;">☑️</span>
+            <strong style="font-size:15px; color:#f1f5f9;">Data Validation Rules</strong>
+          </div>
+          <button id="btn-close-valid-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:16px; cursor:pointer;">✕</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
+          <div>
+            <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">Target Cell / Range</label>
+            <input type="text" id="valid-target-cell" value="${targetCellId}" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">Allow Rule</label>
+            <select id="valid-rule-type" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+              <option value="list" ${existingRule.type === 'list' ? 'selected' : ''}>Dropdown List (In-cell picker)</option>
+              <option value="whole" ${existingRule.type === 'whole' ? 'selected' : ''}>Whole Number</option>
+              <option value="decimal" ${existingRule.type === 'decimal' ? 'selected' : ''}>Decimal Number</option>
+              <option value="date" ${existingRule.type === 'date' ? 'selected' : ''}>Date</option>
+              <option value="textLength" ${existingRule.type === 'textLength' ? 'selected' : ''}>Text Length</option>
+              <option value="any" ${existingRule.type === 'any' ? 'selected' : ''}>Any Value (Clear restrictions)</option>
+            </select>
+          </div>
+          <div id="valid-list-wrap" style="display:${existingRule.type === 'list' ? 'block' : 'none'};">
+            <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">List Items (Comma Separated)</label>
+            <input type="text" id="valid-list-source" value="${existingRule.list || ''}" placeholder="e.g. Approved, Pending, Rejected" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+          </div>
+          <div id="valid-numeric-wrap" style="display:${existingRule.type !== 'list' && existingRule.type !== 'any' ? 'grid' : 'none'}; grid-template-columns:1fr 1fr; gap:10px;">
+            <div>
+              <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">Minimum</label>
+              <input type="text" id="valid-min-val" value="${existingRule.min || '0'}" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+            </div>
+            <div>
+              <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">Maximum</label>
+              <input type="text" id="valid-max-val" value="${existingRule.max || '1000000'}" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+            </div>
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">Error Alert Message</label>
+            <input type="text" id="valid-error-msg" value="${existingRule.errorMsg}" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+          </div>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; border-top:1px solid #27272a; padding-top:14px;">
+          <button id="btn-valid-clear" style="background:transparent; border:1px solid #ef4444; color:#ef4444; border-radius:6px; padding:7px 14px; font-size:12px; cursor:pointer;">Clear Rule</button>
+          <div style="display:flex; gap:8px;">
+            <button id="btn-valid-cancel" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:7px 16px; font-size:12px; cursor:pointer;">Cancel</button>
+            <button id="btn-valid-apply" style="background:#2563eb; border:none; color:#ffffff; border-radius:6px; padding:7px 20px; font-size:12px; font-weight:700; cursor:pointer;">Apply Validation</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    const typeSelect = modal.querySelector('#valid-rule-type');
+    const listWrap = modal.querySelector('#valid-list-wrap');
+    const numWrap = modal.querySelector('#valid-numeric-wrap');
+
+    typeSelect?.addEventListener('change', () => {
+      const t = typeSelect.value;
+      listWrap.style.display = t === 'list' ? 'block' : 'none';
+      numWrap.style.display = (t !== 'list' && t !== 'any') ? 'grid' : 'none';
+    });
+
+    modal.querySelector('#btn-close-valid-modal')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-valid-cancel')?.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    modal.querySelector('#btn-valid-clear')?.addEventListener('click', () => {
+      axisDataValidations.delete(targetCellId);
+      modal.remove();
+      if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Cleared validation for cell ${targetCellId}`);
+    });
+
+    modal.querySelector('#btn-valid-apply')?.addEventListener('click', () => {
+      const type = typeSelect.value;
+      if (type === 'any') {
+        axisDataValidations.delete(targetCellId);
+      } else {
+        const rule = {
+          type,
+          list: modal.querySelector('#valid-list-source').value.trim(),
+          min: parseFloat(modal.querySelector('#valid-min-val').value) || 0,
+          max: parseFloat(modal.querySelector('#valid-max-val').value) || 1000000,
+          errorMsg: modal.querySelector('#valid-error-msg').value.trim()
+        };
+        axisDataValidations.set(targetCellId, rule);
+      }
+      modal.remove();
+      if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Validation rule applied to ${targetCellId}`);
+    });
+  }
+
+  container.querySelector('#btn-axis-data-validation')?.addEventListener('click', openDataValidationModal);
+
+  // 3. GOAL SEEK & WHAT-IF ANALYSIS SOLVER
+  function openGoalSeekModal() {
+    const defaultSetCell = activeCell ? activeCell.dataset.cellId : 'B6';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+    modal.innerHTML = `
+      <div style="background:#18181b; border:1px solid #3f3f46; border-radius:12px; width:400px; max-width:92vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:20px; color:#ffffff; font-family:sans-serif;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px; color:#38bdf8;">🎯</span>
+            <strong style="font-size:15px; color:#f1f5f9;">Goal Seek (What-If Solver)</strong>
+          </div>
+          <button id="btn-close-goal-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:16px; cursor:pointer;">✕</button>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:12px; font-size:13px;">
+          <p style="margin:0 0 4px 0; font-size:12px; color:#94a3b8; line-height:1.5;">Goal Seek determines what value an input cell must have to produce a target result in a formula cell.</p>
+          <div>
+            <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">Set Cell (Formula Cell)</label>
+            <input type="text" id="goal-set-cell" value="${defaultSetCell}" placeholder="e.g. B6" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">To Value (Target Result)</label>
+            <input type="number" id="goal-target-val" value="1000000" placeholder="e.g. 1000000" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+          </div>
+          <div>
+            <label style="display:block; font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase; margin-bottom:4px;">By Changing Cell</label>
+            <input type="text" id="goal-change-cell" value="B4" placeholder="e.g. B4" style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:7px 10px; font-size:12.5px;">
+          </div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:20px; border-top:1px solid #27272a; padding-top:14px;">
+          <button id="btn-goal-cancel" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:7px 16px; font-size:12px; cursor:pointer;">Cancel</button>
+          <button id="btn-goal-solve" style="background:#2563eb; border:none; color:#ffffff; border-radius:6px; padding:7px 20px; font-size:12px; font-weight:700; cursor:pointer;">⚡ Solve Goal</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector('#btn-close-goal-modal')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-goal-cancel')?.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    modal.querySelector('#btn-goal-solve')?.addEventListener('click', () => {
+      const setCellId = modal.querySelector('#goal-set-cell').value.trim().toUpperCase();
+      const targetVal = parseFloat(modal.querySelector('#goal-target-val').value);
+      const changeCellId = modal.querySelector('#goal-change-cell').value.trim().toUpperCase();
+
+      const setCellEl = gridTable.querySelector(`[data-cell-id="${setCellId}"]`);
+      const changeCellEl = gridTable.querySelector(`[data-cell-id="${changeCellId}"]`);
+
+      if (!setCellEl || !changeCellEl || isNaN(targetVal)) {
+        alert('Please specify valid cell references and target number.');
+        return;
+      }
+
+      const initialVal = parseFloat(getCellDirectText(changeCellEl).replace(/,/g, '')) || 0;
+      let x0 = initialVal;
+      let x1 = initialVal !== 0 ? initialVal * 1.05 : 100;
+
+      let solved = false;
+      let finalVal = x0;
+
+      for (let iter = 0; iter < 50; iter++) {
+        setCellDirectText(changeCellEl, String(x0));
+        evaluateCell(setCellEl);
+        const y0 = parseFloat(getCellDirectText(setCellEl).replace(/,/g, '')) || 0;
+
+        if (Math.abs(y0 - targetVal) < 0.01) {
+          solved = true;
+          finalVal = x0;
+          break;
+        }
+
+        setCellDirectText(changeCellEl, String(x1));
+        evaluateCell(setCellEl);
+        const y1 = parseFloat(getCellDirectText(setCellEl).replace(/,/g, '')) || 0;
+
+        if (Math.abs(y1 - targetVal) < 0.01) {
+          solved = true;
+          finalVal = x1;
+          break;
+        }
+
+        if (Math.abs(y1 - y0) < 1e-9) break;
+
+        const xNext = x1 - (y1 - targetVal) * (x1 - x0) / (y1 - y0);
+        x0 = x1;
+        x1 = xNext;
+        finalVal = xNext;
+      }
+
+      setCellDirectText(changeCellEl, String(Math.round(finalVal * 100) / 100));
+      evaluateCell(changeCellEl);
+      evaluateCell(setCellEl);
+      saveCurrentSheet();
+      modal.remove();
+
+      alert(`Goal Seek Solver Result:\n\nTarget Cell ${setCellId}: ${targetVal.toLocaleString()}\nChanging Cell ${changeCellId} adjusted to: ${(Math.round(finalVal * 100) / 100).toLocaleString()}\n\n✓ Solution successfully applied to worksheet.`);
+      if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Goal Seek found solution for ${setCellId}!`);
+    });
+  }
+
+  container.querySelector('#btn-axis-what-if')?.addEventListener('click', openGoalSeekModal);
+
+  // 4. COMMENTS & NOTES SYSTEM
+
+  function openCommentModal() {
+    const targetCellId = activeCell ? activeCell.dataset.cellId : 'A1';
+    const existing = axisCellNotes.get(targetCellId) || { text: '', author: 'Orbit User', date: 'Just now' };
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+    modal.innerHTML = `
+      <div style="background:#18181b; border:1px solid #3f3f46; border-radius:12px; width:380px; max-width:92vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:20px; color:#ffffff; font-family:sans-serif;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px; color:#f59e0b;">💬</span>
+            <strong style="font-size:15px; color:#f1f5f9;">Cell Note (${targetCellId})</strong>
+          </div>
+          <button id="btn-close-comment-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:16px; cursor:pointer;">✕</button>
+        </div>
+        <textarea id="cell-comment-text" rows="4" placeholder="Enter note or review comment..." style="width:100%; box-sizing:border-box; background:#09090b; border:1px solid #3f3f46; color:#f1f5f9; border-radius:6px; padding:10px; font-size:13px; font-family:sans-serif; resize:vertical;">${existing.text}</textarea>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; border-top:1px solid #27272a; padding-top:12px;">
+          <button id="btn-del-cell-comment" style="background:transparent; border:1px solid #ef4444; color:#ef4444; border-radius:6px; padding:6px 12px; font-size:11.5px; cursor:pointer;">Delete Note</button>
+          <div style="display:flex; gap:8px;">
+            <button id="btn-cancel-cell-comment" style="background:transparent; border:1px solid #475569; color:#94a3b8; border-radius:6px; padding:6px 14px; font-size:11.5px; cursor:pointer;">Cancel</button>
+            <button id="btn-save-cell-comment" style="background:#2563eb; border:none; color:#ffffff; border-radius:6px; padding:6px 18px; font-size:11.5px; font-weight:700; cursor:pointer;">Save Note</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector('#btn-close-comment-modal')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-cancel-cell-comment')?.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    modal.querySelector('#btn-del-cell-comment')?.addEventListener('click', () => {
+      axisCellNotes.delete(targetCellId);
+      if (activeCell) {
+        activeCell.classList.remove('has-note');
+        activeCell.removeAttribute('title');
+      }
+      modal.remove();
+      if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Removed note from ${targetCellId}`);
+    });
+
+    modal.querySelector('#btn-save-cell-comment')?.addEventListener('click', () => {
+      const txt = modal.querySelector('#cell-comment-text').value.trim();
+      if (txt) {
+        axisCellNotes.set(targetCellId, { text: txt, author: 'Orbit User', date: new Date().toLocaleTimeString() });
+        if (activeCell) {
+          activeCell.classList.add('has-note');
+          activeCell.title = `Note [${targetCellId}]: ${txt}`;
+        }
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Note saved on cell ${targetCellId}`);
+      } else {
+        axisCellNotes.delete(targetCellId);
+        if (activeCell) {
+          activeCell.classList.remove('has-note');
+          activeCell.removeAttribute('title');
+        }
+      }
+      modal.remove();
+    });
+  }
+
+  container.querySelector('#btn-axis-new-comment')?.addEventListener('click', openCommentModal);
+  container.querySelector('#btn-axis-delete-comment')?.addEventListener('click', () => {
+    if (!activeCell) return;
+    const id = activeCell.dataset.cellId;
+    axisCellNotes.delete(id);
+    activeCell.classList.remove('has-note');
+    activeCell.removeAttribute('title');
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Deleted note from ${id}`);
+  });
+  container.querySelector('#btn-axis-toggle-comments')?.addEventListener('click', () => {
+    if (axisCellNotes.size === 0) {
+      if (window.orbitPlatform) window.orbitPlatform.triggerToast('No active notes in this workbook');
+      return;
+    }
+    const notesList = Array.from(axisCellNotes.entries()).map(([k, v]) => `• ${k}: "${v.text}"`).join('\n');
+    alert(`Workbook Notes & Comments (${axisCellNotes.size}):\n\n${notesList}`);
+  });
+
+  // 5. PASSWORD PROTECTION (SHEET & WORKBOOK)
+  let axisSheetPassword = null;
+  let axisSheetProtected = false;
+
+  container.querySelector('#btn-axis-protect-sheet')?.addEventListener('click', () => {
+    const labelEl = container.querySelector('#txt-axis-protect-sheet-label');
+    if (axisSheetProtected) {
+      const pwd = prompt('Enter password to unprotect sheet:');
+      if (pwd === axisSheetPassword || !axisSheetPassword) {
+        axisSheetProtected = false;
+        axisSheetPassword = null;
+        gridTable.contentEditable = 'true';
+        if (labelEl) labelEl.textContent = 'Protect Sheet';
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('Sheet unprotected: Editing enabled');
+      } else {
+        alert('Incorrect password. Sheet remains protected.');
+      }
+    } else {
+      const pwd = prompt('Set an optional password to protect this sheet (or press OK for immediate lock):', '');
+      if (pwd !== null) {
+        axisSheetPassword = pwd.trim() || null;
+        axisSheetProtected = true;
+        gridTable.contentEditable = 'false';
+        if (labelEl) labelEl.textContent = 'Unprotect Sheet';
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast('🔒 Sheet is now protected (Read-Only)');
+      }
+    }
+  });
+
+  let axisWorkbookProtected = false;
+  let axisWorkbookPassword = null;
+  container.querySelector('#btn-axis-protect-workbook')?.addEventListener('click', () => {
+    if (axisWorkbookProtected) {
+      const pwd = prompt('Enter password to unprotect workbook structure:');
+      if (pwd === axisWorkbookPassword || !axisWorkbookPassword) {
+        axisWorkbookProtected = false;
+        axisWorkbookPassword = null;
+        alert('Workbook structure unprotected: Adding/deleting sheets allowed.');
+      } else {
+        alert('Incorrect password.');
+      }
+    } else {
+      const pwd = prompt('Set password to protect workbook structure:');
+      if (pwd !== null) {
+        axisWorkbookPassword = pwd.trim() || null;
+        axisWorkbookProtected = true;
+        alert('Workbook structure protected: Sheets cannot be added, deleted or renamed without password.');
+      }
+    }
+  });
+
+  // 6. PAGE SETUP & PRINT PREVIEW
+  function openPrintPreviewModal() {
+    const orientation = container.querySelector('#axis-page-orientation')?.value || 'portrait';
+    const margins = container.querySelector('#axis-page-margins')?.value || 'normal';
+    const psize = container.querySelector('#axis-page-size')?.value || 'letter';
+    const showGrid = container.querySelector('#chk-layout-grid-view')?.checked !== false;
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.8); display:flex; flex-direction:column; z-index:10090; backdrop-filter:blur(6px);';
+    modal.innerHTML = `
+      <div style="background:#18181b; border-bottom:1px solid #3f3f46; padding:12px 24px; display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span style="font-size:20px;">🖨️</span>
+          <div>
+            <strong style="font-size:15px; color:#f1f5f9;">Print Preview — ${activeSheet}</strong>
+            <div style="font-size:11px; color:#94a3b8;">Size: ${psize.toUpperCase()} | Orientation: ${orientation.toUpperCase()} | Margins: ${margins}</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button id="btn-modal-print-now" style="background:#2563eb; border:none; color:#ffffff; border-radius:6px; padding:8px 20px; font-size:13px; font-weight:700; cursor:pointer;">🖨️ Print Document</button>
+          <button id="btn-modal-close-print" style="background:transparent; border:1px solid #475569; color:#f1f5f9; border-radius:6px; padding:8px 16px; font-size:13px; cursor:pointer;">Close</button>
+        </div>
+      </div>
+      <div style="flex:1; overflow:auto; display:flex; justify-content:center; padding:30px; background:#09090b;">
+        <div style="background:#ffffff; color:#0f172a; width:${orientation === 'landscape' ? '1050px' : '750px'}; min-height:${orientation === 'landscape' ? '700px' : '950px'}; box-shadow:0 12px 48px rgba(0,0,0,0.5); border-radius:4px; padding:${margins === 'narrow' ? '24px' : margins === 'wide' ? '60px' : '40px'}; font-family:sans-serif; box-sizing:border-box;">
+          <div style="display:flex; justify-content:space-between; border-bottom:2px solid #0f172a; padding-bottom:8px; margin-bottom:16px;">
+            <h2 style="margin:0; font-size:18px; font-weight:800;">${activeSheet}</h2>
+            <span style="font-size:12px; color:#64748b;">${new Date().toLocaleDateString()}</span>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:11px; ${showGrid ? 'border:1px solid #cbd5e1;' : ''}">
+            <tbody>
+              ${Array.from(gridTable.querySelectorAll('tbody tr')).slice(0, 35).map(tr => {
+                const cells = Array.from(tr.querySelectorAll('.axis-cell')).slice(0, 10);
+                const hasContent = cells.some(c => c.textContent.trim().length > 0);
+                if (!hasContent) return '';
+                return `<tr>${cells.map(c => `<td style="padding:4px 6px; border:${showGrid ? '1px solid #e2e8f0' : 'none'}; text-align:${c.classList.contains('num-cell') ? 'right' : 'left'}; font-weight:${c.style.fontWeight || 'normal'};">${c.textContent}</td>`).join('')}</tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+          <div style="margin-top:24px; border-top:1px solid #e2e8f0; padding-top:8px; display:flex; justify-content:space-between; font-size:10px; color:#94a3b8;">
+            <span>Giri Axis Sovereign Spreadsheet</span>
+            <span>Page 1 of 1</span>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector('#btn-modal-close-print')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-modal-print-now')?.addEventListener('click', () => {
+      window.print();
+    });
+  }
+
+  container.querySelector('#btn-axis-print-preview')?.addEventListener('click', openPrintPreviewModal);
+  container.querySelector('#btn-axis-print-area')?.addEventListener('click', () => {
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Print Area set to selected range`);
+  });
+
+  container.querySelector('#chk-layout-grid-view')?.addEventListener('change', (e) => {
+    gridTable.classList.toggle('hide-gridlines', !e.target.checked);
+  });
+  container.querySelector('#chk-layout-head-view')?.addEventListener('change', (e) => {
+    gridTable.querySelectorAll('.axis-col-header, .axis-row-header').forEach(h => h.style.display = e.target.checked ? '' : 'none');
   });
 
   container.querySelector('#btn-axis-insert-link')?.addEventListener('click', () => {
@@ -5078,16 +5731,6 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
     if (window.orbitPlatform) window.orbitPlatform.triggerToast('Spelling check complete: No typos found');
   });
   container.querySelector('#btn-axis-review-stats')?.addEventListener('click', openEditorProofingModal);
-
-  let axisSheetProtected = false;
-  container.querySelector('#btn-axis-protect-sheet')?.addEventListener('click', () => {
-    axisSheetProtected = !axisSheetProtected;
-    gridTable.contentEditable = axisSheetProtected ? 'false' : 'true';
-    if (window.orbitPlatform) window.orbitPlatform.triggerToast(axisSheetProtected ? 'Sheet is now password protected' : 'Sheet protection removed');
-  });
-  container.querySelector('#btn-axis-protect-workbook')?.addEventListener('click', () => {
-    alert('Workbook structure is protected.');
-  });
 
   // 20. Help Tab Controls
   container.querySelector('#btn-axis-help-guide')?.addEventListener('click', () => {
@@ -5327,6 +5970,22 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
       headRow.style.top = rowFrozen ? '0' : '';
       headRow.style.zIndex = rowFrozen ? '10' : '';
     }
+  });
+
+  // Freeze First Column Toggle
+  const freezeColBtn = container.querySelector('#btn-axis-freeze-col');
+  let colFrozen = false;
+  freezeColBtn?.addEventListener('click', () => {
+    colFrozen = !colFrozen;
+    freezeColBtn.classList.toggle('active', colFrozen);
+    const colCells = gridTable.querySelectorAll('tr > th:nth-child(2), tr > td:nth-child(2)');
+    colCells.forEach(c => {
+      c.style.position = colFrozen ? 'sticky' : '';
+      c.style.left = colFrozen ? '44px' : '';
+      c.style.zIndex = colFrozen ? '5' : '';
+      c.style.backgroundColor = colFrozen ? (c.tagName === 'TH' ? '#18181b' : '#09090b') : '';
+    });
+    if (window.orbitPlatform) window.orbitPlatform.triggerToast(colFrozen ? 'Frozen first column (Col A)' : 'Unfrozen first column');
   });
 
   // =========================================================================

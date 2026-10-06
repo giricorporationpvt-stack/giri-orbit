@@ -6813,4 +6813,22 @@ body.dark .drift-merge-field-chip {
   to { transform: scale(1.15) rotate(15deg); opacity: 1; filter: drop-shadow(0 0 12px #38bdf8); }
 }
 
+/* Axis Cell Notes Excel-style Red Corner Triangle */
+.axis-cell.has-note {
+  position: relative;
+}
+.axis-cell.has-note::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-top: 6px solid #ef4444;
+  border-left: 6px solid transparent;
+  pointer-events: none;
+  z-index: 5;
+}
+
+
 
