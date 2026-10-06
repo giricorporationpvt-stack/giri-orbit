@@ -1623,6 +1623,17 @@ export function renderAxisApp(container, onGridUpdate = null, startInEditor = fa
               </div>
               <div class="fluent-group-footer"><span class="fluent-group-label">Data Tools</span></div>
             </div>
+
+            <!-- Analysis Group -->
+            <div class="fluent-ribbon-group">
+              <div class="fluent-group-controls">
+                <button class="fluent-btn-large" id="btn-axis-data-analysis" title="Data Analysis &amp; Statistical Toolpak (Descriptive Statistics, Variance, StDev)">
+                  <span style="font-size:16px;">📈</span>
+                  <span>Data Analysis</span>
+                </button>
+              </div>
+              <div class="fluent-group-footer"><span class="fluent-group-label">Analysis</span></div>
+            </div>
           </div>
 
           <!-- 6. REVIEW TAB PANE -->
@@ -5725,6 +5736,126 @@ function initAxisWorkspace(container, onGridUpdate, customInitialData = null) {
   container.querySelector('#btn-axis-remove-dups')?.addEventListener('click', () => {
     if (window.orbitPlatform) window.orbitPlatform.triggerToast('Duplicate rows checked: 0 duplicates found');
   });
+
+  // Data Analysis & Statistical Toolpak
+  function openStatisticalAnalysisModal() {
+    // Gather all numeric values in sheet or selected cells
+    const allCells = Array.from(gridTable.querySelectorAll('.axis-cell'));
+    const numbers = [];
+    allCells.forEach(c => {
+      const txt = c.textContent.trim().replace(/,/g, '');
+      const val = parseFloat(txt);
+      if (!isNaN(val) && isFinite(val) && txt.length > 0) {
+        numbers.push(val);
+      }
+    });
+
+    if (numbers.length === 0) {
+      alert('No numeric data found in current worksheet to analyze. Please enter some numbers into the grid first.');
+      return;
+    }
+
+    numbers.sort((a, b) => a - b);
+    const count = numbers.length;
+    const sum = numbers.reduce((acc, v) => acc + v, 0);
+    const mean = sum / count;
+    const min = numbers[0];
+    const max = numbers[count - 1];
+    const range = max - min;
+    const median = count % 2 === 0
+      ? (numbers[count / 2 - 1] + numbers[count / 2]) / 2
+      : numbers[Math.floor(count / 2)];
+
+    // Variance & Standard Deviation
+    const variance = numbers.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / (count > 1 ? count - 1 : 1);
+    const stdDev = Math.sqrt(variance);
+    const stdError = stdDev / Math.sqrt(count);
+
+    // Mode calculation
+    const freq = new Map();
+    let maxFreq = 0;
+    let modeVal = numbers[0];
+    numbers.forEach(n => {
+      const f = (freq.get(n) || 0) + 1;
+      freq.set(n, f);
+      if (f > maxFreq) {
+        maxFreq = f;
+        modeVal = n;
+      }
+    });
+    const modeStr = maxFreq > 1 ? modeVal.toLocaleString() : 'N/A (No duplicate values)';
+
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:10090; backdrop-filter:blur(4px);';
+    modal.innerHTML = `
+      <div style="background:#18181b; border:1px solid #3f3f46; border-radius:12px; width:480px; max-width:92vw; box-shadow:0 24px 64px rgba(0,0,0,0.6); padding:22px; color:#ffffff; font-family:sans-serif;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:22px; color:#10b981;">📈</span>
+            <div>
+              <strong style="font-size:16px; color:#f1f5f9;">Data Analysis Toolpak</strong>
+              <div style="font-size:11px; color:#94a3b8;">Descriptive Statistics Summary</div>
+            </div>
+          </div>
+          <button id="btn-close-stat-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:16px; cursor:pointer;">✕</button>
+        </div>
+        <div style="background:#09090b; border:1px solid #27272a; border-radius:8px; overflow:hidden; margin-bottom:16px; font-size:12.5px;">
+          <div style="display:flex; justify-content:space-between; padding:8px 14px; border-bottom:1px solid #18181b; background:#1e293b;"><span style="color:#94a3b8; font-weight:600;">Metric</span><span style="color:#94a3b8; font-weight:600;">Value</span></div>
+          <div style="display:flex; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #18181b;"><span style="color:#cbd5e1;">Mean (Average)</span><strong style="color:#38bdf8;">${mean.toLocaleString(undefined, {maximumFractionDigits: 4})}</strong></div>
+          <div style="display:flex; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #18181b;"><span style="color:#cbd5e1;">Standard Error</span><span style="color:#f1f5f9;">${stdError.toLocaleString(undefined, {maximumFractionDigits: 4})}</span></div>
+          <div style="display:flex; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #18181b;"><span style="color:#cbd5e1;">Median</span><strong style="color:#38bdf8;">${median.toLocaleString(undefined, {maximumFractionDigits: 4})}</strong></div>
+          <div style="display:flex; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #18181b;"><span style="color:#cbd5e1;">Mode</span><span style="color:#f1f5f9;">${modeStr}</span></div>
+          <div style="display:flex; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #18181b;"><span style="color:#cbd5e1;">Standard Deviation</span><strong style="color:#a855f7;">${stdDev.toLocaleString(undefined, {maximumFractionDigits: 4})}</strong></div>
+          <div style="display:flex; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #18181b;"><span style="color:#cbd5e1;">Sample Variance</span><span style="color:#f1f5f9;">${variance.toLocaleString(undefined, {maximumFractionDigits: 4})}</span></div>
+          <div style="display:flex; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #18181b;"><span style="color:#cbd5e1;">Range</span><span style="color:#f1f5f9;">${range.toLocaleString(undefined, {maximumFractionDigits: 4})}</span></div>
+          <div style="display:flex; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #18181b;"><span style="color:#cbd5e1;">Minimum</span><span style="color:#10b981;">${min.toLocaleString()}</span></div>
+          <div style="display:flex; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #18181b;"><span style="color:#cbd5e1;">Maximum</span><span style="color:#ef4444;">${max.toLocaleString()}</span></div>
+          <div style="display:flex; justify-content:space-between; padding:7px 14px; border-bottom:1px solid #18181b;"><span style="color:#cbd5e1;">Sum</span><strong style="color:#f59e0b;">${sum.toLocaleString()}</strong></div>
+          <div style="display:flex; justify-content:space-between; padding:7px 14px;"><span style="color:#cbd5e1;">Count (N)</span><strong style="color:#e2e8f0;">${count}</strong></div>
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:8px;">
+          <button id="btn-export-stats-sheet" style="background:#0284c7; border:none; color:#ffffff; border-radius:6px; padding:8px 16px; font-size:12px; font-weight:600; cursor:pointer;">📋 Output to New Sheet</button>
+          <button id="btn-close-stats-done" style="background:#2563eb; border:none; color:#ffffff; border-radius:6px; padding:8px 18px; font-size:12px; font-weight:700; cursor:pointer;">Done</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector('#btn-close-stat-modal')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-close-stats-done')?.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    modal.querySelector('#btn-export-stats-sheet')?.addEventListener('click', () => {
+      const statsSheetName = `Stats_${Date.now().toString().slice(-4)}`;
+      const newSheet = {
+        id: 'sheet_' + Date.now(),
+        name: statsSheetName,
+        data: {
+          'A1': 'Descriptive Statistics', 'B1': 'Value',
+          'A2': 'Mean', 'B2': String(mean),
+          'A3': 'Standard Error', 'B3': String(stdError),
+          'A4': 'Median', 'B4': String(median),
+          'A5': 'Mode', 'B5': String(modeStr),
+          'A6': 'Standard Deviation', 'B6': String(stdDev),
+          'A7': 'Sample Variance', 'B7': String(variance),
+          'A8': 'Range', 'B8': String(range),
+          'A9': 'Minimum', 'B9': String(min),
+          'A10': 'Maximum', 'B10': String(max),
+          'A11': 'Sum', 'B11': String(sum),
+          'A12': 'Count', 'B12': String(count)
+        }
+      };
+      if (currentSheetData && currentSheetData.sheets) {
+        currentSheetData.sheets.push(newSheet);
+        renderSheetTabs();
+        switchSheet(newSheet.id);
+        modal.remove();
+        if (window.orbitPlatform) window.orbitPlatform.triggerToast(`Statistics exported to ${statsSheetName}`);
+      }
+    });
+  }
+
+  container.querySelector('#btn-axis-data-analysis')?.addEventListener('click', openStatisticalAnalysisModal);
 
   // 19. Review Tab Controls
   container.querySelector('#btn-axis-review-spelling')?.addEventListener('click', () => {
