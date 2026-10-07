@@ -6830,5 +6830,112 @@ body.dark .drift-merge-field-chip {
   z-index: 5;
 }
 
+/* =========================================================================
+   LIGHT THEME REFINEMENT SUITE
+   ========================================================================= */
+body.light-theme {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .tier2-suite-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+}
+
+body.light-theme .suite-brand-main {
+  color: #0f172a !important;
+}
+
+body.light-theme .suite-nav-pill {
+  color: #475569 !important;
+}
+
+body.light-theme .suite-nav-pill.active {
+  background: #f1f5f9 !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .tier1-icon-pill,
+body.light-theme .tier1-corp-pill,
+body.light-theme .tier1-sync-pill,
+body.light-theme .tier1-drive-pill {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+body.light-theme .tier2-menu-item > span {
+  color: #475569 !important;
+}
+
+body.light-theme .tier2-dropdown {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1) !important;
+}
+
+body.light-theme .dropdown-product-row strong {
+  color: #0f172a !important;
+}
+
+body.light-theme .dropdown-product-row:hover {
+  background: #f8fafc !important;
+}
+
+body.light-theme .zoho-landing-container,
+body.light-theme .zoho-suite-landing {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+body.light-theme .zoho-hero-title,
+body.light-theme .zoho-section-title {
+  color: #0f172a !important;
+}
+
+body.light-theme .zoho-card,
+body.light-theme .zoho-tool-card,
+body.light-theme .recent-doc-row,
+body.light-theme .recent-doc-card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06) !important;
+}
+
+body.light-theme .zoho-tool-title,
+body.light-theme .recent-doc-name {
+  color: #0f172a !important;
+}
+
+body.light-theme .cmd-palette-card,
+body.light-theme .export-modal-card {
+  background: #ffffff !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25) !important;
+}
+
+body.light-theme .export-modal-title,
+body.light-theme .cmd-search-row input {
+  color: #0f172a !important;
+}
+
+body.light-theme .cmd-search-row {
+  border-bottom-color: #e2e8f0 !important;
+}
+
+body.light-theme .export-field-label {
+  color: #475569 !important;
+}
+
+body.light-theme .export-filename-input {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+
 
 

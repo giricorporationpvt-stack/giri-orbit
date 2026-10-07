@@ -177,13 +177,23 @@ export class GiriDriveSyncManager {
     let fileObj;
 
     if (existingIndex >= 0) {
+      const prevFile = files[existingIndex];
+      const revisions = Array.isArray(prevFile.revisions) ? [...prevFile.revisions] : [];
+      if (prevFile.content && prevFile.content !== content) {
+        revisions.unshift({
+          timestamp: prevFile.lastModified || Date.now(),
+          size: prevFile.size || '1 KB',
+          content: prevFile.content
+        });
+      }
       fileObj = {
-        ...files[existingIndex],
+        ...prevFile,
         name: fileName,
         tool: tool,
         content: content,
         lastModified: now,
         synced: true,
+        revisions: revisions.slice(0, 10),
         size: `${Math.max(1, Math.round((content ? content.length : 100) / 100) / 10)} KB`
       };
       files[existingIndex] = fileObj;
@@ -198,6 +208,7 @@ export class GiriDriveSyncManager {
         lastModified: now,
         synced: true,
         isGoogleDrive: true,
+        revisions: [],
         content: content
       };
       files.unshift(fileObj);
@@ -1707,6 +1718,9 @@ export class GiriDriveSyncManager {
           </div>
           <div class="drive-file-actions">
             <button class="btn-drive-open" data-file-id="${f.id}" title="Open and edit in ${f.tool.toUpperCase()}">Open ➔</button>
+            ${Array.isArray(f.revisions) && f.revisions.length > 0 ? `
+              <button class="btn-drive-revisions" data-file-id="${f.id}" title="View version history snapshots (${f.revisions.length})" style="background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.3); color:#38bdf8; border-radius:6px; padding:5px 9px; font-size:11.5px; cursor:pointer;">🕒 ${f.revisions.length}</button>
+            ` : ''}
             ${webLink ? `
               <a href="${webLink}" target="_blank" rel="noopener noreferrer" class="btn-drive-external" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); color:#38bdf8; border-radius:6px; padding:5px 9px; font-size:11.5px; text-decoration:none; display:inline-flex; align-items:center; gap:3px;" title="View directly in official Google Drive on web">Drive ↗</a>
             ` : ''}
@@ -1723,6 +1737,15 @@ export class GiriDriveSyncManager {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         this.openDriveFile(btn.dataset.fileId);
+      });
+    });
+
+    container.querySelectorAll('.btn-drive-revisions').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const file = this.getDriveFileById(btn.dataset.fileId);
+        if (!file || !Array.isArray(file.revisions) || file.revisions.length === 0) return;
+        this.openRevisionHistoryModal(file);
       });
     });
 
@@ -1806,6 +1829,71 @@ export class GiriDriveSyncManager {
       item.addEventListener('click', (e) => {
         if (e.target.closest('button') || e.target.closest('a')) return;
         this.openDriveFile(item.dataset.fileId);
+      });
+    });
+  }
+
+  openRevisionHistoryModal(file) {
+    document.getElementById('giri-revision-history-modal-backdrop')?.remove();
+    const modal = document.createElement('div');
+    modal.id = 'giri-revision-history-modal-backdrop';
+    modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:10099; backdrop-filter:blur(5px); font-family:sans-serif;';
+    
+    const rowsHtml = (file.revisions || []).map((rev, idx) => {
+      const timeStr = new Date(rev.timestamp).toLocaleString();
+      return `
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:#27272a; border:1px solid #3f3f46; border-radius:8px; margin-bottom:8px;">
+          <div>
+            <div style="font-size:13px; font-weight:700; color:#f1f5f9;">Version ${file.revisions.length - idx}</div>
+            <div style="font-size:11px; color:#94a3b8;">${timeStr} • ${rev.size || '1 KB'}</div>
+          </div>
+          <button class="btn-restore-rev" data-rev-idx="${idx}" style="background:#2563eb; color:#fff; border:none; border-radius:6px; padding:6px 14px; font-size:12px; font-weight:700; cursor:pointer;">
+            Restore ↺
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    modal.innerHTML = `
+      <div style="background:#18181b; border:1px solid #3f3f46; border-radius:12px; width:480px; max-width:92vw; padding:22px; color:#fff; box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:16px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:20px; color:#38bdf8;">🕒</span>
+            <div>
+              <strong style="font-size:15px; color:#f1f5f9;">Version History</strong>
+              <div style="font-size:11px; color:#94a3b8;">${this.escapeHtml(file.name)}</div>
+            </div>
+          </div>
+          <button id="btn-close-rev-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:16px; cursor:pointer;">✕</button>
+        </div>
+        <div style="max-height:320px; overflow-y:auto; padding-right:4px;">
+          ${rowsHtml || '<div style="color:#94a3b8; font-size:12px; text-align:center; padding:20px;">No prior revisions found.</div>'}
+        </div>
+        <div style="display:flex; justify-content:flex-end; margin-top:16px; border-top:1px solid #27272a; padding-top:12px;">
+          <button id="btn-close-rev-modal-done" style="background:transparent; border:1px solid #475569; color:#cbd5e1; border-radius:6px; padding:6px 16px; font-size:12px; cursor:pointer;">Close</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+
+    modal.querySelector('#btn-close-rev-modal')?.addEventListener('click', () => modal.remove());
+    modal.querySelector('#btn-close-rev-modal-done')?.addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+    modal.querySelectorAll('.btn-restore-rev').forEach(b => {
+      b.addEventListener('click', () => {
+        const idx = parseInt(b.dataset.revIdx, 10);
+        const targetRev = file.revisions[idx];
+        if (!targetRev || !targetRev.content) return;
+        if (confirm(`Restore Version ${file.revisions.length - idx} from ${new Date(targetRev.timestamp).toLocaleTimeString()}?`)) {
+          file.content = targetRev.content;
+          file.lastModified = Date.now();
+          file.synced = true;
+          this.saveActiveFileToDrive(file.tool, file.name, targetRev.content, file.format);
+          modal.remove();
+          this.openDriveFile(file.id);
+          if (window.orbitPlatform) window.orbitPlatform.showToast(`↺ Restored Version ${file.revisions.length - idx} of "${file.name}"`, 'green');
+        }
       });
     });
   }

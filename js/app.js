@@ -1367,6 +1367,37 @@ class GiriOrbitPlatform {
       }
     });
 
+    // Dark / Light Theme Mode Toggle
+    const themeBtn = document.getElementById('btn-suite-theme');
+    const applyTheme = (theme) => {
+      if (theme === 'light') {
+        document.body.classList.add('light-theme');
+        if (themeBtn) {
+          themeBtn.textContent = '🌙';
+          themeBtn.title = 'Switch to Dark Mode';
+        }
+      } else {
+        document.body.classList.remove('light-theme');
+        if (themeBtn) {
+          themeBtn.textContent = '☀️';
+          themeBtn.title = 'Switch to Light Mode';
+        }
+      }
+      try { localStorage.setItem('giri_orbit_theme', theme); } catch (_) {}
+    };
+
+    const savedTheme = (() => {
+      try { return localStorage.getItem('giri_orbit_theme') || 'dark'; } catch (_) { return 'dark'; }
+    })();
+    applyTheme(savedTheme);
+
+    themeBtn?.addEventListener('click', () => {
+      const isLight = document.body.classList.contains('light-theme');
+      const nextTheme = isLight ? 'dark' : 'light';
+      applyTheme(nextTheme);
+      this.showToast(nextTheme === 'light' ? '☀️ Switched to Light Mode' : '🌙 Switched to Dark Mode', 'blue');
+    });
+
     // Mobile Virtual Keyboard Viewport Adjustment for Floating Toolbars
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', () => {
