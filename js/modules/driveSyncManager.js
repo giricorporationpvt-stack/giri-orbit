@@ -1075,6 +1075,173 @@ export class GiriDriveSyncManager {
   }
 
   /**
+   * Selective Google Drive File Picker — Import ONLY the user's selected files
+   */
+  async openGoogleDriveFilePicker() {
+    let token = this.googleUser?.accessToken;
+    if (this.googleUser?.expiresAt && Date.now() > this.googleUser.expiresAt) token = null;
+
+    if (!token) {
+      if (this.tokenClient) {
+        this.tokenClient.requestAccessToken({ prompt: 'select_account', login_hint: this.googleUser?.email || '' });
+      } else {
+        this.promptGoogleDirectLogin();
+      }
+      return;
+    }
+
+    const app = window.orbitPlatform;
+    if (app) app.showToast('Loading your Google Drive directory...', 'blue');
+
+    try {
+      const q = encodeURIComponent("trashed = false and mimeType != 'application/vnd.google-apps.folder'");
+      const fields = encodeURIComponent('files(id,name,mimeType,modifiedTime,size,webViewLink,iconLink)');
+      const res = await fetch(`https://www.googleapis.com/drive/v3/files?pageSize=100&fields=${fields}&q=${q}&orderBy=modifiedTime desc`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson?.error?.message || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const files = data.files || [];
+
+      if (files.length === 0) {
+        alert('No compatible files found in your Google Drive.');
+        return;
+      }
+
+      // Render interactive selection modal
+      document.getElementById('giri-drive-picker-modal-backdrop')?.remove();
+      const pickerModal = document.createElement('div');
+      pickerModal.id = 'giri-drive-picker-modal-backdrop';
+      pickerModal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.75); display:flex; align-items:center; justify-content:center; z-index:10099; backdrop-filter:blur(5px); font-family:sans-serif;';
+
+      const fileRowsHtml = files.map((f, i) => {
+        const mime = (f.mimeType || '').toLowerCase();
+        let tool = 'drift';
+        let format = 'docx';
+        if (mime.includes('spreadsheet') || f.name.match(/\.(xlsx|xls|csv|tsv)$/i)) { tool = 'axis'; format = 'xlsx'; }
+        else if (mime.includes('presentation') || f.name.match(/\.(pptx|ppt)$/i)) { tool = 'kinetic'; format = 'pptx'; }
+        else if (mime.includes('pdf') || f.name.match(/\.pdf$/i)) { tool = 'pdf'; format = 'pdf'; }
+
+        return `
+          <label style="display:flex; align-items:center; gap:12px; padding:10px 12px; background:#27272a; border:1px solid #3f3f46; border-radius:8px; margin-bottom:8px; cursor:pointer;">
+            <input type="checkbox" class="drive-picker-chk" data-file-idx="${i}" style="width:16px; height:16px; accent-color:#0ea5e9; cursor:pointer;">
+            <div style="flex:1; min-width:0;">
+              <strong style="font-size:13px; color:#f1f5f9; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${this.escapeHtml(f.name)}</strong>
+              <span style="font-size:11px; color:#94a3b8;">${tool.toUpperCase()} • ${f.size ? (parseInt(f.size,10)/1024).toFixed(1) + ' KB' : 'Google Cloud File'}</span>
+            </div>
+          </label>
+        `;
+      }).join('');
+
+      pickerModal.innerHTML = `
+        <div style="background:#18181b; border:1px solid #3f3f46; border-radius:14px; width:520px; max-width:92vw; padding:22px; color:#fff; box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #27272a; padding-bottom:12px; margin-bottom:14px;">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span style="font-size:22px; color:#0ea5e9;">🎯</span>
+              <div>
+                <strong style="font-size:16px; color:#f1f5f9;">Select Files from Google Drive</strong>
+                <div style="font-size:11px; color:#94a3b8;">Choose only the specific files you want in Giri Orbit</div>
+              </div>
+            </div>
+            <button id="btn-close-picker-modal" style="background:transparent; border:none; color:#a1a1aa; font-size:18px; cursor:pointer;">✕</button>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-size:12px;">
+            <button id="btn-picker-select-all" style="background:transparent; border:none; color:#38bdf8; cursor:pointer; font-size:12px;">Select All</button>
+            <span id="txt-picker-selected-count" style="color:#94a3b8;">0 files selected</span>
+          </div>
+          <div style="max-height:340px; overflow-y:auto; padding-right:4px;">
+            ${fileRowsHtml}
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:16px; border-top:1px solid #27272a; padding-top:12px;">
+            <button id="btn-cancel-picker" style="background:transparent; border:1px solid #475569; color:#cbd5e1; border-radius:6px; padding:7px 16px; font-size:12px; cursor:pointer;">Cancel</button>
+            <button id="btn-confirm-import-picker" style="background:#0ea5e9; border:none; color:#fff; border-radius:6px; padding:7px 20px; font-size:12.5px; font-weight:700; cursor:pointer;">Import Selected Files</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(pickerModal);
+
+      pickerModal.querySelector('#btn-close-picker-modal')?.addEventListener('click', () => pickerModal.remove());
+      pickerModal.querySelector('#btn-cancel-picker')?.addEventListener('click', () => pickerModal.remove());
+      pickerModal.addEventListener('click', (e) => { if (e.target === pickerModal) pickerModal.remove(); });
+
+      const checkboxes = pickerModal.querySelectorAll('.drive-picker-chk');
+      const countLabel = pickerModal.querySelector('#txt-picker-selected-count');
+      const updateCount = () => {
+        const selected = Array.from(checkboxes).filter(c => c.checked).length;
+        if (countLabel) countLabel.textContent = `${selected} file${selected === 1 ? '' : 's'} selected`;
+      };
+
+      checkboxes.forEach(c => c.addEventListener('change', updateCount));
+
+      pickerModal.querySelector('#btn-picker-select-all')?.addEventListener('click', () => {
+        const allChecked = Array.from(checkboxes).every(c => c.checked);
+        checkboxes.forEach(c => c.checked = !allChecked);
+        updateCount();
+      });
+
+      pickerModal.querySelector('#btn-confirm-import-picker')?.addEventListener('click', () => {
+        const selectedFiles = [];
+        checkboxes.forEach(c => {
+          if (c.checked) {
+            const idx = parseInt(c.dataset.fileIdx, 10);
+            const rawF = files[idx];
+            if (rawF) {
+              const mime = (rawF.mimeType || '').toLowerCase();
+              let tool = 'drift';
+              let format = 'docx';
+              if (mime.includes('spreadsheet') || rawF.name.match(/\.(xlsx|xls|csv|tsv)$/i)) { tool = 'axis'; format = 'xlsx'; }
+              else if (mime.includes('presentation') || rawF.name.match(/\.(pptx|ppt)$/i)) { tool = 'kinetic'; format = 'pptx'; }
+              else if (mime.includes('pdf') || rawF.name.match(/\.pdf$/i)) { tool = 'pdf'; format = 'pdf'; }
+
+              selectedFiles.push({
+                id: rawF.id,
+                googleDriveId: rawF.id,
+                name: rawF.name,
+                tool: tool,
+                folder: 'My Drive (Selected)',
+                format: format,
+                size: rawF.size ? (parseInt(rawF.size, 10)/1024).toFixed(1) + ' KB' : 'Cloud File',
+                lastModified: rawF.modifiedTime ? new Date(rawF.modifiedTime).getTime() : Date.now(),
+                synced: true,
+                isGoogleDrive: true,
+                webViewLink: rawF.webViewLink || `https://drive.google.com/file/d/${rawF.id}/view`
+              });
+            }
+          }
+        });
+
+        if (selectedFiles.length === 0) {
+          alert('Please select at least one file to import.');
+          return;
+        }
+
+        // Save selected files into user's drive storage
+        const current = this.getDriveFiles();
+        const merged = [...selectedFiles, ...current.filter(c => !selectedFiles.some(s => s.id === c.id))];
+        this.saveDriveFiles(merged);
+
+        const listEl = document.getElementById('drive-file-list-container');
+        if (listEl) {
+          listEl.innerHTML = this.renderDriveFileListHtml(merged);
+          this.bindFileListEvents(document.getElementById('drive-sync-modal-backdrop') || document.body);
+        }
+
+        pickerModal.remove();
+        if (app) app.showToast(`✅ Imported ${selectedFiles.length} selected files from your Drive!`, 'green');
+      });
+
+    } catch (err) {
+      console.warn('[Google Drive Picker] Error fetching files:', err);
+      alert(`Could not retrieve Google Drive files: ${err.message}`);
+    }
+  }
+
+  /**
    * Google OAuth 2.0 Integration & Direct Login
    */
   promptGoogleDirectLogin() {
@@ -1523,8 +1690,11 @@ export class GiriDriveSyncManager {
             <input type="text" id="drive-file-filter-input" placeholder="Search Drive files..." spellcheck="false">
           </div>
           <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <button class="btn-giri-primary" id="btn-pick-drive-files" style="padding:6px 13px; font-size:11.5px; background:#0ea5e9; border-color:#0284c7; display:flex; align-items:center; gap:5px; font-weight:600;" title="Select only the specific files you want to import from your Google Drive">
+              <span>🎯 Select Files from Drive</span>
+            </button>
             <button class="btn-giri-primary" id="btn-sync-real-google-files" style="padding:6px 13px; font-size:11.5px; background:#2563eb; border-color:#1d4ed8; display:flex; align-items:center; gap:5px; font-weight:600;" title="Fetch latest original files from your Google Drive">
-              <span>🔄 Sync Drive Files</span>
+              <span>🔄 Sync All Files</span>
             </button>
             <button class="btn-giri-primary" id="btn-drive-save-current" style="padding:6px 13px; font-size:11.5px; display:flex; align-items:center; gap:5px; font-weight:600;" title="Save open active document directly to Google Drive">
               <span>💾 Save Current File</span>
@@ -1591,6 +1761,11 @@ export class GiriDriveSyncManager {
       }
     });
 
+    // Wire Select Only Specific Files from Drive
+    container.querySelector('#btn-pick-drive-files')?.addEventListener('click', async () => {
+      await this.openGoogleDriveFilePicker();
+    });
+
     // Wire Sync Real Google Drive Files
     container.querySelector('#btn-sync-real-google-files')?.addEventListener('click', async () => {
       const btn = container.querySelector('#btn-sync-real-google-files');
@@ -1601,7 +1776,7 @@ export class GiriDriveSyncManager {
       } else {
         await this.fetchRealGoogleDriveFiles();
       }
-      if (btn) btn.innerHTML = '<span>🔄 Sync Drive Files</span>';
+      if (btn) btn.innerHTML = '<span>🔄 Sync All Files</span>';
     });
 
     // Wire Switch Account
