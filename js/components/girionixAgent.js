@@ -132,7 +132,7 @@ export class GirionixAgentManager {
                   <h2 id="girionix-agent-modal-title" style="margin:0; font-size:16px; font-weight:800; color:#f8fafc; letter-spacing:-0.3px;">Girionix Autonomous Agent</h2>
                   <span class="agent-connection-pill" id="agent-header-connection-pill" title="Click to configure AI Engine &amp; API keys" style="cursor:pointer;">
                     <span class="conn-dot">🟢</span>
-                    <span class="conn-label">Gemini 2.0 Flash</span>
+                    <span class="conn-label">Girionix Pro</span>
                   </span>
                   <span class="girionix-partner-badge" id="btn-agent-view-partnership" title="Click to inspect Giri Orbit × Girionix AI official partnership details" style="cursor:pointer; font-size:10px; padding:2px 7px;">
                     <span class="girionix-partner-pulse"></span>
@@ -140,7 +140,7 @@ export class GirionixAgentManager {
                   </span>
                 </div>
                 <p style="margin:2px 0 0 0; font-size:11.5px; color:#94a3b8;">
-                  Autonomous Multi-Turn Office Worker • Gemini 2.0 &amp; ChatGPT Architecture • 1-Click Workspace Execution
+                  Autonomous Multi-Turn Office Worker • Girionix Pro Cloud Architecture • 1-Click Workspace Execution
                 </p>
               </div>
             </div>
@@ -219,10 +219,8 @@ export class GirionixAgentManager {
 
                     <label style="font-size:11.5px; color:#94a3b8; font-weight:500; margin-left:6px;">Online Model:</label>
                     <select id="agent-online-model-select" class="agent-select-pill" style="color:#38bdf8; font-weight:600; background:#0f172a; border:1px solid #0284c7; border-radius:6px; padding:3px 8px; font-size:12px; cursor:pointer;" title="Girionix AI Online Cloud Architecture">
-                      <option value="gemini:gemini-2.0-flash">⚡ Girionix Pro (Gemini 2.0 Flash Online)</option>
-                      <option value="gemini:gemini-2.5-pro">🧠 Girionix Ultra (Gemini 2.5 Pro Deep Reasoning)</option>
-                      <option value="gemini:gemini-1.5-pro">🔬 Girionix Research (Gemini 1.5 Pro Online)</option>
-                      <option value="gemini:gemini-1.5-flash">⚡ Girionix Flash (Gemini 1.5 Flash Online)</option>
+                      <option value="gemini:girionix-pro">⚡ Girionix Pro (Flagship Cloud AI Online)</option>
+                      <option value="gemini:gemini-2.5-pro">🧠 Girionix 2.5 Pro (Deep Reasoning Online)</option>
                       <option value="groq:llama-3.3-70b-versatile">🚀 Girionix Turbo (Groq Llama 3.3 70B Online)</option>
                       <option value="groq:deepseek-r1-distill-llama-70b">📐 Girionix R1 (DeepSeek R1 Distill Online)</option>
                       <option value="openai:gpt-4o">🌐 Girionix Omni (OpenAI GPT-4o Online)</option>
@@ -270,7 +268,7 @@ export class GirionixAgentManager {
                     <strong class="thinking-title">Thought Process</strong>
                     <span class="thinking-duration-badge" id="agent-thinking-duration">Thinking...</span>
                   </div>
-                  <span class="thinking-model-badge" id="agent-thinking-model-badge">Gemini 2.0 Reasoning</span>
+                  <span class="thinking-model-badge" id="agent-thinking-model-badge">Girionix Pro Reasoning</span>
                 </summary>
                 <div class="agent-thinking-log" id="agent-thinking-log">
                   <!-- Steps rendered here dynamically -->

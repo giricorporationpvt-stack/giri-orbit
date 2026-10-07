@@ -936,11 +936,47 @@ export class GiriDriveSyncManager {
 
     const fileName = activeTitle.endsWith(`.${ext}`) ? activeTitle : `${activeTitle}.${ext}`;
 
-    // If Google token available, upload directly to Google Drive API
+    // Determine if modifying / updating an existing file in Google Drive
+    const currentFile = this.currentActiveFileId ? this.getDriveFileById(this.currentActiveFileId) : null;
+    const existingDriveId = currentFile?.googleDriveId || (currentFile?.isGoogleDrive ? currentFile?.id : null);
+
+    // If Google token available, upload or patch directly to Google Drive API
     if (token) {
       if (window.orbitPlatform) window.orbitPlatform.showToast(`Saving "${fileName}" to Google Drive...`, 'blue');
 
       try {
+        if (existingDriveId && !String(existingDriveId).startsWith('gdrive-') && !String(existingDriveId).startsWith('local-')) {
+          // Direct in-place update with PATCH
+          const patchUrl = `https://www.googleapis.com/upload/drive/v3/files/${existingDriveId}?uploadType=media`;
+          const res = await fetch(patchUrl, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': mimeType
+            },
+            body: content
+          });
+
+          // Also update title if changed
+          if (res.ok && currentFile?.name !== fileName) {
+            await fetch(`https://www.googleapis.com/drive/v3/files/${existingDriveId}`, {
+              method: 'PATCH',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ name: fileName })
+            }).catch(() => {});
+          }
+
+          if (res.ok) {
+            if (window.orbitPlatform) window.orbitPlatform.showToast(`✅ Updated "${fileName}" directly in Google Drive!`, 'green');
+            this.saveActiveFileToDrive(currentTool, activeTitle, content, ext);
+            return;
+          }
+        }
+
+        // Upload new file with multipart POST
         const metadata = { name: fileName, mimeType: mimeType };
         const form = new FormData();
         form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
@@ -953,8 +989,14 @@ export class GiriDriveSyncManager {
         });
 
         if (res.ok) {
+          const newDriveFile = await res.json().catch(() => ({}));
           if (window.orbitPlatform) window.orbitPlatform.showToast(`✅ Saved "${fileName}" to Google Drive!`, 'green');
-          await this.fetchRealGoogleDriveFiles();
+          const savedLocal = this.saveActiveFileToDrive(currentTool, activeTitle, content, ext);
+          if (savedLocal && newDriveFile.id) {
+            savedLocal.googleDriveId = newDriveFile.id;
+            savedLocal.webViewLink = newDriveFile.webViewLink || `https://drive.google.com/file/d/${newDriveFile.id}/view`;
+            this.saveDriveFiles(this.getDriveFiles());
+          }
           return;
         }
       } catch (err) {

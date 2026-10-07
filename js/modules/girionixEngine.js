@@ -19,10 +19,8 @@ class GirionixEngine {
   static get PROVIDER_MODELS() {
     return {
       gemini: [
-        { id: 'gemini-2.0-flash', name: 'Girionix 2.0 Flash (Recommended — Free, Fast & Smart)' },
-        { id: 'gemini-2.5-pro', name: 'Girionix 2.5 Pro (Deep Multimodal Reasoning)' },
-        { id: 'gemini-1.5-pro', name: 'Girionix 1.5 Pro (Complex Analysis & Reasoning)' },
-        { id: 'gemini-1.5-flash', name: 'Girionix 1.5 Flash (Ultra-Fast Response)' }
+        { id: 'girionix-pro', name: 'Girionix Pro (Flagship Cloud AI — Fast, Intelligent & Multimodal)' },
+        { id: 'gemini-2.5-pro', name: 'Girionix 2.5 Pro (Deep Multimodal Reasoning)' }
       ],
       groq: [
         { id: 'llama-3.3-70b-versatile', name: 'Girionix Turbo (Groq Llama 3.3 70B — Sub-Second)' },
@@ -51,8 +49,8 @@ class GirionixEngine {
       if (model) {
         localStorage.setItem(this.modelKey, model);
       } else {
-        const defaults = { gemini: 'gemini-2.0-flash', openai: 'gpt-4o-mini', groq: 'llama-3.3-70b-versatile' };
-        localStorage.setItem(this.modelKey, defaults[provider] || 'gemini-2.0-flash');
+        const defaults = { gemini: 'girionix-pro', openai: 'gpt-4o-mini', groq: 'llama-3.3-70b-versatile' };
+        localStorage.setItem(this.modelKey, defaults[provider] || 'girionix-pro');
       }
       window.dispatchEvent(new CustomEvent('girionix-api-settings-changed'));
       return true;
@@ -84,13 +82,16 @@ class GirionixEngine {
     try {
       const p = this.getProvider();
       const saved = localStorage.getItem(this.modelKey);
-      if (saved && saved !== 'Girionix-Local-10.4') return saved;
-      if (p === 'gemini') return 'gemini-2.0-flash';
+      // Migrate away from deprecated or obsolete models
+      if (saved && !['Girionix-Local-10.4', 'gemini-2.0-flash', 'gemini-1.5-pro', 'gemini-1.5-flash'].includes(saved)) {
+        return saved;
+      }
+      if (p === 'gemini') return 'girionix-pro';
       if (p === 'groq') return 'llama-3.3-70b-versatile';
       if (p === 'openai') return 'gpt-4o-mini';
-      return 'gemini-2.0-flash';
+      return 'girionix-pro';
     } catch (_) {
-      return 'gemini-2.0-flash';
+      return 'girionix-pro';
     }
   }
 
@@ -102,10 +103,8 @@ class GirionixEngine {
 
   getModelDisplayName(model) {
     const map = {
-      'gemini-2.0-flash': 'Girionix 2.0 Flash',
+      'girionix-pro': 'Girionix Pro',
       'gemini-2.5-pro': 'Girionix 2.5 Pro',
-      'gemini-1.5-pro': 'Girionix 1.5 Pro',
-      'gemini-1.5-flash': 'Girionix 1.5 Flash',
       'llama-3.3-70b-versatile': 'Girionix Turbo 70B',
       'deepseek-r1-distill-llama-70b': 'Girionix R1 Logic',
       'gpt-4o': 'Girionix Omni 4o',
@@ -162,7 +161,8 @@ class GirionixEngine {
 
     try {
       if (provider === 'gemini') {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model || 'gemini-2.0-flash'}:generateContent?key=${apiKey}`;
+        const targetModel = (model === 'girionix-pro' || !model || model === 'gemini-2.0-flash') ? 'gemini-2.5-pro' : model;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
         const res = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -294,7 +294,8 @@ Provide 4-6 rich, well-structured slides tailored specifically to the subject ma
     }
 
     if (provider === 'gemini') {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+      const targetModel = (model === 'girionix-pro' || !model || model === 'gemini-2.0-flash') ? 'gemini-2.5-pro' : model;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${apiKey}`;
       
       // Build conversation contents including history
       const contents = [];
@@ -424,7 +425,7 @@ Provide 4-6 rich, well-structured slides tailored specifically to the subject ma
                 Online AI Provider
               </label>
               <select id="modal-ai-provider-select" style="width:100%;box-sizing:border-box;background:#13151f;border:1px solid #2e3346;color:#f8fafc;border-radius:8px;padding:10px 12px;font-size:13px;outline:none;cursor:pointer;">
-                <option value="gemini" ${currentProvider === 'gemini' ? 'selected' : ''}>🌐 Google Gemini API (Recommended: 2.0 Flash — Fast, Free &amp; Powerful)</option>
+                <option value="gemini" ${currentProvider === 'gemini' ? 'selected' : ''}>🌐 Google Gemini API (Recommended: Girionix Pro — Fast, Intelligent &amp; Reliable)</option>
                 <option value="groq" ${currentProvider === 'groq' ? 'selected' : ''}>⚡ Groq Cloud (Llama 3.3 70B &amp; DeepSeek R1 — Sub-Second Velocity)</option>
                 <option value="openai" ${currentProvider === 'openai' ? 'selected' : ''}>🤖 OpenAI (ChatGPT — GPT-4o, GPT-4o-mini, o3-mini)</option>
               </select>
@@ -582,12 +583,12 @@ Provide 4-6 rich, well-structured slides tailored specifically to the subject ma
     // Clear / Reset
     clearBtn?.addEventListener('click', () => {
       this.clearApiKey();
-      this.setApiKey('', 'gemini', 'gemini-2.0-flash');
+      this.setApiKey('', 'gemini', 'girionix-pro');
       keyInput.value = '';
       testResult.style.display = 'none';
       if (typeof onSaveCallback === 'function') onSaveCallback();
       if (window.orbitPlatform) {
-        window.orbitPlatform.showToast('Cleared API Key. Reset to Girionix 2.0 Flash online.', 'blue');
+        window.orbitPlatform.showToast('Cleared API Key. Reset to Girionix Pro online.', 'blue');
       }
       backdrop.remove();
     });
