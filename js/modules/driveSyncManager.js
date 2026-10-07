@@ -1376,10 +1376,22 @@ export class GiriDriveSyncManager {
             <span>Continue with Google</span>
           </button>
 
+          <div style="display:flex; justify-content:center; gap:10px; margin-top:10px; flex-wrap:wrap;">
+            <button id="btn-browser-paste-token" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; border-radius:8px; padding:8px 14px; font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+              <span>🔑 Direct OAuth Access Token</span>
+            </button>
+            <button id="btn-browser-custom-client-id" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; border-radius:8px; padding:8px 14px; font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+              <span>⚙️ Your Custom Client ID</span>
+            </button>
+            <button id="btn-browser-local-drive" style="background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.15); color:#cbd5e1; border-radius:8px; padding:8px 14px; font-size:12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+              <span>📁 Local Google Drive Folder</span>
+            </button>
+          </div>
+
           <div style="background:rgba(245,158,11,0.08); border:1px solid rgba(245,158,11,0.25); border-radius:10px; padding:10px 14px; max-width:460px; font-size:11.5px; color:#fbbf24; text-align:left; line-height:1.45; display:flex; gap:8px;">
             <span style="font-size:14px; flex-shrink:0;">ℹ️</span>
             <div>
-              <strong>Google Verification Note:</strong> Because Giri Orbit is a sovereign client-side app in developer mode, Google will show <em>"Google hasn't verified this app"</em>. Simply click <strong>"Advanced"</strong> (bottom-left) ➔ <strong>"Go to Giri Orbit (unsafe)"</strong> to authorize your Drive files.
+              <strong>External Setup Options:</strong> You can sign in using 1-Click Google OAuth above, enter your own Google Cloud OAuth 2.0 Client ID, paste a fresh token directly, or connect your local Google Drive folder on disk.
             </div>
           </div>
 
@@ -1413,6 +1425,35 @@ export class GiriDriveSyncManager {
 
       container.querySelector('#btn-browser-continue-google')?.addEventListener('click', () => {
         this.promptGoogleDirectLogin();
+      });
+
+      container.querySelector('#btn-browser-paste-token')?.addEventListener('click', () => {
+        const token = prompt('Paste your Google OAuth Access Token:\n(e.g., from OAuth 2.0 Playground or Google Cloud CLI):');
+        if (token && token.trim()) {
+          const userEmail = prompt('Enter your Google Account email address:', 'user@gmail.com') || 'user@gmail.com';
+          this.performGoogleLogin(userEmail.split('@')[0], userEmail, {
+            accessToken: token.trim(),
+            expiresAt: Date.now() + 3600000
+          });
+        }
+      });
+
+      container.querySelector('#btn-browser-custom-client-id')?.addEventListener('click', () => {
+        const customId = prompt('Enter your Google Cloud OAuth 2.0 Client ID:\n(from Google Cloud Console -> APIs & Services -> Credentials)', this.googleClientId || DEFAULT_GOOGLE_CLIENT_ID);
+        if (customId && customId.trim()) {
+          this.googleClientId = customId.trim();
+          this.saveSettings();
+          this.initGoogleTokenClient(this.googleClientId);
+          if (this.tokenClient) {
+            this.tokenClient.requestAccessToken({ prompt: 'select_account' });
+          } else {
+            this.promptGoogleDirectLogin();
+          }
+        }
+      });
+
+      container.querySelector('#btn-browser-local-drive')?.addEventListener('click', async () => {
+        await this.openLocalDriveDirectory();
       });
       return;
     }
